@@ -1,0 +1,31 @@
+{
+  // Esta linha é ótima, ela já traz muitas configurações boas
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+
+  // Certifique-se de que os arquivos corretos estão sendo incluídos
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__/*"],
+
+  "compilerOptions": {
+    "composite": true,
+ 
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    // --- CORREÇÕES PRINCIPAIS AQUI ---
+
+    // 1. Defina o 'module' para uma versão moderna. 'ESNext' é a melhor opção para Vite.
+    "module": "ESNext",
+
+    // 2. 'moduleResolution' deve ser 'bundler' (o mais moderno) ou 'node'.
+    // A recomendação oficial do Vite é 'bundler'.
+    "moduleResolution": "bundler",
+
+    // 3. Garanta que 'types' inclua 'vite/client'. Isso resolve o erro "Property 'env' does not exist...".
+    "types": ["vite/client"],
+
+    // 4. (Opcional, mas recomendado) Garanta que 'target' também seja moderno.
+    "target": "ESNext"
+  }
+}
