@@ -397,7 +397,7 @@
                         v-model="form.profileCardColor" show-alpha />
                       <div>
                         <label class="label-text">Opacidade do Card: {{ Math.round(form.profileCardOpacity * 100)
-                        }}%</label>
+                          }}%</label>
                         <input type="range" v-model.number="form.profileCardOpacity" min="0" max="1" step="0.05"
                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500 mt-3">
                       </div>
@@ -748,7 +748,7 @@ function removeAsset(field: UploadableField) {
   delete pendingFiles[field]
 }
 
-const handleAddAudio = (data: { title: string; url: string; coverUrl?: string | null }) => {
+const handleAddAudio = (data: { title: string; url: string; coverUrl?: string | null, type: "DIRECT" | "SPOTIFY" | "SOUNDCLOUD"; }) => {
   pageStore.addAudio(data).catch(err => toast.error(err.message)); // Adicionado .catch para feedback
 };
 
