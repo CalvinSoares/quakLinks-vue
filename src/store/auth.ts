@@ -1,11 +1,8 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import axios from "axios";
-import router from "@/router";
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1",
-});
+import router from "@/router";
+import api from "@/services/api";
 
 type UserRole = "FREE" | "PREMIUM";
 
@@ -44,7 +41,6 @@ export const useAuthStore = defineStore("auth", () => {
     if (typeof tokenStr === "string") {
       localStorage.setItem("token", tokenStr);
       token.value = tokenStr;
-      api.defaults.headers.common["Authorization"] = `Bearer ${tokenStr}`;
     }
   }
 

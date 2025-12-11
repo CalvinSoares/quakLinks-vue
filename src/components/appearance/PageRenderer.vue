@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-full w-full relative text-white transition-all duration-500" :style="{
+    <div class="min-h-[80vh] max-h-[90vh] w-full relative text-white transition-all duration-500 " :style="{
         fontFamily: page.fontFamily || 'Inter',
         cursor: page.cursorUrl ? `url(${page.cursorUrl}), auto` : 'auto'
     }">
@@ -24,10 +24,10 @@
             class="absolute inset-0 z-[1] pointer-events-none bg-radial-vignette"></div>
 
         <!-- 3. Container do Conteúdo -->
-        <div class="relative z-10 flex flex-col items-center justify-center min-h-full p-6 text-center">
+        <div class="relative z-10 flex flex-col items-center justify-center min-h-full p-6 text-center  ">
 
             <!-- MODIFICADO: Container dinâmico que vira o "card" ou um container simples -->
-            <div class="relative w-full max-w-md mx-auto transition-all duration-300 rounded-2xl p-6 sm:p-8"
+            <div class="relative w-full max-w-md max-h-[70vh] mx-auto transition-all duration-300 rounded-2xl p-6 sm:p-8 overflow-y-auto custom-scrollbar"
                 :style="profileCardStyle">
                 <div
                     class="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent">
@@ -83,8 +83,24 @@
                     </div>
                 </div>
 
-                <div v-if="page.links && page.links.length > 0"
-                    class="w-full max-w-sm mt-8 h-[160px] overflow-y-auto px-4">
+                <div v-if="embeddableAudios.length > 0" class="w-full max-w-sm mt-8 space-y-4">
+                    <div v-for="audio in embeddableAudios" :key="audio.id"
+                        class="transition-all duration-300 animate-slide-up">
+                        <!-- Spotify Embed -->
+                        <iframe v-if="audio.type === 'SPOTIFY'" style="border-radius:12px"
+                            :src="getSpotifyEmbedUrl(audio.url)" width="100%" height="152" frameBorder="0"
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy">
+                        </iframe>
+
+                        <!-- SoundCloud Embed -->
+                        <iframe v-else-if="audio.type === 'SOUNDCLOUD'" width="100%" height="166" scrolling="no"
+                            frameborder="no" allow="autoplay" :src="getSoundCloudEmbedUrl(audio.url)">
+                        </iframe>
+                    </div>
+                </div>
+
+                <div v-if="page.links && page.links.length > 0" class="w-full max-w-sm mt-8 h-full px-4">
 
                     <!-- MODIFICADO: Container agora é dinâmico com v-if -->
                     <div v-if="page.layoutLinkStyle === 'icons_only'"
@@ -285,6 +301,30 @@ const getIconForUrl = (url: string | null | undefined) => {
     if (url.includes('twitch.tv')) return BrandTwitchIcon;
     return LinkIcon;
 };
+
+const embeddableAudios = computed(() => {
+    if (!props.page || !props.page.audios) {
+        return [];
+    }
+    return props.page.audios.filter((audio: any) => audio.type === 'SPOTIFY' || audio.type === 'SOUNDCLOUD');
+});
+
+function getSpotifyEmbedUrl(url: string): string {
+    if (!url.includes('open.spotify.com')) return '';
+    try {
+        const path = new URL(url).pathname;
+        return `https://open.spotify.com/embed${path}`;
+    } catch (e) {
+        return '';
+    }
+}
+
+function getSoundCloudEmbedUrl(url: string): string {
+    if (!url.includes('soundcloud.com')) return '';
+    const encodedUrl = encodeURIComponent(url);
+    // Adicionamos `visual=true` para um player mais moderno, como o da imagem de exemplo
+    return `https://w.soundcloud.com/player/?url=${encodedUrl}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`;
+}
 
 const pageBackgroundStyle = computed(() => {
     const style: Record<string, any> = {
@@ -563,5 +603,22 @@ a {
     100% {
         clip-path: inset(40% 0 33% 0);
     }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #334155;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #475569;
 }
 </style>

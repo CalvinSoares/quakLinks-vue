@@ -1,4 +1,3 @@
-<!-- src/components/dashboard/overview/ProfileCompletionCard.vue -->
 <template>
     <div
         class="p-6 bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl shadow-xl h-full">

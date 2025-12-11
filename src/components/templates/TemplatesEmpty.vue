@@ -6,6 +6,7 @@
       </div>
       <p class="text-slate-400 font-medium">{{ message }}</p>
     </div>
+
   </div>
 </template>
 

@@ -12,6 +12,7 @@
 import { ref } from 'vue';
 import { useUserStore } from '@/store/user';
 import { SparklesIcon } from '@heroicons/vue/24/solid';
+import { toast } from 'vue-sonner';
 
 const userStore = useUserStore();
 const isLoading = ref(false);
@@ -21,7 +22,7 @@ async function handleUpgrade() {
     try {
         await userStore.redirectToCheckout();
     } catch (error) {
-        alert('Não foi possível iniciar o pagamento. Tente novamente.');
+        toast.error('Não foi possível iniciar o pagamento. Tente novamente.');
         console.error(error);
     } finally {
         isLoading.value = false;

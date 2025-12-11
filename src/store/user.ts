@@ -1,19 +1,6 @@
 import { defineStore } from "pinia";
 import { useAuthStore } from "./auth"; // Precisamos da authStore para atualizar os dados locais
-import axios from "axios";
-
-// Reutilizamos a mesma configuração de API
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1",
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import api from "@/services/api";
 
 interface UserUpdatePayload {
   name?: string;

@@ -1,29 +1,11 @@
 import axios from "axios";
-
-// Instância do Axios para nossas APIs internas (com token)
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1",
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import api from "./api";
 
 interface SignedUrlResponse {
   signedUrl: string;
   finalFileUrl: string;
 }
 
-/**
- * Orquestra o processo de upload de arquivo usando URLs pré-assinadas.
- * @param file O objeto File a ser enviado.
- * @param uploadType O tipo de upload ('avatar' ou 'background').
- * @returns A URL pública final do arquivo no R2.
- */
 export async function uploadFileWithSignedUrl(
   file: File,
   uploadType:

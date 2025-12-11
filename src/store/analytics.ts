@@ -1,22 +1,8 @@
+import api from "@/services/api";
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import axios from "axios";
 
 export type TimePeriod = "7d" | "30d" | "90d" | "all";
-
-// Use uma instância de API centralizada no futuro.
-// Por agora, criamos uma nova.
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1",
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 // --- DEFINIÇÃO DE TIPOS ---
 export interface AnalyticsData {

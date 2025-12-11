@@ -3,8 +3,8 @@
   <div v-if="previewData" class="w-full h-full relative  bg-slate-950">
 
     <!-- ADICIONADO: O AudioPlayer agora faz parte do preview -->
-    <AudioPlayer v-if="previewData.audios && previewData.audios.length > 0" :audios="previewData.audios"
-      :shuffle="previewData.shuffleAudios" :show-widget="previewData.showAudioPlayer" />
+    <AudioPlayer v-if="directAudios.length > 0" :audios="directAudios" :shuffle="previewData.shuffleAudios"
+      :show-widget="previewData.showAudioPlayer" />
 
     <!-- O PageRenderer continua sendo o coração da UI -->
     <PageRenderer :page="pageWithLinks" />
@@ -36,6 +36,13 @@ const pageWithLinks = computed(() => {
     user: pageStore.currentPage?.user || null,
     audios: pageStore.currentPage?.audios || [],
   };
+});
+
+const directAudios = computed(() => {
+  if (!props.previewData || !props.previewData.audios) {
+    return [];
+  }
+  return props.previewData.audios.filter((audio: any) => audio.type === 'DIRECT' || !audio.type);
 });
 
 </script>

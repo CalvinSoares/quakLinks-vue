@@ -19,18 +19,27 @@ onMounted(async () => {
   const token = Array.isArray(route.query.token) ? route.query.token[0] : route.query.token;
 
   if (token) {
-    // A action setToken deve salvar o token no localStorage e no state
     authStore.setToken(token);
-    // Após salvar o token, busca os dados do usuário
-    await Promise.all([
-      authStore.fetchUser(),
-      pageStore.fetchMyPage() // <-- Busca a página ao mesmo tempo
-    ]);
-    // Redireciona para o dashboard
-    router.push('/dashboard/overview');
+    try {
+      await authStore.fetchUser();
+
+      if (authStore.user) {
+        try {
+          await pageStore.fetchMyPage();
+        } catch (pageError) {
+          console.warn("Usuário logado, mas erro ao buscar página (pode ser novo usuário):", pageError);
+        }
+        router.push('/dashboard');
+
+      } else {
+        throw new Error("Falha ao recuperar usuário");
+      }
+    } catch (e) {
+      console.error("Erro no callback de auth:", e);
+      router.push('/login?error=auth_failed');
+    }
   } else {
-    // Se não houver token, redireciona de volta para a página de login com um erro
-    router.push('/login?error=auth_failed');
+    router.push('/login?error=no_token');
   }
 });
 </script>

@@ -8,7 +8,7 @@
       <DashboardHeader :is-sidebar-open="isSidebarOpen" @toggle-sidebar="isSidebarOpen = !isSidebarOpen" />
 
       <!-- Conteúdo da Página com Scroll -->
-      <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-950/80 p-6 lg:p-8">
+      <main class="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar bg-slate-950/80 p-6 lg:p-8">
         <slot />
       </main>
     </div>
@@ -43,5 +43,22 @@ onMounted(async () => {
 .main-wrapper button,
 .main-wrapper [role="button"] {
   cursor: pointer !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
 }
 </style>

@@ -30,6 +30,21 @@ export interface Template {
   isFavorited?: boolean;
 }
 
+export interface TemplateListItem {
+  id: string;
+  name: string;
+  previewImageUrl: string;
+  visibility: "PUBLIC" | "PRIVATE" | "UNLISTED";
+  createdAt: string;
+  creator: TemplateCreator;
+  tags: TemplateTag[];
+  _count: {
+    favoritedBy: number;
+  };
+  isNew?: boolean;
+  isFavorited?: boolean;
+}
+
 export interface ListTemplatesQuery {
   search?: string;
   tags?: string;
@@ -47,15 +62,14 @@ export interface CreateTemplateInput {
   visibility: "PUBLIC" | "PRIVATE" | "UNLISTED";
 }
 
-// --- FIM DOS TIPOS ---
-
 export const useTemplatesStore = defineStore("templates", () => {
-  // --- STATE ---
-  const templates = ref<Template[]>([]);
-  const myTemplates = ref<Template[]>([]);
-  const favoriteTemplates = ref<Template[]>([]); // NOVO
-  const recentTemplates = ref<Template[]>([]);
+  const templates = ref<TemplateListItem[]>([]);
+  const myTemplates = ref<TemplateListItem[]>([]);
+  const favoriteTemplates = ref<TemplateListItem[]>([]);
+  const recentTemplates = ref<TemplateListItem[]>([]);
   const selectedTemplate = ref<Template | null>(null);
+  const popularTags = ref<{ name: string }[]>([]);
+  const selectedTags = ref<string[]>([]);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
@@ -91,7 +105,7 @@ export const useTemplatesStore = defineStore("templates", () => {
 
     try {
       const response = await api.get<{
-        templates: Template[];
+        templates: TemplateListItem[];
         total: number;
       }>("/templates", { params: filters });
 
@@ -116,10 +130,8 @@ export const useTemplatesStore = defineStore("templates", () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const response = await api.get<{ templates: Template[] }>(
-        "/templates/mine"
-      );
-      myTemplates.value = response.data.templates;
+      const response = await api.get<TemplateListItem[]>("/templates/mine");
+      myTemplates.value = response.data;
     } catch (err: any) {
       error.value =
         err.response?.data?.message || "Falha ao buscar seus templates.";
@@ -131,10 +143,11 @@ export const useTemplatesStore = defineStore("templates", () => {
   async function fetchFavoriteTemplates() {
     isLoading.value = true;
     try {
-      const response = await api.get<{ templates: Template[] }>(
+      const response = await api.get<TemplateListItem[]>(
         "/templates/favorites"
       );
-      favoriteTemplates.value = response.data.templates;
+
+      favoriteTemplates.value = response.data;
     } catch (err) {
       /* ... */
     } finally {
@@ -145,10 +158,9 @@ export const useTemplatesStore = defineStore("templates", () => {
   async function fetchRecentTemplates() {
     isLoading.value = true;
     try {
-      const response = await api.get<{ templates: Template[] }>(
-        "/templates/recent"
-      );
-      recentTemplates.value = response.data.templates;
+      const response = await api.get<TemplateListItem[]>("/templates/recent");
+
+      recentTemplates.value = response.data;
     } catch (err) {
       /* ... */
     } finally {
@@ -168,9 +180,32 @@ export const useTemplatesStore = defineStore("templates", () => {
     }
   }
 
+  async function fetchPopularTags() {
+    try {
+      const response = await api.get<{ name: string }[]>(
+        "/templates/tags/popular"
+      );
+      popularTags.value = response.data;
+    } catch (err) {
+      console.error("Failed to fetch popular tags:", err);
+    }
+  }
+
   function setFilter(key: keyof ListTemplatesQuery, value: any) {
     if (filters[key] === value) return;
     (filters[key] as any) = value;
+    fetchTemplates();
+  }
+
+  function toggleTagFilter(tagName: string) {
+    const index = selectedTags.value.indexOf(tagName);
+    if (index > -1) {
+      selectedTags.value.splice(index, 1);
+    } else {
+      selectedTags.value.push(tagName);
+    }
+    // Atualiza o filtro principal e dispara a busca
+    filters.tags = selectedTags.value.join(",") || undefined;
     fetchTemplates();
   }
 
@@ -187,7 +222,7 @@ export const useTemplatesStore = defineStore("templates", () => {
     }
   }
 
-  async function toggleFavorite(template: Template) {
+  async function toggleFavorite(template: TemplateListItem) {
     const originalState = template.isFavorited;
 
     template.isFavorited = !template.isFavorited;
@@ -226,7 +261,10 @@ export const useTemplatesStore = defineStore("templates", () => {
       // 3. Envia os dados para criar o template
       const response = await api.post<Template>("/templates", payload);
 
-      myTemplates.value.unshift(response.data);
+      if (Array.isArray(myTemplates.value)) {
+        myTemplates.value.unshift(response.data);
+      }
+
       return response.data;
     } catch (err: any) {
       console.error("Falha ao criar o template:", err);
@@ -289,6 +327,10 @@ export const useTemplatesStore = defineStore("templates", () => {
     error,
     pagination,
     filters,
+    popularTags,
+    selectedTags,
+    fetchPopularTags,
+    toggleTagFilter,
     fetchTemplates,
     fetchMyTemplates,
     fetchTemplateById,
