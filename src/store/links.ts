@@ -1,23 +1,7 @@
+import api from "@/services/api";
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import axios from "axios";
 
-// Reutilize sua instância do Axios configurada com o token
-const api = axios.create({
-  baseURL: `${
-    import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1"
-  }/links`,
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Interface baseada no seu schema Prisma
 export interface Link {
   id: string;
   title: string;

@@ -397,7 +397,7 @@
                         v-model="form.profileCardColor" show-alpha />
                       <div>
                         <label class="label-text">Opacidade do Card: {{ Math.round(form.profileCardOpacity * 100)
-                          }}%</label>
+                        }}%</label>
                         <input type="range" v-model.number="form.profileCardOpacity" min="0" max="1" step="0.05"
                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500 mt-3">
                       </div>
@@ -516,6 +516,7 @@ import { useUserStore } from '@/store/user'
 import SwitchToggle from '@/components/SwitchToggle.vue'
 import AudioManagerModal from '@/components/appearance/AudioManagerModal.vue'
 import TitleEffectsModal from '@/components/appearance/TitleEffectsModal.vue'
+import { toast } from 'vue-sonner'
 
 // Importação dinâmica de ícones para as abas (requer @heroicons/vue)
 const IconUserCircle = defineAsyncComponent(() => import('@heroicons/vue/24/outline/UserCircleIcon'))
@@ -748,24 +749,24 @@ function removeAsset(field: UploadableField) {
 }
 
 const handleAddAudio = (data: { title: string; url: string; coverUrl?: string | null }) => {
-  pageStore.addAudio(data).catch(err => alert(err.message)); // Adicionado .catch para feedback
+  pageStore.addAudio(data).catch(err => toast.error(err.message)); // Adicionado .catch para feedback
 };
 
 // CORRIGIDO: Tipagem para o parâmetro 'data'
 const handleUpdateAudio = (data: { id: string } & Partial<Omit<Audio, 'id'>>) => {
-  pageStore.updateAudio(data.id, data).catch(err => alert(err.message));
+  pageStore.updateAudio(data.id, data).catch(err => toast.error(err.message));
 };
 
 // CORRIGIDO: Tipagem para o parâmetro 'id'
 const handleDeleteAudio = (id: string) => {
   if (confirm('Tem certeza que deseja excluir este áudio?')) {
-    pageStore.deleteAudio(id).catch(err => alert(err.message));
+    pageStore.deleteAudio(id).catch(err => toast.error(err.message));
   }
 };
 
 // CORRIGIDO: Tipagem para o parâmetro 'id'
 const handleSetActiveAudio = (id: string) => {
-  pageStore.setActiveAudio(id).catch(err => alert(err.message));
+  pageStore.setActiveAudio(id).catch(err => toast.error(err.message));
 };
 
 

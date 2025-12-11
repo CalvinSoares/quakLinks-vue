@@ -11,6 +11,10 @@
       </template>
     </div>
 
+    <div v-if="isLoading" class="grid ...">
+      <div v-for="i in 4" :key="i" class="aspect-[3/4] bg-slate-800 rounded-2xl animate-pulse"></div>
+    </div>
+
     <div v-if="hasMore && !isLoading" class="mt-12 text-center pb-8">
       <button @click="$emit('load-more')"
         class="px-8 py-3.5 font-semibold text-white bg-gradient-to-r from-slate-700 to-slate-800 rounded-xl hover:from-slate-600 hover:to-slate-700 border border-slate-600/50 hover:border-slate-500 transition-all duration-300 shadow-lg hover:shadow-xl">
@@ -22,13 +26,13 @@
 
 <script setup lang="ts">
 import TemplateCard from './TemplateCard.vue'
-import type { Template } from '@/store/templates'
+import type { Template, TemplateListItem } from '@/store/templates'
 
 export type TemplateCardVariant = 'explore' | 'favorites' | 'recent' | 'mine';
 
 
 defineProps<{
-  templates: Template[]
+  templates: TemplateListItem[]
   variant: TemplateCardVariant
   hasMore: boolean
   isLoading: boolean
@@ -37,8 +41,8 @@ defineProps<{
 defineEmits<{
   view: [id: string]
   apply: [id: string]
-  favorite: [template: Template]
-  edit: [template: Template]
+  favorite: [template: TemplateListItem]
+  edit: [template: TemplateListItem]
   delete: [id: string]
   'load-more': []
 }>()

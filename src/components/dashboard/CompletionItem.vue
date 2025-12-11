@@ -16,7 +16,7 @@
     </div>
 
     <!-- Label -->
-    <span class="text-sm font-medium flex-grow">{{ label }}</span>
+    <span class="text-sm font-medium flex-grow text-start">{{ label }}</span>
 
     <!-- Arrow Icon -->
     <ChevronRightIcon v-if="!completed"

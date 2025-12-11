@@ -1,23 +1,7 @@
+import api from "@/services/api";
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
-import axios from "axios";
+import { ref } from "vue";
 
-// Reutilizaremos a instância do axios configurada no authStore ou criamos uma nova.
-// Para simplicidade, vamos criar uma aqui, mas o ideal é ter um arquivo central para isso.
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1",
-});
-
-// Adiciona um interceptor para injetar o token em todas as requisições
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// --- DEFINIÇÃO DE TIPOS BASEADO NO SEU PRISMA SCHEMA ---
 interface Link {
   id: string;
   title: string;
@@ -35,6 +19,7 @@ export interface Audio {
   id: string;
   title: string;
   url: string;
+  type: "DIRECT" | "SPOTIFY" | "SOUNDCLOUD";
   coverUrl?: string | null;
   isActive: boolean;
   order: number;
@@ -107,8 +92,14 @@ export const usePageStore = defineStore("page", () => {
       currentPage.value = response.data;
     } catch (err: any) {
       console.error("Erro ao buscar a página do usuário:", err);
-      error.value =
-        err.response?.data?.message || "Não foi possível carregar sua página.";
+      if (err.response && err.response.status === 404) {
+        currentPage.value = null;
+      } else {
+        error.value =
+          err.response?.data?.message ||
+          "Não foi possível carregar sua página.";
+        throw err;
+      }
     } finally {
       isLoading.value = false;
     }
@@ -159,18 +150,16 @@ export const usePageStore = defineStore("page", () => {
   async function addAudio(audioData: {
     title: string;
     url: string;
+    type: "DIRECT" | "SPOTIFY" | "SOUNDCLOUD";
     coverUrl?: string | null;
   }) {
     if (!currentPage.value) return;
     try {
       const response = await api.post<Audio>("/audios/", audioData);
 
-      console.log("response", response.data);
-
       currentPage.value.audios.push(response.data);
     } catch (err: any) {
       console.error("Erro ao adicionar áudio:", err);
-      // Lançar erro para o componente UI tratar (ex: mostrar um toast de erro)
       throw new Error(
         err.response?.data?.message || "Não foi possível adicionar o áudio."
       );

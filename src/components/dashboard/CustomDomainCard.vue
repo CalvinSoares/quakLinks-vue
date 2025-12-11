@@ -84,6 +84,7 @@ import { useUserStore } from '@/store/user';
 import { GlobeAltIcon } from '@heroicons/vue/24/outline';
 import UpgradeToPremium from '../dashboard/UpgradeToPremium.vue';
 import { TrashIcon } from 'vue-tabler-icons';
+import { toast } from 'vue-sonner';
 
 const auth = useAuthStore();
 const userStore = useUserStore();
@@ -139,7 +140,7 @@ async function handleVerifyDomain() {
     try {
         const result = await userStore.verifyCustomDomain();
 
-        alert(result.message);
+        toast.success(result.message);
 
 
     } catch (e: any) {

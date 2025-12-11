@@ -9,31 +9,44 @@
         <label for="edit-name" class="form-label">Nome do Template</label>
         <input v-model="form.name" id="edit-name" type="text" required class="form-input" />
       </div>
-<div>
+      <div>
         <label class="form-label">Imagem de Preview</label>
-        <div class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-slate-700 border-dashed rounded-md">
+        <div
+          class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-slate-700 border-dashed rounded-md">
           <!-- Estado inicial ou quando há uma imagem existente -->
           <div v-if="!preview && form.previewImageUrl" class="relative w-full aspect-video">
             <img :src="form.previewImageUrl" class="w-full h-full object-contain rounded-md" />
-            <label for="edit-file-upload" class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer text-white font-semibold">
+            <label for="edit-file-upload"
+              class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer text-white font-semibold">
               Trocar Imagem
-              <input id="edit-file-upload" type="file" class="sr-only" @change="handleFileChange" accept="image/png, image/jpeg, image/gif">
+              <input id="edit-file-upload" type="file" class="sr-only" @change="handleFileChange"
+                accept="image/png, image/jpeg, image/gif">
             </label>
           </div>
           <!-- Estado quando uma nova imagem foi selecionada -->
           <div v-else-if="preview" class="relative w-full aspect-video">
             <img :src="preview" class="w-full h-full object-contain rounded-md" />
-            <button @click="removeFile" type="button" class="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <button @click="removeFile" type="button"
+              class="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
             </button>
           </div>
-           <!-- Estado vazio (sem imagem inicial ou nova) -->
+          <!-- Estado vazio (sem imagem inicial ou nova) -->
           <div v-else class="space-y-1 text-center">
-            <svg class="mx-auto h-12 w-12 text-slate-500" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <svg class="mx-auto h-12 w-12 text-slate-500" stroke="currentColor" fill="none" viewBox="0 0 48 48"
+              aria-hidden="true">
+              <path
+                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
             <div class="flex text-sm text-slate-400">
-              <label for="edit-file-upload-empty" class="relative cursor-pointer rounded-md font-medium text-amber-400 hover:text-amber-300">
+              <label for="edit-file-upload-empty"
+                class="relative cursor-pointer rounded-md font-medium text-amber-400 hover:text-amber-300">
                 <span>Selecione um arquivo</span>
-                <input id="edit-file-upload-empty" type="file" class="sr-only" @change="handleFileChange" accept="image/png, image/jpeg, image/gif">
+                <input id="edit-file-upload-empty" type="file" class="sr-only" @change="handleFileChange"
+                  accept="image/png, image/jpeg, image/gif">
               </label>
             </div>
             <p class="text-xs text-slate-500">PNG, JPG, GIF até 10MB</p>
@@ -47,14 +60,15 @@
       <div>
         <label class="form-label">Visibilidade</label>
         <div class="flex gap-4 mt-2">
-            <label v-for="option in visibilityOptions" :key="option.value" class="flex items-center gap-2 text-slate-300 cursor-pointer">
-              <input type="radio" v-model="form.visibility" :value="option.value" name="visibility" class="form-radio" />
-              {{ option.label }}
-            </label>
+          <label v-for="option in visibilityOptions" :key="option.value"
+            class="flex items-center gap-2 text-slate-300 cursor-pointer">
+            <input type="radio" v-model="form.visibility" :value="option.value" name="visibility" class="form-radio" />
+            {{ option.label }}
+          </label>
         </div>
       </div>
     </form>
-    
+
     <template #footer>
       <button type="button" @click="$emit('close')" class="btn-secondary">Cancelar</button>
       <button type="button" @click="handleSubmit" :disabled="isLoading" class="btn-primary">
@@ -68,6 +82,7 @@
 import { ref, reactive, watch } from 'vue';
 import { useTemplatesStore, type CreateTemplateInput, type Template } from '@/store/templates';
 import BaseModal from '../modals/BaseModal.vue';
+import { toast } from 'vue-sonner';
 
 // ... (toda a lógica do script setup permanece a mesma da versão anterior)
 const props = defineProps<{ isOpen: boolean, template: Template | null }>();
@@ -114,7 +129,7 @@ function removeFile() {
   preview.value = null;
   // Limpa o input
   const input = document.getElementById('edit-file-upload') as HTMLInputElement;
-  if(input) input.value = '';
+  if (input) input.value = '';
 }
 
 function resetAndClose() {
@@ -125,7 +140,7 @@ function resetAndClose() {
 async function handleSubmit() {
   if (!props.template) return;
   isLoading.value = true;
-  
+
   // Monta o payload apenas com os dados a serem enviados
   const payload: Partial<CreateTemplateInput> = {
     ...form,
@@ -136,13 +151,13 @@ async function handleSubmit() {
   if (selectedFile.value) {
     payload.previewImageFile = selectedFile.value;
   }
-  
+
   try {
     await store.updateTemplate(props.template.id, payload);
-    alert('Template atualizado com sucesso!');
+    toast.success('Template atualizado com sucesso!');
     resetAndClose();
   } catch (error: any) {
-    alert(`Erro: ${error.message}`);
+    toast.error(`Erro: ${error.message}`);
   } finally {
     isLoading.value = false;
   }
@@ -150,9 +165,23 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.form-label { @apply block text-sm font-medium text-slate-300 mb-1; }
-.form-input { @apply w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500; }
-.form-radio { @apply h-4 w-4 text-amber-500 bg-slate-700 border-slate-600 focus:ring-amber-500; }
-.btn-primary { @apply px-6 py-2 text-sm font-medium text-slate-900 bg-amber-400 rounded-md hover:bg-amber-300 disabled:bg-slate-600 transition-colors; }
-.btn-secondary { @apply px-4 py-2 text-sm font-medium text-slate-300 rounded-md hover:bg-slate-800 transition-colors; }
+.form-label {
+  @apply block text-sm font-medium text-slate-300 mb-1;
+}
+
+.form-input {
+  @apply w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500;
+}
+
+.form-radio {
+  @apply h-4 w-4 text-amber-500 bg-slate-700 border-slate-600 focus:ring-amber-500;
+}
+
+.btn-primary {
+  @apply px-6 py-2 text-sm font-medium text-slate-900 bg-amber-400 rounded-md hover:bg-amber-300 disabled:bg-slate-600 transition-colors;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 text-sm font-medium text-slate-300 rounded-md hover:bg-slate-800 transition-colors;
+}
 </style>

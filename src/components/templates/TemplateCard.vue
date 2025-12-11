@@ -70,11 +70,11 @@
 
 <script setup lang="ts">
 import { HeartIcon } from '@heroicons/vue/24/solid';
-import type { Template } from '@/store/templates';
+import type { TemplateListItem } from '@/store/templates';
 import type { TemplateCardVariant } from './TemplatesGrid.vue';
 
 defineProps<{
-  template: Template,
+  template: TemplateListItem,
   variant: TemplateCardVariant
 }>();
 
