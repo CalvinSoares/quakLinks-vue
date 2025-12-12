@@ -1,10 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/store/auth";
 
-// Importe suas Views (páginas)
 import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
-import DashboardView from "@/views/DashboardView.vue";
 import UserPageView from "@/views/UserPageView.vue";
 import LinksView from "@/views/LinksView.vue";
 import AppearanceView from "@/views/AppearanceView.vue";
@@ -14,6 +12,7 @@ import AccountSettingsView from "@/views/AccountSettingsView.vue";
 import TemplatesView from "@/views/TemplatesView.vue";
 import AuthCallback from "@/views/AuthCallback.vue";
 import AnalyticsView from "@/views/AnalyticsView.vue";
+import LandingPage from "@/views/Landing-Page.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,6 +21,11 @@ const router = createRouter({
       path: "/login",
       name: "login",
       component: LoginView,
+    },
+    {
+      path: "/",
+      name: "home",
+      component: LandingPage,
     },
     {
       path: "/register",
@@ -33,12 +37,7 @@ const router = createRouter({
       name: "verify-email",
       component: VerifyEmailView,
     },
-    {
-      path: "/dashboard",
-      name: "dashboard",
-      component: DashboardView,
-      meta: { requiresAuth: true }, // <-- Marca esta rota como protegida
-    },
+
     {
       path: "/analytics",
       name: "Analytics",
@@ -84,7 +83,7 @@ const router = createRouter({
       path: "/",
       redirect: () => {
         const auth = useAuthStore();
-        return auth.isAuthenticated ? "/dashboard" : "/login";
+        return auth.isAuthenticated ? "/dashboard/overview" : "/login";
       },
     },
     {
