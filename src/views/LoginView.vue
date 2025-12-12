@@ -170,7 +170,7 @@ const handleLogin = async () => {
       email: email.value,
       password: password.value,
     });
-    await router.push('/dashboard');
+    await router.push('/dashboard/overview');
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Email ou senha inválidos.';
   } finally {

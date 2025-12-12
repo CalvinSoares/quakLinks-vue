@@ -30,8 +30,6 @@ export const useAuthStore = defineStore("auth", () => {
   // Getters
   const isAuthenticated = computed(() => !!token.value);
 
-  console.log("user", user.value);
-
   const isPremium = computed(() => user.value?.role === "PREMIUM");
 
   // Actions

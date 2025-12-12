@@ -7,7 +7,7 @@
     <div class="text-center p-8 bg-slate-800/50 rounded-2xl border border-slate-700">
       <h1 class="text-4xl font-bold text-red-400">Oops!</h1>
       <p class="mt-2 text-slate-400">{{ pageStore.error }}</p>
-      <router-link to="/"
+      <router-link to="/dashboard/overview"
         class="inline-block px-6 py-2 mt-6 text-sm font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700">
         Voltar para o início
       </router-link>
