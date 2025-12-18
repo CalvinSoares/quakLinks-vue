@@ -1,6 +1,6 @@
 <template>
   <div class="mb-8 flex flex-col md:flex-row items-center gap-4">
-    <!-- Barra de Pesquisa -->
+
     <div class="relative group flex-grow w-full md:w-auto">
       <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
         <MagnifyingGlassIcon class="h-5 w-5 text-slate-500" />
@@ -10,7 +10,7 @@
         class="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-12 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/50" />
     </div>
 
-    <!-- Dropdown de Ordenação -->
+
     <div class="relative">
       <select :value="sortBy" @change="$emit('update:sortBy', ($event.target as HTMLSelectElement).value as SortType)"
         class="appearance-none w-full md:w-48 bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-400/50">
@@ -50,7 +50,7 @@
         </MenuItems>
       </transition>
     </Menu>
-    <!-- Botão de Filtro por Criador (simples) -->
+
     <div class="relative group">
       <input :value="creator" @input="$emit('update:creator', ($event.target as HTMLInputElement).value)" type="search"
         placeholder="Search by creator"

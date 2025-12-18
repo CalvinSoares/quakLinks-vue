@@ -2,20 +2,16 @@
     <Modal :is-open="true" :title="isEditing ? 'Editar Mídia' : 'Adicionar Nova Mídia'" @close="$emit('close')">
         <div class="space-y-6 p-6">
 
-            <!-- Seletor de Tipo de Mídia -->
             <div>
                 <label class="label-text">Fonte da Mídia</label>
-                <div class="grid grid-cols-3 gap-2 p-1 bg-slate-800 rounded-lg w-full mt-1">
+                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-800 rounded-lg w-full mt-1">
                     <button @click="form.type = 'DIRECT'" :class="getTypeButtonClass('DIRECT')">Upload</button>
-                    <button @click="form.type = 'SPOTIFY'" :class="getTypeButtonClass('SPOTIFY')">Spotify</button>
                     <button @click="form.type = 'SOUNDCLOUD'"
                         :class="getTypeButtonClass('SOUNDCLOUD')">SoundCloud</button>
                 </div>
             </div>
 
-            <!-- Campos Condicionais baseados no tipo -->
             <transition name="fade" mode="out-in">
-                <!-- Campos para UPLOAD -->
                 <div v-if="form.type === 'DIRECT'" key="direct" class="space-y-4">
                     <AssetUploader title="Arquivo de Áudio (.mp3, .wav)" :current-url="form.url" upload-type="audio"
                         accepted-files="audio/*" @upload="(payload) => handleFileSelect('audio', payload.file)"
@@ -26,7 +22,6 @@
                         @remove="() => handleFileRemove('audio_cover')" />
                 </div>
 
-                <!-- Campos para SPOTIFY ou SOUNDCLOUD -->
                 <div v-else key="embed" class="space-y-4">
                     <div>
                         <label for="audio-url" class="label-text">URL da Música ou Playlist</label>
@@ -36,7 +31,6 @@
                 </div>
             </transition>
 
-            <!-- Campo de Título (Comum a todos) -->
             <div>
                 <label for="audio-title" class="label-text">Título</label>
                 <input id="audio-title" type="text" v-model="form.title" class="input-dark"
@@ -83,17 +77,16 @@ const form = reactive({
 
 const pendingFiles = reactive<{ audio?: File, audio_cover?: File }>({});
 
-// Preenche o formulário ao editar
 onMounted(() => {
     if (props.editingAudio) {
         form.title = props.editingAudio.title;
         form.url = props.editingAudio.url;
-        form.type = props.editingAudio.type || 'DIRECT'; // Fallback para áudios antigos
+        form.type = props.editingAudio.type || 'DIRECT';
         form.coverUrl = props.editingAudio.coverUrl || null;
     }
 });
 
-// Limpa os campos de arquivo ao mudar o tipo
+
 watch(() => form.type, (newType, oldType) => {
     if (newType !== oldType) {
         form.url = null;
@@ -106,7 +99,7 @@ watch(() => form.type, (newType, oldType) => {
 const handleFileSelect = (type: 'audio' | 'audio_cover', file: File) => {
     pendingFiles[type] = file;
     if (type === 'audio') {
-        form.url = file.name; // Mostra o nome do arquivo como placeholder
+        form.url = file.name;
     } else {
         const reader = new FileReader();
         reader.onload = (e) => { form.coverUrl = e.target?.result as string; };
@@ -128,7 +121,6 @@ const save = async () => {
 
     isSaving.value = true;
 
-    // Prepara os dados finais para serem emitidos
     const finalData: any = {
         title: form.title,
         type: form.type,
@@ -137,7 +129,6 @@ const save = async () => {
     };
 
     try {
-        // Se for upload, processa os arquivos pendentes
         if (form.type === 'DIRECT') {
             if (pendingFiles.audio) {
                 finalData.url = await uploadFileWithSignedUrl(pendingFiles.audio, 'audio');

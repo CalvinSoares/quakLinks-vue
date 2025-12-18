@@ -11,7 +11,6 @@
             </span>
         </div>
 
-        <!-- Barra de Progresso -->
         <div class="mb-6">
             <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden shadow-inner">
                 <div class="h-3 rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-yellow-500 via-pink-500 to-indigo-500"
@@ -21,7 +20,6 @@
             </div>
         </div>
 
-        <!-- Alerta de Perfil Incompleto -->
         <div v-if="completion.percentage < 100"
             class="mb-6 flex items-start gap-3 p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl transition-all duration-300 hover:border-amber-500/50">
             <ExclamationTriangleIcon class="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
@@ -31,7 +29,6 @@
             </div>
         </div>
 
-        <!-- Tarefas de Conclusão -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <CompletionItem v-for="item in completion.tasks" :key="item.label" :label="item.label"
                 :completed="item.completed" :to="item.to" :action="item.action" />

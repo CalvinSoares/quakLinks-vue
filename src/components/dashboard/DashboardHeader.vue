@@ -1,8 +1,6 @@
 <template>
-    <!-- Header fixo para mobile e tablet, escondido em telas grandes -->
     <header
         class="sticky top-0 z-10 flex items-center justify-between h-16 px-4 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 lg:hidden">
-        <!-- Botão de Menu Hambúrguer Animado -->
         <button @click="$emit('toggleSidebar')" class="relative w-8 h-8 flex items-center justify-center">
             <span class="sr-only">Abrir menu</span>
             <div class="space-y-1.5">
@@ -15,9 +13,8 @@
             </div>
         </button>
 
-        <!-- Logo (opcional, para reforçar a marca no mobile) -->
         <div class="flex items-center gap-2">
-            <img src="/duckbio.png" alt="QuackLinks Logo" class="w-7 h-5" />
+            <img src="/ducklogonatal.png" alt="QuackLinks Logo" class="w-7 h-5" />
             <h1 class="text-xl font-bold tracking-wider text-white">Quack<span class="text-amber-400">Links</span></h1>
         </div>
 

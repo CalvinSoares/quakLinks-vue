@@ -1,103 +1,149 @@
-<!-- components/appearance/AudioManagerModal.vue -->
 <template>
-    <Modal :is-open="true" title="Gerenciador de Mídia" @close="$emit('close')">
-        <div class="space-y-6 p-6">
-            <p class="text-sm text-slate-400">Gerencie suas músicas de fundo (upload) e players incorporados (Spotify).
-            </p>
+    <Modal :is-open="true" title="Gerenciador de Áudio" @close="$emit('close')">
+        <div class="flex flex-col h-[500px]">
 
-            <!-- Botão Premium -->
-            <button
-                class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-purple-500/10 text-purple-300 border border-purple-500/20 hover:bg-purple-500/20 transition">
-                Adicione mais mídias com
-                <DiamondIcon class="w-4 h-4" /> Premium
-            </button>
 
-            <!-- Lista de Áudios -->
-            <div class="space-y-3">
-                <h3 class="text-slate-300 font-medium">Suas Mídias ({{ audios.length }}/{{ maxAudios }})</h3>
-                <div v-if="audios.length > 0" class="max-h-60 overflow-y-auto pr-2 space-y-3">
-                    <AudioItem v-for="audio in audios" :key="audio.id" :audio="audio" @set-active="handleSetActive"
-                        @edit="handleEdit" @delete="handleDelete" />
-                </div>
-                <div v-else
-                    class="text-center py-6 text-slate-500 text-sm border-2 border-dashed border-slate-800 rounded-lg">
-                    Nenhuma mídia adicionada.
-                </div>
+            <div class="flex border-b border-slate-700 mb-4 px-6 pt-2">
+                <button @click="activeTab = 'background'"
+                    class="pb-2 px-4 text-sm font-medium transition-colors relative"
+                    :class="activeTab === 'background' ? 'text-yellow-400' : 'text-slate-400 hover:text-white'">
+                    Música de Fundo
+                    <div v-if="activeTab === 'background'" class="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-400">
+                    </div>
+                </button>
+                <button @click="activeTab = 'embeds'" class="pb-2 px-4 text-sm font-medium transition-colors relative"
+                    :class="activeTab === 'embeds' ? 'text-yellow-400' : 'text-slate-400 hover:text-white'">
+                    Players (Spotify)
+                    <div v-if="activeTab === 'embeds'" class="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-400">
+                    </div>
+                </button>
             </div>
 
-            <!-- Opções -->
-            <div class="space-y-4 pt-4 border-t border-slate-700/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h4 class="font-semibold text-white">Embaralhar músicas de fundo</h4>
-                        <p class="text-xs text-slate-400">Reproduz um áudio aleatório da sua lista de uploads.</p>
+            <div class="flex-1 overflow-y-auto px-6 pb-6 custom-scrollbar">
+
+                <div v-if="activeTab === 'background'" class="space-y-6 animate-fade-in">
+                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-semibold text-white">Player Flutuante</h4>
+                                <p class="text-xs text-slate-400">Toca automaticamente ao entrar no perfil.</p>
+                            </div>
+                            <SwitchToggle :model-value="showPlayer"
+                                @update:model-value="$emit('update:showPlayer', $event)" />
+                        </div>
+                        <div class="flex items-center justify-between border-t border-slate-700/50 pt-4">
+                            <div>
+                                <h4 class="font-semibold text-white">Modo Aleatório</h4>
+                                <p class="text-xs text-slate-400">Embaralhar a ordem de reprodução.</p>
+                            </div>
+                            <SwitchToggle :model-value="shuffle"
+                                @update:model-value="$emit('update:shuffle', $event)" />
+                        </div>
                     </div>
-                    <SwitchToggle :model-value="shuffle" @update:model-value="$emit('update:shuffle', $event)" />
-                </div>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h4 class="font-semibold text-white">Player de música de fundo</h4>
-                        <p class="text-xs text-slate-400">Mostra um widget flutuante no seu perfil para uploads.</p>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-slate-300 font-medium text-sm">Meus Uploads ({{ directAudios.length }})</h3>
+                            <button @click="openAddModal('DIRECT')"
+                                class="text-xs flex items-center gap-1 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-md transition text-white">
+                                <UploadIcon class="w-3 h-3" /> Upload
+                            </button>
+                        </div>
+
+                        <div v-if="directAudios.length > 0" class="space-y-2">
+                            <AudioItem v-for="audio in directAudios" :key="audio.id" :audio="audio"
+                                @set-active="handleSetActive" @edit="handleEdit" @delete="handleDelete" />
+                        </div>
+                        <div v-else
+                            class="text-center py-8 text-slate-500 text-xs border-2 border-dashed border-slate-800 rounded-lg">
+                            Nenhuma música enviada.
+                        </div>
                     </div>
-                    <SwitchToggle :model-value="showPlayer" @update:model-value="$emit('update:showPlayer', $event)" />
                 </div>
+
+                <div v-if="activeTab === 'embeds'" class="space-y-6 animate-fade-in">
+                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold text-white">Mostrar Cards de Música</h4>
+                                <p class="text-xs text-slate-400">Exibe os widgets do Spotify/SoundCloud no perfil.</p>
+                            </div>
+                            <SwitchToggle :model-value="showEmbeds"
+                                @update:model-value="$emit('update:showEmbeds', $event)" />
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-slate-300 font-medium text-sm">Embeds Ativos ({{ embedAudios.length }})</h3>
+                            <button @click="isSpotifyPickerOpen = true"
+                                class="text-xs flex items-center gap-1 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold px-3 py-1.5 rounded-md transition">
+                                <BrandSpotifyIcon class="w-3 h-3" /> Adicionar
+                            </button>
+                        </div>
+
+                        <div v-if="embedAudios.length > 0" class="space-y-2">
+                            <AudioItem v-for="audio in embedAudios" :key="audio.id" :audio="audio"
+                                :hide-active-toggle="true" @edit="handleEdit" @delete="handleDelete" />
+                        </div>
+                        <div v-else
+                            class="text-center py-8 text-slate-500 text-xs border-2 border-dashed border-slate-800 rounded-lg">
+                            Nenhum player adicionado.
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <!-- ATUALIZADO: Rodapé com duas opções -->
         <template #footer>
-            <div class="grid grid-cols-2 gap-3 w-full">
-                <button @click="openAddModal('DIRECT')"
-                    class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg transition">
-                    <UploadIcon class="w-5 h-5" />
-                    Adicionar por Upload
-                </button>
-                <button @click="isSpotifyPickerOpen = true"
-                    class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg transition">
-                    <BrandSpotifyIcon class="w-5 h-5" />
-                    Adicionar do Spotify
-                </button>
+            <div class="text-xs text-slate-500 w-full text-center">
+                Dica: Você pode ter música de fundo E embeds ativos simultaneamente.
             </div>
         </template>
     </Modal>
 
-    <!-- Modal de Adicionar/Editar por UPLOAD -->
     <AddAudioModal v-if="isAddModalOpen" :editing-audio="editingAudio" @close="closeAddModal" @save="handleSaveAudio" />
-
-    <!-- NOVO: Modal para escolher músicas do Spotify -->
     <SpotifyPickerModal v-if="isSpotifyPickerOpen" @close="isSpotifyPickerOpen = false" @save="handleSaveAudio" />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import SwitchToggle from '../SwitchToggle.vue';
 import type { Audio } from '@/store/page';
 import AudioItem from './AudioItem.vue';
-import { DiamondIcon, UploadIcon, BrandSpotifyIcon } from 'vue-tabler-icons';
+import { UploadIcon, BrandSpotifyIcon } from 'vue-tabler-icons';
 import AddAudioModal from './AddAudioModal.vue';
-import SpotifyPickerModal from './SpotifyPickerModal.vue'; // Importe o novo modal
+import SpotifyPickerModal from './SpotifyPickerModal.vue';
 import Modal from '../dashboard/Modal.vue';
 
-defineProps<{
+const props = defineProps<{
     audios: Audio[];
     shuffle: boolean;
     showPlayer: boolean;
+    showEmbeds: boolean;
 }>();
 
-const emit = defineEmits(['close', 'add', 'update', 'delete', 'update:shuffle', 'update:showPlayer', 'set-active']);
+const emit = defineEmits([
+    'close', 'add', 'update', 'delete',
+    'update:shuffle', 'update:showPlayer', 'update:showEmbeds',
+    'set-active'
+]);
 
-const maxAudios = ref(2); // Idealmente, isso viria do estado do usuário (plano free/premium)
+const activeTab = ref<'background' | 'embeds'>('background');
 const isAddModalOpen = ref(false);
-const isSpotifyPickerOpen = ref(false); // Novo estado para o modal do Spotify
+const isSpotifyPickerOpen = ref(false);
 const editingAudio = ref<Audio | null>(null);
+
+const directAudios = computed(() => props.audios.filter(a => a.type === 'DIRECT'));
+const embedAudios = computed(() => props.audios.filter(a => a.type === 'SPOTIFY' || a.type === 'SOUNDCLOUD'));
 
 const handleSetActive = (audioId: string) => emit('set-active', audioId);
 
 const handleEdit = (audio: Audio) => {
     editingAudio.value = audio;
-    // Abre o modal correto dependendo do tipo de áudio
     if (audio.type === 'SPOTIFY') {
-        isSpotifyPickerOpen.value = true; // No futuro, você pode passar o `editingAudio` para o SpotifyPicker para mostrar a música atual
+        isSpotifyPickerOpen.value = true;
     } else {
         isAddModalOpen.value = true;
     }
@@ -105,32 +151,40 @@ const handleEdit = (audio: Audio) => {
 
 const handleDelete = (audioId: string) => emit('delete', audioId);
 
-// Função genérica para abrir o modal de upload/edição
 const openAddModal = (type: 'DIRECT') => {
-    // Se precisar, você pode passar o tipo inicial para o AddAudioModal
     isAddModalOpen.value = true;
 }
 
-// Fecha ambos os modais de adição e reseta o estado de edição
 const closeAddModal = () => {
     isAddModalOpen.value = false;
     isSpotifyPickerOpen.value = false;
     editingAudio.value = null;
 };
 
-// Função unificada para salvar. Funciona para ambos os modais.
-const handleSaveAudio = (data: {
-    title: string;
-    url: string;
-    type: 'DIRECT' | 'SPOTIFY' | 'SOUNDCLOUD'; // Mantemos SoundCloud para o futuro
-    coverUrl?: string | null;
-    spotifyTrackId?: string;
-}) => {
+const handleSaveAudio = (data: any) => {
     if (editingAudio.value) {
         emit('update', { id: editingAudio.value.id, ...data });
     } else {
         emit('add', data);
     }
-    closeAddModal(); // Fecha qualquer modal que estiver aberto
+    closeAddModal();
 };
 </script>
+
+<style scoped>
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>

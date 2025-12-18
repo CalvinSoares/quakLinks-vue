@@ -2,7 +2,6 @@
     <div @click.self="$emit('close')"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl shadow-2xl animate-fade-in">
-            <!-- Cabeçalho -->
             <div class="flex items-center justify-between p-4 border-b border-slate-800">
                 <h2 class="text-lg font-bold text-white">Efeitos do nome de usuário</h2>
                 <button @click="$emit('close')"
@@ -14,9 +13,7 @@
                 </button>
             </div>
 
-            <!-- Conteúdo do Modal -->
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Lado Esquerdo: Grid de Efeitos -->
                 <div class="grid grid-cols-3 gap-3 self-start">
                     <button v-for="effect in titleEffects" :key="effect.id" @click="localSelectedEffect = effect.id"
                         class="relative aspect-square flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all text-center"
@@ -41,7 +38,6 @@
                     </button>
                 </div>
 
-                <!-- Lado Direito: Preview -->
                 <div class="flex items-center justify-center p-8 bg-pink-600 rounded-xl min-h-[160px] overflow-hidden">
                     <h1 class="text-4xl font-bold text-white break-words text-center"
                         :class="localSelectedEffect !== 'typewriter' ? previewClass : ''" :data-text="truncatedTitle"
@@ -58,7 +54,6 @@
                 </div>
             </div>
 
-            <!-- Rodapé -->
             <div
                 class="flex items-center justify-end gap-3 p-4 bg-slate-950/50 border-t border-slate-800 rounded-b-2xl">
                 <button @click="$emit('close')"
@@ -78,13 +73,12 @@
 import { ref, computed } from 'vue';
 
 const props = defineProps<{
-    modelValue: string; // O efeito selecionado atualmente (usado com v-model)
+    modelValue: string;
     title: string;
 }>();
 
 const emit = defineEmits(['update:modelValue', 'close']);
 
-// Estado local para permitir o cancelamento
 const localSelectedEffect = ref(props.modelValue);
 
 const titleEffects = [

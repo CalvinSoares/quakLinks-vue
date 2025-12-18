@@ -1,8 +1,6 @@
-<!-- src/components/dashboard/overview/AccountActionsCard.vue -->
 <template>
     <div
         class="p-6 bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl shadow-xl space-y-6 h-full">
-        <!-- Seção de Gerenciamento -->
         <div>
             <h2 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
                 <Cog6ToothIcon class="w-6 h-6 text-yellow-400" />
@@ -29,10 +27,8 @@
             </div>
         </div>
 
-        <!-- Divisor -->
         <hr class="border-slate-700/50">
 
-        <!-- Seção de Conexões -->
         <div>
             <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
                 <LinkIcon class="w-6 h-6 text-yellow-400" />
@@ -40,7 +36,6 @@
             </h3>
             <p class="text-sm text-slate-400 mb-4">Vincule sua conta do Discord.</p>
 
-            <!-- Estado Conectado -->
             <div v-if="isDiscordConnected" class="flex items-center gap-2">
                 <div
                     class="flex-grow flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 rounded-xl text-white font-semibold shadow-lg">
@@ -53,7 +48,6 @@
                 </button>
             </div>
 
-            <!-- Estado Desconectado -->
             <button v-else @click="$emit('connectDiscord')"
                 class="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.02] shadow-lg">
                 <component :is="BrandDiscordIcon" class="w-5 h-5" />

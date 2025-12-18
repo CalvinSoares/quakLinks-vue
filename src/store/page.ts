@@ -11,8 +11,33 @@ interface Link {
 }
 
 interface PageUser {
-  discordAvatarUrl: string | null;
-  useDiscordAvatar: boolean;
+  image: string | null;
+  imageProvider: string;
+  name: string;
+  role: string;
+}
+
+export interface Block {
+  id: string;
+  type: BlockType;
+  order: number;
+  isVisible: boolean;
+  content: any;
+  pageId: string;
+}
+
+export enum BlockType {
+  LINK = "LINK",
+  HEADER = "HEADER",
+  TEXT = "TEXT",
+  DIVIDER = "DIVIDER",
+  VIDEO = "VIDEO",
+  SOCIAL = "SOCIAL",
+  IMAGE = "IMAGE",
+  AUDIO = "AUDIO",
+  YOUTUBE_SUBSCRIBE = "YOUTUBE_SUBSCRIBE",
+  PINTEREST = "PINTEREST",
+  COUNTDOWN = "COUNTDOWN",
 }
 
 export interface Audio {
@@ -53,6 +78,7 @@ export interface Page {
 
   fontFamily?: string;
   buttonStyle?: string;
+  buttonColor?: string | null;
   buttonRoundness?: string;
   backgroundOverlay?: string;
   buttonShadow?: boolean;
@@ -72,14 +98,23 @@ export interface Page {
 
   shuffleAudios: boolean;
   showAudioPlayer: boolean;
+  showEmbeds: boolean;
   audios: Audio[];
 
   profileRingType?: string | null;
   profileRingColors?: string[];
+
+  pageLayout?: "standard" | "banner" | "portrait";
+  blocks: Block[];
+
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const usePageStore = defineStore("page", () => {
   const currentPage = ref<Page | null>(null);
+  const userPages = ref<Page[]>([]);
+  const totalPages = ref(0);
   const isLoading = ref<boolean>(false);
   const error = ref<string | null>(null);
 
@@ -88,7 +123,6 @@ export const usePageStore = defineStore("page", () => {
     error.value = null;
     try {
       const response = await api.get<Page>("/pages/my-page");
-      console.log("response.data", response.data);
       currentPage.value = response.data;
     } catch (err: any) {
       console.error("Erro ao buscar a página do usuário:", err);
@@ -105,37 +139,56 @@ export const usePageStore = defineStore("page", () => {
     }
   }
 
-  /**
-   * Atualiza a página do usuário autenticado.
-   * Corresponde à rota PUT /pages/my-page
-   * @param {Partial<Page>} pageData - Os dados a serem atualizados.
-   */
-  async function updateMyPage(pageData: Partial<Page>) {
+  async function fetchUserPages(page = 1, search = "") {
     isLoading.value = true;
-    error.value = null;
     try {
-      const response = await api.put<Page>("/pages/my-page", pageData);
-      currentPage.value = response.data; // Atualiza o state com os dados retornados
-      return response.data; // Retorna os dados para possível feedback na UI (ex: "Salvo!")
-    } catch (err: any) {
-      console.error("Erro ao atualizar a página:", err);
-      error.value =
-        err.response?.data?.message || "Não foi possível salvar as alterações.";
-      throw new Error(error.value || "erro"); // Lança o erro para que o componente possa tratá-lo
+      const res = await api.get(`/pages/list?page=${page}&search=${search}`);
+      userPages.value = res.data.pages;
+      totalPages.value = res.data.totalPages;
+    } catch (e) {
+      console.error(e);
     } finally {
       isLoading.value = false;
     }
   }
 
-  /**
-   * Busca uma página pública pelo seu slug.
-   * Corresponde à rota GET /pages/:slug
-   * @param {string} slug - O slug da página a ser buscada.
-   */
+  async function createNewPage(data: { title: string; slug: string }) {
+    const res = await api.post("/pages", data);
+    await fetchUserPages();
+    return res.data;
+  }
+
+  async function deleteUserPage(id: string) {
+    await api.delete(`/pages/${id}`);
+    await fetchUserPages();
+    if (currentPage.value?.id === id) currentPage.value = null;
+  }
+
+  async function selectPageToEdit(slug: string) {
+    await fetchPageBySlug(slug);
+  }
+
+  async function updateMyPage(pageData: Partial<Page>) {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      const response = await api.put<Page>("/pages/my-page", pageData);
+      currentPage.value = response.data;
+      return response.data;
+    } catch (err: any) {
+      console.error("Erro ao atualizar a página:", err);
+      error.value =
+        err.response?.data?.message || "Não foi possível salvar as alterações.";
+      throw new Error(error.value || "erro");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   async function fetchPageBySlug(slug: string) {
     isLoading.value = true;
     error.value = null;
-    currentPage.value = null; // Limpa a página anterior
+    currentPage.value = null;
     try {
       const response = await api.get<Page>(`/pages/${slug}`);
       currentPage.value = response.data;
@@ -204,7 +257,6 @@ export const usePageStore = defineStore("page", () => {
     if (!currentPage.value) return;
     try {
       const response = await api.post<Audio>(`/audios/${audioId}/set-active`);
-      // Atualiza o estado local para refletir qual áudio está ativo
       currentPage.value.audios.forEach((audio) => {
         audio.isActive = audio.id === response.data.id;
       });
@@ -216,16 +268,87 @@ export const usePageStore = defineStore("page", () => {
     }
   }
 
+  async function createBlock(blockData: { type: BlockType; content?: any }) {
+    if (!currentPage.value) return;
+    try {
+      const response = await api.post<Block>("/blocks", blockData);
+      currentPage.value.blocks.push(response.data);
+      currentPage.value.blocks.sort((a, b) => a.order - b.order);
+    } catch (err: any) {
+      console.error("Erro ao criar bloco:", err);
+      throw err;
+    }
+  }
+
+  async function updateBlock(blockId: string, data: Partial<Block>) {
+    if (!currentPage.value) return;
+    try {
+      const response = await api.put<Block>(`/blocks/${blockId}`, data);
+      const index = currentPage.value.blocks.findIndex((b) => b.id === blockId);
+      if (index !== -1) {
+        currentPage.value.blocks[index] = {
+          ...currentPage.value.blocks[index],
+          ...response.data,
+        };
+      }
+    } catch (err: any) {
+      console.error("Erro ao atualizar bloco:", err);
+      throw err;
+    }
+  }
+
+  async function deleteBlock(blockId: string) {
+    if (!currentPage.value) return;
+    try {
+      await api.delete(`/blocks/${blockId}`);
+      currentPage.value.blocks = currentPage.value.blocks.filter(
+        (b) => b.id !== blockId
+      );
+    } catch (err: any) {
+      console.error("Erro ao deletar bloco:", err);
+      throw err;
+    }
+  }
+
+  async function reorderBlocks(newOrder: Block[]) {
+    if (!currentPage.value) return;
+
+    currentPage.value.blocks = newOrder;
+
+    try {
+      const payload = newOrder.map((block, index) => ({
+        id: block.id,
+        order: index,
+      }));
+
+      await api.put("/blocks/reorder", { blocks: payload });
+    } catch (err: any) {
+      console.error("Erro ao reordenar blocos:", err);
+      await fetchMyPage();
+      throw err;
+    }
+  }
+
   return {
     currentPage,
+    userPages,
+    totalPages,
     isLoading,
     error,
     fetchMyPage,
+    fetchUserPages,
+    createNewPage,
+    deleteUserPage,
+    selectPageToEdit,
     updateMyPage,
     fetchPageBySlug,
     addAudio,
     updateAudio,
     deleteAudio,
     setActiveAudio,
+    createBlock,
+    updateBlock,
+    deleteBlock,
+    reorderBlocks,
   };
 });

@@ -4,7 +4,6 @@ import api from "@/services/api";
 import { usePageStore } from "./page";
 import { uploadFileWithSignedUrl } from "@/services/uploadService";
 
-// --- DEFINIÇÃO DE TIPOS ---
 export interface TemplateTag {
   name: string;
 }
@@ -89,8 +88,6 @@ export const useTemplatesStore = defineStore("templates", () => {
     tags: undefined,
   });
 
-  // --- ACTIONS ---
-
   async function fetchTemplates(loadMore = false) {
     if (isLoading.value) return;
     isLoading.value = true;
@@ -149,7 +146,7 @@ export const useTemplatesStore = defineStore("templates", () => {
 
       favoriteTemplates.value = response.data;
     } catch (err) {
-      /* ... */
+      console.error(err);
     } finally {
       isLoading.value = false;
     }
@@ -162,7 +159,7 @@ export const useTemplatesStore = defineStore("templates", () => {
 
       recentTemplates.value = response.data;
     } catch (err) {
-      /* ... */
+      console.error(err);
     } finally {
       isLoading.value = false;
     }
@@ -204,7 +201,6 @@ export const useTemplatesStore = defineStore("templates", () => {
     } else {
       selectedTags.value.push(tagName);
     }
-    // Atualiza o filtro principal e dispara a busca
     filters.tags = selectedTags.value.join(",") || undefined;
     fetchTemplates();
   }
@@ -212,7 +208,6 @@ export const useTemplatesStore = defineStore("templates", () => {
   async function applyTemplate(templateId: string) {
     try {
       await api.post(`/templates/${templateId}/apply`);
-      // Após aplicar, atualiza os dados da página do usuário
       const pageStore = usePageStore();
       await pageStore.fetchMyPage();
       return true;
@@ -236,7 +231,6 @@ export const useTemplatesStore = defineStore("templates", () => {
       }
     } catch (err) {
       console.error("Falha ao favoritar o template:", err);
-      // Reverte a mudança na UI em caso de erro
       template.isFavorited = originalState;
       template._count.favoritedBy += originalState ? 1 : -1;
     }
@@ -244,21 +238,18 @@ export const useTemplatesStore = defineStore("templates", () => {
 
   async function createTemplate(data: CreateTemplateInput) {
     try {
-      // 1. Faz o upload da imagem de preview primeiro
       const uploadedImageUrl = await uploadFileWithSignedUrl(
         data.previewImageFile,
         "template_preview"
       );
 
-      // 2. Prepara o payload para a nossa API principal, já com a URL final
       const payload = {
         name: data.name,
-        previewImageUrl: uploadedImageUrl, // <-- Usa a URL retornada pelo serviço de upload
+        previewImageUrl: uploadedImageUrl,
         tags: data.tags,
         visibility: data.visibility,
       };
 
-      // 3. Envia os dados para criar o template
       const response = await api.post<Template>("/templates", payload);
 
       if (Array.isArray(myTemplates.value)) {
@@ -287,7 +278,7 @@ export const useTemplatesStore = defineStore("templates", () => {
           "template_preview"
         );
       }
-      delete payload.previewImageFile; // Remove o arquivo do payload final
+      delete payload.previewImageFile;
 
       const response = await api.put<Template>(`/templates/${id}`, payload);
       const index = myTemplates.value.findIndex((t) => t.id === id);
@@ -303,11 +294,10 @@ export const useTemplatesStore = defineStore("templates", () => {
     }
   }
 
-  // --- NOVA AÇÃO ---
   async function deleteTemplate(id: string) {
     try {
       await api.delete(`/templates/${id}`);
-      // Remove da lista local
+
       myTemplates.value = myTemplates.value.filter((t) => t.id !== id);
     } catch (err: any) {
       console.error(`Failed to delete template ${id}:`, err);

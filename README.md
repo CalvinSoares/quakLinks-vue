@@ -36,3 +36,29 @@ npm run dev
 ```sh
 npm run build
 ```
+
+
+melhorar cards no overview
+arrumar bugs em templtaes
+analisar sobre os dominios costomizados
+aplicar e criar modal de plano premium
+verificar plano na stripe
+aplicar badge de premium em certas partes 
+ajustar link do google para produção
+ajustar card interno no preview pra n quebrar o layout
+
+criar section de integrações com videos(youtube, twitch, ticket, etc...), spotufy, inscrever no yotube, tiktok, pinterest, instagram, facebook, xtwiter, googlemaps, threads, etc..
+
+criar sectionbs de carrosel, serviços, imagens, produtos, videos, portfolgio, etc..
+
+refatorar logica de paginas, usuario deve ter uma lista da paginas dele existentes, criar limite baseado no plano
+
+criar countador, evento, etc..
+
+
+
+
+
+
+aplicar troca de idiomas
+aplicar tema branco

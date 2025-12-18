@@ -1,139 +1,96 @@
 <template>
   <div v-if="pageStore.isLoading" class="flex items-center justify-center min-h-screen bg-slate-950 text-slate-300">
-    Carregando perfil...
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      <p>Carregando perfil...</p>
+    </div>
   </div>
 
   <div v-else-if="pageStore.error" class="flex items-center justify-center min-h-screen bg-slate-950 p-4">
-    <div class="text-center p-8 bg-slate-800/50 rounded-2xl border border-slate-700">
-      <h1 class="text-4xl font-bold text-red-400">Oops!</h1>
-      <p class="mt-2 text-slate-400">{{ pageStore.error }}</p>
-      <router-link to="/dashboard/overview"
-        class="inline-block px-6 py-2 mt-6 text-sm font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700">
-        Voltar para o início
+    <div class="text-center p-8 bg-slate-800/50 rounded-2xl border border-slate-700 max-w-md w-full">
+      <h1 class="text-2xl font-bold text-red-400 mb-2">Página não encontrada</h1>
+      <p class="text-slate-400 mb-6">{{ pageStore.error }}</p>
+      <router-link to="/"
+        class="px-6 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+        Ir para a Home
       </router-link>
     </div>
   </div>
 
-  <div v-else-if="page" class="min-h-full w-full relative text-white transition-all duration-500" :style="{
-    fontFamily: page.fontFamily || 'Inter',
-    cursor: page.cursorUrl ? `url(${page.cursorUrl}), auto` : 'auto'
-  }">
-    <!-- 1. Fundo (Imagem/Cor) com Efeito de Blur -->
-    <video v-if="page.backgroundType === 'video' && page.backgroundVideoUrl" :key="page.backgroundVideoUrl"
-      class="absolute top-1/2 left-1/2 w-full h-full object-cover -translate-x-1/2 -translate-y-1/2"
-      :style="{ filter: `blur(${page.backgroundBlur || 0}px)` }" :poster="page.backgroundUrl || ''" autoplay loop muted
-      playsinline>
-      <source :src="page.backgroundVideoUrl" type="video/mp4">
-      Seu navegador não suporta vídeos.
-    </video>
+  <div v-else-if="page"
+    class="min-h-screen w-full relative overflow-y-auto overflow-x-hidden text-white transition-all duration-500"
+    :style="pageContainerStyle">
 
-    <div v-else class="absolute inset-0 bg-cover bg-center transition-all duration-700" :style="pageBackgroundStyle">
+
+    <div class="absolute left-0 top-0 w-full transition-all duration-500 ease-in-out overflow-hidden z-0"
+      :class="getBackgroundDimensions">
+
+      <video v-if="page.backgroundType === 'video' && page.backgroundVideoUrl" :key="page.backgroundVideoUrl"
+        class="w-full h-full object-cover" :style="{ filter: `blur(${page.backgroundBlur || 0}px)` }"
+        :poster="page.backgroundUrl || ''" autoplay loop muted playsinline>
+        <source :src="page.backgroundVideoUrl" type="video/mp4">
+      </video>
+
+      <div v-else class="w-full h-full bg-cover bg-center transition-all duration-700" :style="mediaBackgroundStyle">
+      </div>
+
+      <div v-if="page.backgroundOverlay === 'noise'"
+        class="absolute inset-0 z-[1] opacity-10 pointer-events-none bg-[url('/noise.png')] animate-pulse">
+      </div>
+      <div v-if="page.backgroundOverlay === 'scanlines'"
+        class="absolute inset-0 z-[1] pointer-events-none bg-[url('/scanlines.png')] bg-cover opacity-20"></div>
+      <div v-if="page.backgroundOverlay === 'vignette'"
+        class="absolute inset-0 z-[1] pointer-events-none bg-radial-vignette"></div>
     </div>
 
-    <!-- 2. Overlays VFX -->
-    <div v-if="page.backgroundOverlay === 'noise'"
-      class="absolute inset-0 z-[1] opacity-10 pointer-events-none bg-[url('/noise.png')] animate-pulse"></div>
-    <div v-if="page.backgroundOverlay === 'scanlines'"
-      class="absolute inset-0 z-[1] pointer-events-none bg-[url('/scanlines.png')] bg-cover opacity-20"></div>
-    <div v-if="page.backgroundOverlay === 'vignette'"
-      class="absolute inset-0 z-[1] pointer-events-none bg-radial-vignette"></div>
 
-    <!-- 3. Container do Conteúdo -->
-    <div class="relative z-10 flex flex-col items-center justify-center min-h-screen p-6 text-center">
+    <div class="relative z-10 flex flex-col items-center min-h-full px-4 transition-all duration-500"
+      :class="getContentAlignment">
 
-      <!-- MODIFICADO: Container dinâmico que vira o "card" ou um container simples -->
       <div class="relative w-full max-w-md mx-auto transition-all duration-300 rounded-2xl p-6 sm:p-8"
-        :style="profileCardStyle">
-        <div
-          class="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent">
+        :class="{ 'mt-0': page.pageLayout === 'standard' }" :style="profileCardStyle">
+
+        <ProfileHeader :page="page" />
+
+        <div v-if="sortedBlocks.length > 0" :class="containerClasses">
+          <UniversalBlock v-for="block in sortedBlocks" :key="block.id" :block="block" :page="page"
+            :class="{ 'col-span-2 w-full': page.layoutLinkStyle === 'grid' && block.type !== 'LINK' }" />
         </div>
 
-        <!-- Avatar com Borda Dinâmica -->
-        <div class="relative group mb-4 flex justify-center">
-          <div class="p-1 rounded-full transition-all duration-300" :style="profileRingStyle"
-            :class="{ 'ring-animated': page.profileRingType === 'animated' }">
-            <img :src="finalAvatarUrl" alt="Avatar" class="relative w-28 h-28 object-cover rounded-full shadow-lg" />
-          </div>
+        <div v-else-if="page.links && page.links.length > 0" class="w-full flex flex-col gap-3">
+          <UniversalBlock v-for="link in page.links" :key="link.id"
+            :block="{ type: 'LINK', content: { title: link.title, url: link.url } }" :page="page" />
         </div>
 
-        <h1 class="text-3xl font-bold tracking-tight drop-shadow-lg min-h-[48px]"
-          :class="{ 'text-glow': page.glowEffect === 'title' || page.glowEffect === 'both' }"
-          :style="{ color: page.textColor || '#FFFFFF', '--glow-color': page.textColor || '#FFFFFF' }">
-          <span v-if="page.typewriterEffect" class="typewriter font-mono"
-            :style="{ '--char-count': (user?.name || page.slug).length }" :key="user?.name || page.slug">
-            {{ user?.name || page.slug }}
-          </span>
-          <span v-else>
-            {{ user?.name || page.slug }}
-          </span>
-        </h1>
+      </div>
 
-        <p v-if="page.bio" class="mt-2 text-slate-300 max-w-sm opacity-90">
-          <span>{{ page.bio }}</span>
-        </p>
+      <div v-if="embeddableAudios.length > 0 && page.showEmbeds !== false"
+        class="w-full max-w-md mx-auto mb-12 mt-6 space-y-4">
+        <div v-for="audio in embeddableAudios" :key="audio.id"
+          class="relative w-full transition-transform duration-300 hover:scale-[1.02] animate-slide-up group/player">
 
-        <!-- Contador de Views e Localização -->
-        <div class="mt-4 w-full flex flex-row items-center justify-between gap-2 text-sm text-white">
-          <div v-if="page.showViewCount" class="flex items-center justify-start gap-2">
-            <EyeIcon class="w-5 h-5" />
-            <span>{{ page.viewCount.toLocaleString() }}</span>
+          <div
+            class="absolute -inset-0.5 opacity-30 blur-xl transition-opacity duration-500 group-hover/player:opacity-50 rounded-2xl"
+            :class="audio.type === 'SPOTIFY' ? 'bg-[#1DB954]' : 'bg-[#ff5500]'">
           </div>
-
-          <div v-if="page.location" class="flex items-center justify-start gap-2 text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" stroke-width="2"
-              stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
-            </svg>
-            <span>{{ page.location }}</span>
-          </div>
-        </div>
-
-        <!-- Lista de Links Dinâmica -->
-        <div v-if="sortedLinks.length > 0"
-          class="w-full max-w-sm mt-8 max-h-[45vh] overflow-y-auto custom-scrollbar px-2">
-
-          <div v-if="page.layoutLinkStyle === 'icons_only'" class="flex justify-center items-center flex-wrap gap-4">
-            <a v-for="(link, index) in sortedLinks" :key="link.id" :href="getRedirectUrl(link.id)" target="_blank"
-              rel="noopener noreferrer" :title="link.title"
-              class="group relative transition-all duration-300 transform link-item" :class="getLinkClasses(page)"
-              :style="{ animationDelay: `${index * 100}ms` }">
-              <div class="relative z-10 w-full h-full flex items-center justify-center">
-                <component :is="getIconForUrl(link.url)" class="w-7 h-7 z-10"
-                  :class="{ 'icon-glow': page.glowEffect === 'icons' || page.glowEffect === 'both' }"
-                  :style="getIconStyle(link.url)" />
-              </div>
-            </a>
-          </div>
-
-          <div v-else :class="page.layoutLinkStyle === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 gap-3' : 'space-y-4'">
-            <a v-for="(link, index) in sortedLinks" :key="link.id" :href="getRedirectUrl(link.id)" target="_blank"
-              rel="noopener noreferrer" class="group relative transition-all duration-300 transform link-item"
-              :class="getLinkClasses(page)" :style="{ animationDelay: `${index * 100}ms` }">
-              <div class="relative z-10 w-full h-full flex" :class="{
-                'items-center': page.layoutLinkStyle !== 'stacked',
-                'flex-col items-center justify-center text-center gap-2': page.layoutLinkStyle === 'stacked',
-                'flex-col justify-center': page.layoutLinkStyle === 'grid'
-              }">
-                <component :is="getIconForUrl(link.url)" class="w-7 h-7 z-10"
-                  :class="{ 'icon-glow': page.glowEffect === 'icons' || page.glowEffect === 'both' }"
-                  :style="getIconStyle(link.url)" />
-                <span class="z-10" :class="{
-                  'text-center text-xs font-medium': page.layoutLinkStyle === 'grid',
-                  'text-center font-semibold': page.layoutLinkStyle === 'stacked',
-                  'flex-1 text-center font-semibold tracking-wide': page.layoutLinkStyle === 'list' || !page.layoutLinkStyle
-                }" :style="{ color: page.textColor || '#FFFFFF' }">
-                  {{ link.title }}
-                </span>
-              </div>
-            </a>
+          <div
+            class="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 backdrop-blur-sm border border-white/5">
+            <iframe v-if="audio.type === 'SPOTIFY'" style="border-radius: 12px" :src="getSpotifyEmbedUrl(audio.url)"
+              width="100%" height="152" frameBorder="0"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"
+              class="block w-full bg-transparent">
+            </iframe>
+            <iframe v-else-if="audio.type === 'SOUNDCLOUD'" width="100%" height="166" scrolling="no" frameborder="no"
+              allow="autoplay" :src="getSoundCloudEmbedUrl(audio.url)" class="block w-full bg-transparent">
+            </iframe>
           </div>
         </div>
       </div>
     </div>
 
     <AudioPlayer v-if="page.audios && page.audios.length > 0" :audios="page.audios" :shuffle="page.shuffleAudios"
-      :show-widget="page.showAudioPlayer" />
+      :show-widget="page.showAudioPlayer" top="top-5" />
+
   </div>
 </template>
 
@@ -142,182 +99,193 @@ import { onMounted, onUnmounted, computed, watch, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { usePageStore } from '@/store/page';
 import { useUiStore } from '@/store/uiStore';
-import { BrandGithubIcon, BrandTwitterIcon, BrandInstagramIcon, BrandLinkedinIcon, BrandYoutubeIcon, LinkIcon, BrandDiscordIcon, BrandTwitchIcon, EyeIcon, BrandPinterestIcon } from 'vue-tabler-icons';
 import AudioPlayer from '@/components/appearance/AudioPlayer.vue';
-import { useAuthStore } from '@/store/auth';
+import ProfileHeader from '@/components/appearance/ProfileHeader.vue';
+import UniversalBlock from '@/components/appearance/UniversalBlock.vue';
 
-// Hooks e Stores
 const route = useRoute();
 const uiStore = useUiStore();
 const pageStore = usePageStore();
-const { user } = useAuthStore()
 
-
-// State
 const page = computed(() => pageStore.currentPage);
 const slug = computed(() => route.params.slug as string);
-const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
 
-// --- LÓGICA COPIADA E ADAPTADA DO LIVEPREVIEW ---
+interface Snowflake {
+  id: number;
+  style: {
+    left: string;
+    top: string;
+    width: string;
+    height: string;
+    opacity: number;
+    animationName: string;
+    animationDuration: string;
+    animationDelay: string;
+  };
+}
 
-const finalAvatarUrl = computed(() => {
-  if (!page.value) return '';
-  if (page.value.user?.useDiscordAvatar && page.value.user.discordAvatarUrl) {
-    return page.value.user.discordAvatarUrl;
+const snowflakes = ref<Snowflake[]>([]);
+
+const generateSnow = () => {
+  const count = 50;
+  const newFlakes: Snowflake[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const size = Math.random() * 4 + 2;
+    const duration = Math.random() * 5 + 5;
+
+    newFlakes.push({
+      id: i,
+      style: {
+        left: `${Math.random() * 100}%`,
+        top: `-10px`,
+        width: `${size}px`,
+        height: `${size}px`,
+        opacity: Math.random() * 0.5 + 0.3,
+        animationName: 'snowfall',
+        animationDuration: `${duration}s`,
+        animationDelay: `${Math.random() * 5}s`
+      }
+    });
   }
-  if (page.value.avatarUrl) {
-    return page.value.avatarUrl;
+  snowflakes.value = newFlakes;
+};
+
+
+const sortedBlocks = computed(() => {
+  if (page.value?.blocks) {
+    return [...page.value.blocks].sort((a: any, b: any) => a.order - b.order);
   }
-  return `https://ui-avatars.com/api/?name=${page.value.slug}&background=1e293b&color=fff&size=128`;
+  return [];
 });
 
-const pageBackgroundStyle = computed(() => {
+const getBackgroundDimensions = computed(() => {
+  const layout = page.value?.pageLayout || 'standard';
+  switch (layout) {
+    case 'banner':
+      return 'h-[25vh] min-h-[220px]';
+    case 'portrait':
+      return 'h-[45vh] min-h-[300px]';
+    case 'standard':
+    default:
+      return 'h-full inset-0';
+  }
+});
+
+const getContentAlignment = computed(() => {
+  const layout = page.value?.pageLayout || 'standard';
+  switch (layout) {
+    case 'banner':
+      return 'justify-start pt-[26vh]';
+    case 'portrait':
+      return 'justify-end pb-10 pt-[42vh]';
+    case 'standard':
+    default:
+      return 'justify-center py-10';
+  }
+});
+
+const containerClasses = computed(() => {
+  const layout = page.value?.layoutLinkStyle || 'list';
+  switch (layout) {
+    case 'icons_only': return 'flex flex-wrap justify-center items-center gap-4 px-2';
+    case 'grid': return 'grid grid-cols-2 gap-3';
+    case 'stacked':
+    case 'list':
+    default: return 'flex flex-col gap-3 w-full';
+  }
+});
+
+const pageContainerStyle = computed(() => {
+  if (!page.value) return {};
+  const style: Record<string, any> = {
+    fontFamily: page.value.fontFamily || 'Inter',
+    backgroundColor: page.value.backgroundColor || '#111827',
+    cursor: page.value.cursorUrl ? `url(${page.value.cursorUrl}), auto` : 'auto'
+  };
+
+  if (page.value.pageLayout !== 'standard') {
+    const showGradient = (page.value as any).isBodyGradient !== undefined
+      ? (page.value as any).isBodyGradient
+      : true;
+
+    if (showGradient) {
+      style.backgroundImage = `linear-gradient(${page.value.gradientDirection || 'to bottom'}, ${page.value.gradientColorA || '#1E3A8A'}, ${page.value.gradientColorB || '#4C1D95'})`;
+    } else {
+      style.backgroundImage = 'none';
+      style.backgroundColor = page.value.backgroundColor || '#111827';
+    }
+  }
+  return style;
+});
+
+const mediaBackgroundStyle = computed(() => {
   if (!page.value) return {};
   const style: Record<string, any> = {
     filter: `blur(${page.value.backgroundBlur || 0}px)`,
     transform: `scale(${1 + (page.value.backgroundBlur || 0) / 100})`
   };
-  switch (page.value.backgroundType) {
-    case 'image':
-      style.backgroundImage = `url(${page.value.backgroundUrl})`;
-      style.backgroundColor = page.value.backgroundColor || '#111827';
-      break;
-    case 'gradient':
-      style.backgroundImage = `linear-gradient(${page.value.gradientDirection || 'to bottom'}, ${page.value.gradientColorA || '#1E3A8A'}, ${page.value.gradientColorB || '#4C1D95'})`;
-      break;
-    case 'solid':
-    default:
-      style.backgroundColor = page.value.backgroundColor || '#111827';
-      break;
+
+  const hasImage = page.value.backgroundUrl && page.value.backgroundUrl.length > 0;
+
+  if (page.value.backgroundType === 'image' && hasImage) {
+    style.backgroundImage = `url(${page.value.backgroundUrl})`;
+  } else if (page.value.backgroundType === 'video') {
+    style.backgroundColor = 'transparent';
+  } else {
+    style.backgroundImage = `linear-gradient(${page.value.gradientDirection || 'to bottom'}, ${page.value.gradientColorA || '#1E3A8A'}, ${page.value.gradientColorB || '#4C1D95'})`;
   }
+
+  if (!style.backgroundImage && page.value.pageLayout === 'standard') {
+    style.backgroundColor = page.value.backgroundColor || '#111827';
+  }
+
   return style;
 });
 
 const profileCardStyle = computed(() => {
-  if (!page.value || !page.value.showProfileCard) {
-    return { backgroundColor: 'transparent', border: 'none', boxShadow: 'none' };
-  }
-
+  if (!page.value || !page.value.showProfileCard) return { backgroundColor: 'transparent', border: 'none', boxShadow: 'none' };
   const baseColorRgb = '107, 114, 128';
   const opacity = page.value.profileCardOpacity ?? 0.2;
 
   return {
-    backgroundColor: `rgba(${baseColorRgb}, ${opacity})`,
-    backdropFilter: `blur(16px)`, // Blur fixo de 16px
+    backgroundColor: page.value.profileCardColor || `rgba(${baseColorRgb}, ${opacity})`,
+    backdropFilter: `blur(16px)`,
     '-webkit-backdrop-filter': `blur(16px)`,
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)'
   };
 });
 
-
-const profileRingStyle = computed(() => {
-  if (!page.value) return {};
-  const type = page.value.profileRingType || 'none';
-  const colors = page.value.profileRingColors || [];
-  const padding = '3px';
-
-  if (type === 'none' || colors.length === 0) {
-    return { background: 'transparent', padding };
-  }
-  if (type === 'solid' || colors.length === 1) {
-    return { background: colors[0], padding };
-  }
-  const gradientColors = [...colors, colors[0]].join(', ');
-  if (type === 'gradient') {
-    return { background: `linear-gradient(45deg, ${gradientColors})`, padding };
-  }
-  if (type === 'animated') {
-    return { '--ring-gradient': `conic-gradient(from var(--angle, 0deg), ${gradientColors})`, padding };
-  }
-  return {};
+const embeddableAudios = computed(() => {
+  if (!page.value || !page.value.audios) return [];
+  return page.value.audios.filter((audio: any) => audio.type === 'SPOTIFY' || audio.type === 'SOUNDCLOUD');
 });
 
-const getIconForUrl = (url: string | null | undefined) => {
-  if (!url) return LinkIcon;
-  if (url.includes('github.com')) return BrandGithubIcon;
-  if (url.includes('twitter.com') || url.includes('x.com')) return BrandTwitterIcon;
-  if (url.includes('instagram.com')) return BrandInstagramIcon;
-  if (url.includes('linkedin.com')) return BrandLinkedinIcon;
-  if (url.includes('youtube.com')) return BrandYoutubeIcon;
-  if (url.includes('discord.gg') || url.includes('discord.com')) return BrandDiscordIcon;
-  if (url.includes('pinterest.com')) return BrandPinterestIcon;
-  if (url.includes('twitch.tv')) return BrandTwitchIcon;
-  return LinkIcon;
-};
+function getSpotifyEmbedUrl(url: string): string {
+  if (!url.includes('spotify.com')) return '';
+  try {
+    const urlObj = new URL(url);
+    let path = urlObj.pathname;
+    if (path.endsWith('/')) path = path.slice(0, -1);
+    return `https://open.spotify.com/embed${path}?utm_source=generator&theme=0`;
+  } catch (e) { return ''; }
+}
 
-const getIconStyle = (url: string) => {
-  if (!page.value) return {};
-  const style: { color: string; '--glow-color'?: string } = { color: page.value.iconColor || '#CCCCCC' };
-  let brandColor = '';
-  if (page.value.useStandardIconColors) {
-    if (url.includes('github.com')) brandColor = '#E5E7EB';
-    if (url.includes('twitter.com') || url.includes('x.com')) brandColor = '#1DA1F2';
-    if (url.includes('instagram.com')) brandColor = '#E4405F';
-    if (url.includes('linkedin.com')) brandColor = '#0A66C2';
-    if (url.includes('youtube.com')) brandColor = '#FF0000';
-    if (url.includes('discord.gg') || url.includes('discord.com')) brandColor = '#5865F2';
-    if (url.includes('twitch.tv')) brandColor = '#9146FF';
-    if (url.includes('pinterest.com')) brandColor = '#E82B43';
-  }
-  if (brandColor) style.color = brandColor;
-  if (page.value.glowEffect === 'icons' || page.value.glowEffect === 'both') {
-    style['--glow-color'] = style.color;
-  }
-  return style;
-};
+function getSoundCloudEmbedUrl(url: string): string {
+  if (!url.includes('soundcloud.com')) return '';
+  const encodedUrl = encodeURIComponent(url);
+  return `https://w.soundcloud.com/player/?url=${encodedUrl}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true`;
+}
 
-const getLinkClasses = (pageData: any) => {
-  const style = pageData.linkStyle || 'classic';
-  const fill = pageData.buttonStyle || 'solid';
-  const roundness = pageData.buttonRoundness || 'rounded-lg';
-  const shadow = pageData.buttonShadow || false;
-  const layout = pageData.layoutLinkStyle || 'list';
-
-  let layoutClasses = '';
-  switch (layout) {
-    case 'icons_only': layoutClasses = 'w-14 h-14 flex items-center justify-center'; break;
-    case 'stacked': layoutClasses = 'flex flex-col items-center justify-center p-4 text-center'; break;
-    case 'grid': layoutClasses = 'flex flex-col items-center justify-center p-3 aspect-square'; break;
-    default: layoutClasses = 'flex items-center w-full px-5 py-3'; break;
-  }
-
-  switch (style) {
-    case 'minimal': return `${layoutClasses} ${roundness} text-slate-300 group-hover:text-white border-b-2 group-hover:border-slate-700`;
-    case 'brutalist': return `${layoutClasses} ${roundness} bg-white text-black border-2 border-black font-bold shadow-[4px_4px_0px_#000] group-hover:shadow-none group-hover:translate-x-[4px] group-hover:translate-y-[4px]`;
-    case 'spotlight': return `${layoutClasses} ${roundness} bg-transparent group-hover:-translate-y-1`;
-    default:
-      let fillClasses = '';
-      switch (fill) {
-        case 'outline': fillClasses = 'border-2 border-white/30 hover:bg-white/10 bg-transparent'; break;
-        case 'soft': fillClasses = 'bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700'; break;
-        case 'glass': fillClasses = 'bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10'; break;
-        default: fillClasses = 'bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800/50'; break;
-      }
-      return `${layoutClasses} ${fillClasses} ${roundness} ${shadow ? 'shadow-lg' : ''} group-hover:-translate-y-1`;
-  }
-};
-
-// --- LÓGICA ORIGINAL DA PÁGINA ---
-
-const sortedLinks = computed(() => {
-  if (page.value?.links) {
-    return [...page.value.links].sort((a, b) => a.order - b.order);
-  }
-  return [];
-});
-
-const getRedirectUrl = (linkId: string) => {
-  return `${apiUrl}/redirect/${linkId}`;
-};
 
 const loadPage = (slugToFetch: string) => {
   if (slugToFetch) pageStore.fetchPageBySlug(slugToFetch);
 };
 
-// Lifecycle Hooks
 onMounted(() => {
   loadPage(slug.value);
+  generateSnow();
 });
 
 watch(slug, (newSlug) => {
@@ -338,78 +306,38 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+@keyframes snowfall {
+  0% {
+    transform: translateY(-10px) translateX(0);
+  }
+
+  25% {
+    transform: translateY(25vh) translateX(15px);
+  }
+
+  50% {
+    transform: translateY(50vh) translateX(-15px);
+  }
+
+  75% {
+    transform: translateY(75vh) translateX(15px);
+  }
+
+  100% {
+    transform: translateY(105vh) translateX(0);
+  }
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+.fixed div {
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #475569;
-  border-radius: 20px;
-}
-
-/* Animações e Estilos Visuais do LivePreview */
 .bg-radial-vignette {
   background: radial-gradient(circle, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.8) 100%);
 }
 
-.typewriter {
-  display: inline-block;
-  border-right: .15em solid #a78bfa;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 0;
-  animation:
-    typing 3.5s steps(var(--char-count, 40)) forwards,
-    blink-caret .75s step-end infinite;
-}
-
-@keyframes typing {
-  from {
-    max-width: 0
-  }
-
-  to {
-    max-width: 100%
-  }
-
-}
-
-
-@keyframes blink-caret {
-
-  from,
-  to {
-    border-color: transparent
-  }
-
-  50% {
-    border-color: #a78bfa;
-  }
-}
-
-@property --angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
-
-@keyframes smooth-spin {
-  to {
-    --angle: 360deg;
-  }
-}
-
-.ring-animated {
-  background: var(--ring-gradient);
-  animation: smooth-spin 4s linear infinite;
-}
-
-/* Animação de entrada para os links */
-.link-item {
+.animate-slide-up {
   opacity: 0;
   animation: slide-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
@@ -419,16 +347,5 @@ onUnmounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Efeitos de Brilho (Glow) */
-.text-glow {
-  text-shadow: 0 0 5px var(--glow-color, #fff), 0 0 10px var(--glow-color, #fff), 0 0 15px var(--glow-color, #fff), 0 0 20px rgba(255, 255, 255, 0.5);
-  transition: text-shadow 0.3s ease-in-out;
-}
-
-.icon-glow {
-  filter: drop-shadow(0 0 3px var(--glow-color, #fff)) drop-shadow(0 0 6px var(--glow-color, #fff));
-  transition: filter 0.3s ease-in-out;
 }
 </style>

@@ -1,364 +1,266 @@
 <template>
   <DashboardLayout>
-    <div class="space-y-8 pb-12">
-      <!-- Header com gradiente e efeito blur -->
-      <div class="relative">
-        <div
-          class="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-indigo-500/10 to-rose-500/10 blur-3xl -z-10">
-        </div>
-        <OverviewHeader title="Account Overview"
-          subtitle="Gerencie seu perfil e acompanhe suas estatísticas em tempo real." :icon="UserCircleIcon" />
-      </div>
+    <div class="fixed top-0 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] -z-10 animate-pulse-slow">
+    </div>
+    <div
+      class="fixed bottom-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] -z-10 animate-pulse-slow delay-1000">
+    </div>
 
-      <!-- Loading com animação moderna -->
-      <div v-show="!isDataLoaded" class="flex items-center justify-center min-h-[400px]">
-        <div class="text-center space-y-6">
-          <div class="relative w-20 h-20 mx-auto">
-            <div class="absolute inset-0 border-4 border-yellow-500/30 rounded-full animate-ping"></div>
-            <div class="absolute inset-0 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin">
-            </div>
-          </div>
-          <p class="text-slate-400 animate-pulse">Carregando dados da conta...</p>
+    <div class="relative z-10 space-y-8 pb-12">
+
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight flex items-center gap-3">
+            Olá, <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">{{
+              user?.name?.split(' ')[0] }}</span>
+            <span class="inline-block animate-wave text-3xl">👋</span>
+          </h1>
+          <p class="text-slate-400 mt-2 text-base md:text-lg">Gerencie sua conta e integrações em um só lugar.</p>
         </div>
       </div>
 
-      <!-- Conteúdo Principal -->
-      <div v-show="isDataLoaded" class="space-y-8">
-        <!-- Cards de stats completamente redesenhados com gradientes, glassmorphism e animações -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Username Card -->
+      <div v-show="!isDataLoaded" class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
+        <div class="h-40 rounded-3xl bg-slate-800/50" v-for="i in 3" :key="i"></div>
+      </div>
+
+      <div v-show="isDataLoaded" class="space-y-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
           <div
-            class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 p-6 hover:border-yellow-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-yellow-500/20">
+            class="group relative rounded-3xl bg-slate-900/60 border border-white/5 p-6 backdrop-blur-md hover:border-amber-500/30 transition-all overflow-hidden">
             <div
-              class="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+              class="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
             </div>
-            <div class="relative z-10">
-              <div class="flex items-center justify-between mb-4">
-                <div
-                  class="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-indigo-500/20 border border-yellow-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <UserIcon class="w-6 h-6 text-yellow-400" />
+
+            <div class="flex items-center gap-4 mb-6 relative z-10">
+              <div class="relative">
+                <div class="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 to-purple-600">
+                  <img :src="sidebarAvatarUrl"
+                    class="w-full h-full rounded-full object-cover border-2 border-slate-900" />
                 </div>
-                <div class="flex items-center gap-1">
-                  <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                  <span class="text-xs text-slate-400">Online</span>
+                <button @click="openUsernameModal"
+                  class="absolute -bottom-1 -right-1 p-1.5 bg-slate-800 rounded-full border border-slate-700 text-white hover:text-amber-400 transition-colors shadow-lg">
+                  <PencilIcon class="w-3 h-3" />
+                </button>
+              </div>
+              <div class="overflow-hidden">
+                <h3 class="font-bold text-white text-lg truncate">{{ user?.name }}</h3>
+                <p class="text-slate-400 text-xs truncate">{{ user?.email }}</p>
+                <div
+                  class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                  {{ user?.role === 'PREMIUM' ? 'PRO MEMBER ⚡' : 'FREE PLAN' }}
                 </div>
               </div>
-              <p class="text-sm text-slate-400 font-medium mb-2">Username</p>
-              <p class="text-2xl font-bold text-white group-hover:text-yellow-400 transition-colors duration-300">
-                {{ user?.name || '...' }}
-              </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-auto relative z-10">
+              <button @click="openUsernameModal"
+                class="flex items-center justify-center gap-2 p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-colors">
+                <UserCircleIcon class="w-4 h-4" /> Editar Nome
+              </button>
+              <button @click="$router.push('/settings')"
+                class="flex items-center justify-center gap-2 p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-colors">
+                <Cog6ToothIcon class="w-4 h-4" /> Configurações
+              </button>
             </div>
           </div>
 
-          <!-- Alias Card -->
           <div
-            class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 p-6 hover:border-rose-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-rose-500/20">
-            <div
-              class="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            </div>
-            <div class="relative z-10">
-              <div class="flex items-center justify-between mb-4">
-                <div
-                  class="p-3 rounded-xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 border border-rose-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <AtSymbolIcon class="w-6 h-6 text-rose-400" />
-                </div>
-                <a :href="`/${page?.slug}`" target="_blank"
-                  class="text-xs text-slate-400 hover:text-rose-400 transition-colors flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                  <span>Visitar</span>
-                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
+            class="group relative rounded-3xl bg-slate-900/60 border border-white/5 p-6 backdrop-blur-md hover:border-purple-500/30 transition-all flex flex-col justify-between">
+            <div class="flex justify-between items-start">
+              <div class="p-3 bg-purple-500/10 rounded-2xl text-purple-400 border border-purple-500/20">
+                <DocumentDuplicateIcon class="w-6 h-6" />
               </div>
-              <p class="text-sm text-slate-400 font-medium mb-2">Alias</p>
-              <p class="text-2xl font-bold text-white group-hover:text-rose-400 transition-colors duration-300">
-                @{{ page?.slug || '...' }}
-              </p>
+              <router-link to="/dashboard/pages"
+                class="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
+                Ver todas
+                <ArrowRightIcon class="w-3 h-3" />
+              </router-link>
+            </div>
+            <div>
+              <h3 class="text-slate-400 text-sm font-medium mb-1">Páginas Criadas</h3>
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-black text-white">{{ pageStore.userPages?.length || 0 }}</span>
+                <span class="text-sm text-slate-500 font-medium">/ 5</span>
+              </div>
+              <div class="w-full h-1.5 bg-slate-800 rounded-full mt-3 overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-1000"
+                  :style="{ width: `${((pageStore.userPages?.length || 0) / 5) * 100}%` }"></div>
+              </div>
             </div>
           </div>
 
-          <!-- Profile Views Card -->
           <div
-            class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 p-6 hover:border-blue-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20">
-            <div
-              class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            </div>
-            <div class="relative z-10">
-              <div class="flex items-center justify-between mb-4">
-                <div
-                  class="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <EyeIcon class="w-6 h-6 text-blue-400" />
-                </div>
-                <div
-                  class="flex items-center gap-1 text-xs text-green-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                      d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  <span>+12%</span>
-                </div>
+            class="group relative rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 border border-white/5 p-6 overflow-hidden flex flex-col justify-center">
+            <div class="flex items-center gap-4">
+              <div class="relative w-16 h-16 flex-shrink-0">
+                <svg class="w-full h-full transform -rotate-90">
+                  <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="none"
+                    class="text-slate-800" />
+                  <circle cx="32" cy="32" r="28" stroke="url(#gradient-completion)" stroke-width="4" fill="none"
+                    :stroke-dasharray="175" :stroke-dashoffset="175 - (completion.percentage / 100) * 175"
+                    stroke-linecap="round" class="transition-all duration-1000 ease-out" />
+                  <defs>
+                    <linearGradient id="gradient-completion" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#fbbf24" />
+                      <stop offset="100%" stop-color="#a855f7" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">{{
+                  completion.percentage }}%</span>
               </div>
-              <p class="text-sm text-slate-400 font-medium mb-2">Profile Views</p>
-              <p class="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300">
-                {{ (page?.viewCount ?? 0).toLocaleString() }}
-              </p>
+              <div>
+                <h3 class="text-white font-bold text-sm">Complete seu Setup</h3>
+                <p class="text-slate-400 text-xs mt-1 leading-relaxed">Complete as tarefas para turbinar seu perfil.</p>
+              </div>
+            </div>
+            <div class="mt-4 space-y-2">
+              <div v-for="(task, i) in completion.tasks.slice(0, 2)" :key="i" class="flex items-center gap-2 text-xs">
+                <div class="w-4 h-4 rounded-full flex items-center justify-center"
+                  :class="task.completed ? 'bg-green-500/20 text-green-400' : 'bg-slate-800 text-slate-500'">
+                  <CheckIcon v-if="task.completed" class="w-3 h-3" />
+                  <div v-else class="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
+                </div>
+                <span :class="task.completed ? 'text-slate-500 line-through' : 'text-slate-300'">{{ task.label }}</span>
+              </div>
             </div>
           </div>
+
         </div>
 
-        <!-- Grid principal redesenhado com novos cards -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Profile Completion - redesenhado -->
-          <div
-            class="lg:col-span-2 relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 p-8">
-            <div
-              class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-yellow-500/10 to-indigo-500/10 blur-3xl">
-            </div>
+        <div>
+          <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <LinkIcon class="w-5 h-5 text-indigo-400" /> Contas Conectadas
+          </h2>
 
-            <div class="relative z-10">
-              <div class="flex items-center justify-between mb-6">
-                <div>
-                  <h3 class="text-2xl font-bold text-white mb-2">Profile Completion</h3>
-                  <p class="text-sm text-slate-400">Complete seu perfil para desbloquear todos os recursos</p>
-                </div>
-                <div class="relative w-20 h-20">
-                  <!-- Circle Progress -->
-                  <svg class="transform -rotate-90 w-20 h-20">
-                    <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="6" fill="none"
-                      class="text-slate-700" />
-                    <circle cx="40" cy="40" r="32" stroke="url(#gradient)" stroke-width="6" fill="none"
-                      :stroke-dasharray="circumference"
-                      :stroke-dashoffset="circumference - (completion.percentage / 100) * circumference"
-                      class="transition-all duration-1000 ease-out" stroke-linecap="round" />
-                    <defs>
-                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#eab308;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <span class="text-lg font-bold text-white">{{ completion.percentage }}%</span>
-                  </div>
-                </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div class="relative overflow-hidden rounded-2xl border transition-all duration-300 group"
+              :class="isDiscordConnected ? 'bg-[#5865F2]/10 border-[#5865F2]/30' : 'bg-slate-900 border-slate-800 hover:border-slate-700'">
+
+              <div v-if="isDiscordConnected"
+                class="absolute -right-10 -top-10 w-40 h-40 bg-[#5865F2]/20 blur-[60px] rounded-full pointer-events-none">
               </div>
 
-              <!-- Tasks List -->
-              <div class="space-y-3">
-                <div v-for="(task, index) in completion.tasks" :key="index"
-                  class="group flex items-center gap-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:border-slate-600 transition-all duration-300 hover:bg-slate-800/80"
-                  :class="task.completed ? 'opacity-60' : 'hover:scale-[1.01]'">
-                  <div
-                    class="flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300"
-                    :class="task.completed
-                        ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-500'
-                        : 'border-slate-600 group-hover:border-yellow-500'
-                      ">
-                    <CheckCircleIcon v-if="task.completed" class="w-4 h-4 text-white" />
+              <div class="p-5 flex items-center justify-between relative z-10">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg"
+                    :class="isDiscordConnected ? 'bg-[#5865F2]' : 'bg-slate-800 text-slate-500'">
+                    <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M20.317 4.3698a19.7913 19.7913 0 00-4.8852-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4464.8245-.666 1.2828-1.5796-.3418-3.2142-.3418-4.7938 0-.2196-.4583-.455-.9075-.666-1.2828a.0741.0741 0 00-.0785-.0371 19.7364 19.7364 0 00-4.8852 1.5152.0691.0691 0 00-.0321.0262c-1.8988 4.6534-2.3168 9.541-1.7827 14.0416a.0741.0741 0 00.0785.062c1.4892-.259 2.9304-.7531 4.3085-1.4093a.0741.0741 0 00.042-.0372c-.177-.323-.342-.6526-.5-.9865a.0741.0741 0 01.012-.0819c.1252-.0941.251-.191.3765-.2911a.0741.0741 0 01.078-.012c4.1325 1.631 8.563 1.631 12.6954 0a.0741.0741 0 01.0785.012c.1255.1001.2515.197.3765.2911a.0741.0741 0 01.012.0819c-.158.3339-.323.6635-.5.9865a.0741.0741 0 00.042.0372c1.378.6562 2.8193 1.1503 4.3085 1.4093a.0741.0741 0 00.0785-.062c.54-4.494.12-9.382-1.7828-14.0416a.0691.0691 0 00-.032-.0262zM8.02 15.3312c-.8325 0-1.5097-.682-1.5097-1.523 0-.841.6772-1.523 1.5097-1.523s1.5097.682 1.5097 1.523c0 .841-.6772 1.523-1.5097 1.523zm7.96 0c-.8325 0-1.5097-.682-1.5097-1.523 0-.841.6772-1.523 1.5097-1.523s1.5097.682 1.5097 1.523c0 .841-.6772 1.523-1.5097 1.523z" />
+                    </svg>
                   </div>
+                  <div>
+                    <h3 class="font-bold text-white">Discord</h3>
+                    <p v-if="isDiscordConnected" class="text-[#5865F2] text-xs font-bold tracking-wide mt-0.5">CONECTADO
+                    </p>
+                    <p v-else class="text-slate-500 text-xs">Não conectado</p>
+                  </div>
+                </div>
 
-                  <span class="flex-1 text-sm font-medium transition-colors"
-                    :class="task.completed ? 'text-slate-500 line-through' : 'text-slate-300 group-hover:text-white'">
-                    {{ task.label }}
-                  </span>
-
-                  <button v-if="!task.completed && (task.to || task.action)"
-                    class="px-4 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-yellow-600 to-indigo-600 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:from-yellow-500 hover:to-indigo-500">
-                    Completar
+                <div v-if="isDiscordConnected">
+                  <button @click="openDisconnectModal('discord')"
+                    class="px-3 py-1.5 text-xs font-bold text-white bg-[#5865F2] hover:bg-[#4752C4] rounded-lg transition-colors">
+                    Desconectar
                   </button>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Account Actions - redesenhado -->
-          <div class="space-y-4">
-            <!-- Quick Actions Card -->
-            <div
-              class="rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 p-6">
-              <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
-                Quick Actions
-              </h3>
-
-              <div class="space-y-3">
-                <button @click="openUsernameModal"
-                  class="w-full flex items-center gap-3 p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:border-yellow-500/50 hover:bg-slate-800 transition-all duration-300 group">
-                  <div class="p-2 rounded-lg bg-yellow-500/10 group-hover:bg-yellow-500/20 transition-colors">
-                    <PencilIcon class="w-5 h-5 text-yellow-400" />
-                  </div>
-                  <div class="flex-1 text-left">
-                    <p class="text-sm font-semibold text-white">Change Username</p>
-                    <p class="text-xs text-slate-400">Atualize seu nome de usuário</p>
-                  </div>
-                  <svg class="w-5 h-5 text-slate-600 group-hover:text-yellow-400 transition-colors" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-
-                <button @click="openDisplayNameModal"
-                  class="w-full flex items-center gap-3 p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:border-indigo-500/50 hover:bg-slate-800 transition-all duration-300 group">
-                  <div class="p-2 rounded-lg bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors">
-                    <ComputerDesktopIcon class="w-5 h-5 text-indigo-400" />
-                  </div>
-                  <div class="flex-1 text-left">
-                    <p class="text-sm font-semibold text-white">Change Display Name</p>
-                    <p class="text-xs text-slate-400">Título da sua página</p>
-                  </div>
-                  <svg class="w-5 h-5 text-slate-600 group-hover:text-indigo-400 transition-colors" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                <div v-else>
+                  <a :href="discordLoginUrl"
+                    class="px-4 py-2 text-xs font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white rounded-lg transition-colors border border-slate-700">
+                    Conectar
+                  </a>
+                </div>
               </div>
             </div>
 
-            <!-- Discord Connection Card -->
-            <div
-              class="rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 p-6">
-              <div v-if="!isDiscordConnected" class="text-center space-y-4">
-                <div
-                  class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-[#5865F2]/20 to-[#5865F2]/5 border border-[#5865F2]/30 flex items-center justify-center">
-                  <svg class="w-8 h-8 text-[#5865F2]" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                      d="M20.317 4.3698a19.7913 19.7913 0 00-4.8852-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4464.8245-.666 1.2828-1.5796-.3418-3.2142-.3418-4.7938 0-.2196-.4583-.455-.9075-.666-1.2828a.0741.0741 0 00-.0785-.0371 19.7364 19.7364 0 00-4.8852 1.5152.0691.0691 0 00-.0321.0262c-1.8988 4.6534-2.3168 9.541-1.7827 14.0416a.0741.0741 0 00.0785.062c1.4892-.259 2.9304-.7531 4.3085-1.4093a.0741.0741 0 00.042-.0372c-.177-.323-.342-.6526-.5-.9865a.0741.0741 0 01.012-.0819c.1252-.0941.251-.191.3765-.2911a.0741.0741 0 01.078-.012c4.1325 1.631 8.563 1.631 12.6954 0a.0741.0741 0 01.0785.012c.1255.1001.2515.197.3765.2911a.0741.0741 0 01.012.0819c-.158.3339-.323.6635-.5.9865a.0741.0741 0 00.042.0372c1.378.6562 2.8193 1.1503 4.3085 1.4093a.0741.0741 0 00.0785-.062c.54-4.494.12-9.382-1.7828-14.0416a.0691.0691 0 00-.032-.0262zM8.02 15.3312c-.8325 0-1.5097-.682-1.5097-1.523 0-.841.6772-1.523 1.5097-1.523s1.5097.682 1.5097 1.523c0 .841-.6772 1.523-1.5097 1.523zm7.96 0c-.8325 0-1.5097-.682-1.5097-1.523 0-.841.6772-1.523 1.5097-1.523s1.5097.682 1.5097 1.523c0 .841-.6772 1.523-1.5097 1.523z" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 class="font-bold text-white mb-1">Connect Discord</h4>
-                  <p class="text-xs text-slate-400">Sincronize seu avatar e desbloqueie recursos</p>
-                </div>
-                <button @click="openDiscordModal"
-                  class="w-full px-4 py-3 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-[#5865F2]/20">
-                  Conectar
-                </button>
-              </div>
+            <div class="relative overflow-hidden rounded-2xl border transition-all duration-300 group"
+              :class="isGoogleConnected ? 'bg-white/5 border-white/10' : 'bg-slate-900 border-slate-800 hover:border-slate-700'">
 
-              <div v-else class="space-y-4">
-                <div class="flex items-center gap-3">
-                  <div class="relative">
-                    <img v-if="user?.discordAvatarUrl" :src="user.discordAvatarUrl" alt="Discord Avatar"
-                      class="w-12 h-12 rounded-full border-2 border-[#5865F2]" />
-                    <div
-                      class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-2 border-slate-900">
-                    </div>
+              <div class="p-5 flex items-center justify-between relative z-10">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-white text-slate-900 shadow-lg">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24">
+                      <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4" />
+                      <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853" />
+                      <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05" />
+                      <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335" />
+                    </svg>
                   </div>
-                  <div class="flex-1">
-                    <p class="text-sm font-semibold text-white">Discord Connected</p>
-                    <p class="text-xs text-slate-400">Avatar sincronizado</p>
+                  <div>
+                    <h3 class="font-bold text-white">Google</h3>
+                    <p v-if="isGoogleConnected" class="text-green-400 text-xs font-bold tracking-wide mt-0.5">CONECTADO
+                    </p>
+                    <p v-else class="text-slate-500 text-xs">Não conectado</p>
                   </div>
                 </div>
-                <button @click="openDisconnectModal"
-                  class="w-full px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold transition-all duration-300 border border-red-500/30 hover:border-red-500/50">
-                  Desconectar
-                </button>
+
+                <div v-if="isGoogleConnected">
+                  <button @click="openDisconnectModal('google')"
+                    class="px-3 py-1.5 text-xs font-bold text-slate-300 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 border border-slate-700 rounded-lg transition-all">
+                    Desvincular
+                  </button>
+                </div>
+                <div v-else>
+                  <a :href="googleLoginUrl"
+                    class="px-4 py-2 text-xs font-bold text-slate-900 bg-white hover:bg-gray-200 rounded-lg transition-colors">
+                    Conectar
+                  </a>
+                </div>
               </div>
             </div>
+
           </div>
         </div>
+
       </div>
     </div>
 
-    <!-- Modals -->
-    <Modal :is-open="isUsernameModalOpen" @close="isUsernameModalOpen = false" title="Change Username">
-      <div class="space-y-4 p-4">
-        <label for="username" class="block text-sm font-medium text-slate-300">Username</label>
-        <div class="relative">
-          <PencilIcon class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input v-model="newUsername" type="text" id="username"
-            class="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-10 pr-4 text-white focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all"
-            placeholder="Seu nome de usuário" />
-        </div>
-        <button @click="handleUpdateUsername" :disabled="isLoading"
-          class="w-full px-4 py-3 font-semibold text-white bg-gradient-to-r from-yellow-600 to-indigo-600 rounded-xl hover:from-yellow-500 hover:to-indigo-500 disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed transition-all duration-300">
-          {{ isLoading ? 'Salvando...' : 'Change Username' }}
+    <Modal :is-open="isUsernameModalOpen" @close="isUsernameModalOpen = false" title="Editar Usuário">
+      <div class="p-6 space-y-4">
+        <label class="block text-sm font-medium text-slate-400 mb-1">Novo nome de usuário</label>
+        <input v-model="newUsername" type="text" class="input-modern" placeholder="Ex: John Doe" />
+        <button @click="handleUpdateUsername" :disabled="isLoading" class="btn-primary w-full">
+          {{ isLoading ? 'Salvando...' : 'Salvar Alterações' }}
         </button>
-        <p v-if="error" class="text-sm text-red-400 text-center">{{ error }}</p>
       </div>
     </Modal>
 
-    <Modal :is-open="isDisplayNameModalOpen" @close="isDisplayNameModalOpen = false" title="Change Display Name">
-      <div class="space-y-4 p-4">
-        <label for="displayName" class="block text-sm font-medium text-slate-300">Display Name</label>
-        <div class="relative">
-          <ComputerDesktopIcon class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input v-model="newDisplayName" type="text" id="displayName"
-            class="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-10 pr-4 text-white focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all"
-            placeholder="Título da sua página" />
+    <Modal :is-open="isDisconnectModalOpen" @close="isDisconnectModalOpen = false" title="Desconectar Conta">
+      <div class="p-6 space-y-4 text-center">
+        <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-2">
+          <ArrowLeftEndOnRectangleIcon class="w-6 h-6" />
         </div>
-        <button @click="handleUpdateDisplayName" :disabled="isLoading"
-          class="w-full px-4 py-3 font-semibold text-white bg-gradient-to-r from-yellow-600 to-indigo-600 rounded-xl hover:from-yellow-500 hover:to-indigo-500 disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed transition-all duration-300">
-          {{ isLoading ? 'Salvando...' : 'Change Display Name' }}
-        </button>
-        <p v-if="error" class="text-sm text-red-400 text-center">{{ error }}</p>
-      </div>
-    </Modal>
-
-    <Modal :is-open="isDiscordModalOpen" @close="isDiscordModalOpen = false" title="Conectar sua Conta do Discord">
-      <div class="p-4 space-y-4">
-        <p class="text-slate-300 text-center">
-          Conecte sua conta do Discord para desbloquear novos recursos e personalizar ainda mais seu perfil!
+        <p class="text-slate-300 text-sm">
+          Tem certeza que deseja desvincular sua conta do
+          <span class="capitalize font-bold text-white">{{ disconnectTarget }}</span>?
+          Isso pode afetar seu login se for seu único método de acesso.
         </p>
-        <ul class="text-left space-y-3 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-          <li class="flex items-start gap-3 text-slate-300">
-            <CheckCircleIcon class="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
-            <span class="text-sm">Sincronize seu avatar do Discord automaticamente.</span>
-          </li>
-          <li class="flex items-start gap-3 text-slate-300">
-            <CheckCircleIcon class="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
-            <span class="text-sm">Mostre seu status do Discord em sua página (em breve).</span>
-          </li>
-          <li class="flex items-start gap-3 text-slate-300">
-            <CheckCircleIcon class="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
-            <span class="text-sm">Desbloqueie temas e badges exclusivos (em breve).</span>
-          </li>
-        </ul>
-        <a :href="discordLoginUrl"
-          class="flex items-center justify-center gap-2 w-full px-4 py-3 font-semibold text-white bg-[#5865F2] rounded-xl hover:bg-[#4f5bda] transition-all duration-300 hover:scale-[1.02] shadow-lg">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path
-              d="M20.317 4.3698a19.7913 19.7913 0 00-4.8852-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4464.8245-.666 1.2828-1.5796-.3418-3.2142-.3418-4.7938 0-.2196-.4583-.455-.9075-.666-1.2828a.0741.0741 0 00-.0785-.0371 19.7364 19.7364 0 00-4.8852 1.5152.0691.0691 0 00-.0321.0262c-1.8988 4.6534-2.3168 9.541-1.7827 14.0416a.0741.0741 0 00.0785.062c1.4892-.259 2.9304-.7531 4.3085-1.4093a.0741.0741 0 00.042-.0372c-.177-.323-.342-.6526-.5-.9865a.0741.0741 0 01.012-.0819c.1252-.0941.251-.191.3765-.2911a.0741.0741 0 01.078-.012c4.1325 1.631 8.563 1.631 12.6954 0a.0741.0741 0 01.0785.012c.1255.1001.2515.197.3765.2911a.0741.0741 0 01.012.0819c-.158.3339-.323.6635-.5.9865a.0741.0741 0 00.042.0372c1.378.6562 2.8193 1.1503 4.3085 1.4093a.0741.0741 0 00.0785-.062c.54-4.494.12-9.382-1.7828-14.0416a.0691.0691 0 00-.032-.0262zM8.02 15.3312c-.8325 0-1.5097-.682-1.5097-1.523 0-.841.6772-1.523 1.5097-1.523s1.5097.682 1.5097 1.523c0 .841-.6772 1.523-1.5097 1.523zm7.96 0c-.8325 0-1.5097-.682-1.5097-1.523 0-.841.6772-1.523 1.5097-1.523s1.5097.682 1.5097 1.523c0 .841-.6772 1.523-1.5097 1.523z" />
-          </svg>
-          Conectar com Discord
-        </a>
+        <div class="flex gap-3 pt-2">
+          <button @click="isDisconnectModalOpen = false" class="btn-secondary flex-1">Cancelar</button>
+          <button @click="handleDisconnectAccount" :disabled="isLoading" class="btn-danger flex-1">
+            {{ isLoading ? 'Removendo...' : 'Sim, desconectar' }}
+          </button>
+        </div>
       </div>
     </Modal>
 
-    <Modal :is-open="isDisconnectModalOpen" @close="isDisconnectModalOpen = false" title="Desconectar Conta do Discord">
-      <div class="p-6 space-y-6">
-        <div class="text-center space-y-2">
-          <div class="w-16 h-16 mx-auto bg-red-500/10 rounded-full flex items-center justify-center">
-            <ExclamationTriangleIcon class="w-8 h-8 text-red-400" />
-          </div>
-          <p class="text-slate-300">Tem certeza que deseja desvincular sua conta do Discord?</p>
-          <p class="text-sm text-slate-400">
-            Seu avatar do Discord será removido e você precisará se conectar novamente para usar os recursos
-            relacionados.
-          </p>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex gap-3">
-          <button @click="isDisconnectModalOpen = false"
-            class="flex-1 px-6 py-3 font-semibold text-white bg-slate-600 hover:bg-slate-500 rounded-xl transition-all">
-            Cancelar
-          </button>
-          <button @click="handleDisconnectDiscord" :disabled="isLoading"
-            class="flex-1 px-6 py-3 font-semibold text-white bg-red-600 hover:bg-red-500 rounded-xl disabled:bg-slate-500 transition-all">
-            {{ isLoading ? 'Desconectando...' : 'Desconectar' }}
-          </button>
-        </div>
-      </template>
-    </Modal>
   </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useAuthStore } from '@/store/auth';
 import { usePageStore } from '@/store/page';
 import { useUserStore } from '@/store/user';
@@ -366,14 +268,14 @@ import DashboardLayout from '@/layouts/DashboardLayout.vue';
 import Modal from '@/components/dashboard/Modal.vue';
 import {
   PencilIcon,
-  ComputerDesktopIcon,
   UserCircleIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  AtSymbolIcon,
+  Cog6ToothIcon,
+  CheckIcon,
+  ArrowRightIcon,
+  LinkIcon,
+  DocumentDuplicateIcon,
+  ArrowLeftEndOnRectangleIcon
 } from '@heroicons/vue/24/outline';
-import { EyeIcon, UserIcon } from 'vue-tabler-icons';
-import OverviewHeader from '@/components/dashboard/OverviewHeader.vue';
 import { toast } from 'vue-sonner';
 
 const authStore = useAuthStore();
@@ -381,101 +283,140 @@ const pageStore = usePageStore();
 const userStore = useUserStore();
 
 const isUsernameModalOpen = ref(false);
-const isDisplayNameModalOpen = ref(false);
-const isDiscordModalOpen = ref(false);
 const isDisconnectModalOpen = ref(false);
+const disconnectTarget = ref<'discord' | 'google'>('discord');
 const newUsername = ref('');
-const newDisplayName = ref('');
 const isLoading = ref(false);
-const error = ref<string | null>(null);
+
+onMounted(() => {
+  if (pageStore.userPages.length === 0) pageStore.fetchUserPages();
+});
 
 const user = computed(() => authStore.user);
-const page = computed(() => pageStore.currentPage);
-const isDataLoaded = computed(() => !!(user.value && page.value));
-const isDiscordConnected = computed(() => !!authStore.user?.discordAvatarUrl);
+const isDataLoaded = computed(() => !!user.value);
+
+const sidebarAvatarUrl = computed(() => {
+  return user.value?.image || `https://ui-avatars.com/api/?name=${user.value?.name}&background=fbbd24&color=1e293b&bold=true`;
+});
+
+const isDiscordConnected = computed(() => user.value?.accounts?.some(acc => acc.provider === 'discord') ?? false);
+const isGoogleConnected = computed(() => user.value?.accounts?.some(acc => acc.provider === 'google') ?? false);
 
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
-const discordLoginUrl = `${apiUrl}/auth/discord`;
-
-// Circle progress calculation
-const circumference = 2 * Math.PI * 32;
+const tokenParam = authStore.token ? `?token=${authStore.token}` : '';
+const discordLoginUrl = `${apiUrl}/auth/discord${tokenParam}`;
+const googleLoginUrl = `${apiUrl}/auth/google${tokenParam}`;
 
 const completion = computed(() => {
-  if (!page.value) return { percentage: 0, tasks: [] };
-
-  const isDiscordLinked = !!authStore.user?.discordAvatarUrl;
-
   const tasks = [
-    { label: 'Upload An Avatar', completed: !!(page.value.avatarUrl || page.value.user?.discordAvatarUrl), to: '/dashboard/appearance' },
-    { label: 'Add A Description', completed: !!page.value.bio && page.value.bio.length > 0, to: '/dashboard/appearance' },
-    { label: 'Add Socials', completed: page.value.links.length > 0, to: '/links' },
-    { label: 'Link Discord Account', completed: isDiscordLinked, action: !isDiscordLinked ? openDiscordModal : undefined },
+    { label: 'Definir Avatar', completed: !!user.value?.image },
+    { label: 'Criar Página', completed: (pageStore.userPages?.length || 0) > 0 },
+    { label: 'Conectar Conta', completed: isDiscordConnected.value || isGoogleConnected.value },
   ];
-
   const completedCount = tasks.filter(t => t.completed).length;
   const percentage = Math.round((completedCount / tasks.length) * 100);
   return { percentage, tasks };
 });
 
-function openDiscordModal() {
-  isDiscordModalOpen.value = true;
-}
-
-function openDisconnectModal() {
+function openDisconnectModal(target: 'discord' | 'google') {
+  disconnectTarget.value = target;
   isDisconnectModalOpen.value = true;
 }
 
 function openUsernameModal() {
   newUsername.value = user.value?.name || '';
-  error.value = null;
   isUsernameModalOpen.value = true;
 }
 
-function openDisplayNameModal() {
-  newDisplayName.value = page.value?.title || '';
-  error.value = null;
-  isDisplayNameModalOpen.value = true;
-}
-
 async function handleUpdateUsername() {
-  if (!newUsername.value.trim()) {
-    error.value = "Username não pode estar em branco.";
-    return;
-  }
+  if (!newUsername.value.trim()) return toast.error("Nome vazio.");
   isLoading.value = true;
-  error.value = null;
   try {
     await userStore.updateUserProfile({ name: newUsername.value });
     isUsernameModalOpen.value = false;
-  } catch (e: any) {
-    error.value = e.message;
-  } finally {
-    isLoading.value = false;
-  }
+    toast.success("Nome atualizado!");
+  } catch (e: any) { toast.error(e.message); }
+  finally { isLoading.value = false; }
 }
 
-async function handleUpdateDisplayName() {
-  isLoading.value = true;
-  error.value = null;
-  try {
-    await pageStore.updateMyPage({ title: newDisplayName.value });
-    isDisplayNameModalOpen.value = false;
-  } catch (e: any) {
-    error.value = e.message;
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-async function handleDisconnectDiscord() {
+async function handleDisconnectAccount() {
   isLoading.value = true;
   try {
-    await userStore.unlinkDiscord();
+    await userStore.unlinkAccount(disconnectTarget.value);
     isDisconnectModalOpen.value = false;
-  } catch (e: any) {
-    toast.error(e.message);
-  } finally {
-    isLoading.value = false;
-  }
+    toast.success(`Conta ${disconnectTarget.value} desconectada.`);
+    await authStore.fetchUser();
+  } catch (e: any) { toast.error(e.message || "Erro ao desconectar"); }
+  finally { isLoading.value = false; }
 }
 </script>
+
+<style scoped>
+.btn-primary {
+  @apply py-3 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl transition-all disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply py-2 bg-slate-800 text-white rounded-xl hover:bg-slate-700 font-medium transition-colors;
+}
+
+.btn-danger {
+  @apply py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 font-bold transition-colors;
+}
+
+.input-modern {
+  @apply w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all outline-none;
+}
+
+@keyframes wave {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  10%,
+  30% {
+    transform: rotate(14deg);
+  }
+
+  20% {
+    transform: rotate(-8deg);
+  }
+
+  40% {
+    transform: rotate(-4deg);
+  }
+
+  50% {
+    transform: rotate(10deg);
+  }
+
+  60% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-wave {
+  animation: wave 2.5s infinite;
+  transform-origin: 70% 70%;
+}
+
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+</style>

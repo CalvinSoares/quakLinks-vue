@@ -1,6 +1,6 @@
 <template>
     <div v-if="currentAudio" :class="[
-        'fixed top-5 left-5 z-50 flex items-center gap-3 bg-black/50 backdrop-blur-md border border-slate-700/50 rounded-full p-2 transition-all duration-300',
+        'fixed left-5 z-50 flex items-center gap-3 bg-black/50 backdrop-blur-md border border-slate-700/50 rounded-full p-2 transition-all duration-300', top,
         showWidget ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
     ]" @mouseenter="controlsVisible = true" @mouseleave="controlsVisible = false">
 
@@ -47,6 +47,7 @@ const props = defineProps<{
     audios: Audio[];
     shuffle: boolean;
     showWidget: boolean;
+    top: string;
 }>();
 
 
