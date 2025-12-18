@@ -6,13 +6,22 @@ import api from "@/services/api";
 
 type UserRole = "FREE" | "PREMIUM";
 
+export interface Account {
+  id: string;
+  provider: string;
+}
+
 interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
-  discordAvatarUrl?: string | null;
-  useDiscordAvatar?: boolean;
+  image?: string | null;
+  imageProvider: string;
+
+  googleImage?: string | null;
+  discordImage?: string | null;
+  accounts: Account[];
   CustomDomain?: {
     id: string;
     domain: string;
@@ -21,18 +30,24 @@ interface User {
 }
 
 export const useAuthStore = defineStore("auth", () => {
-  // State
   const token = ref<string | null>(localStorage.getItem("token"));
   const user = ref<User | null>(
     JSON.parse(localStorage.getItem("user") || "null")
   );
 
-  // Getters
   const isAuthenticated = computed(() => !!token.value);
 
   const isPremium = computed(() => user.value?.role === "PREMIUM");
 
-  // Actions
+  const isDiscordConnected = computed(
+    () =>
+      user.value?.accounts.some((acc) => acc.provider === "discord") ?? false
+  );
+
+  const isGoogleConnected = computed(
+    () => user.value?.accounts.some((acc) => acc.provider === "google") ?? false
+  );
+
   function setToken(newToken: string | string[]) {
     const tokenStr = Array.isArray(newToken) ? newToken[0] : newToken;
 
@@ -55,17 +70,14 @@ export const useAuthStore = defineStore("auth", () => {
     delete api.defaults.headers.common["Authorization"];
   }
 
-  // Ação de Login
   async function login(credentials: { email: string; password: string }) {
     const response = await api.post("/auth/login", credentials);
     const { token } = response.data;
     setToken(token);
 
-    // Após o login, buscar os dados do usuário
     await fetchUser();
   }
 
-  // Ação de Registro
   async function register(details: any) {
     await api.post("/auth/register", details);
   }
@@ -75,13 +87,11 @@ export const useAuthStore = defineStore("auth", () => {
     return response.data;
   }
 
-  // Ação para buscar dados do usuário logado
   async function fetchUser() {
     if (token.value) {
       try {
         const response = await api.get<User>("/users/me");
 
-        console.log("user fetch", response.data);
         setUser(response.data);
       } catch (error) {
         console.error("Erro ao buscar usuário, limpando autenticação.", error);
@@ -90,13 +100,11 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
-  // Ação de Logout
   function logout() {
     clearAuth();
     router.push("/login");
   }
 
-  // Garante que o header de autorização seja definido ao carregar a store
   if (token.value) {
     api.defaults.headers.common["Authorization"] = `Bearer ${token.value}`;
   }
@@ -106,6 +114,8 @@ export const useAuthStore = defineStore("auth", () => {
     user,
     isAuthenticated,
     isPremium,
+    isDiscordConnected,
+    isGoogleConnected,
     login,
     register,
     logout,

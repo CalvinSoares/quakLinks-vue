@@ -3,7 +3,6 @@
     <h3 class="text-lg font-semibold text-white mb-2">{{ title }}</h3>
     <div
       class="relative flex items-center justify-center w-full h-32 bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
-      <!-- Estado de Upload (com preview) -->
       <template v-if="currentUrl">
         <video v-if="isVideo" :src="currentUrl" class="w-full h-full object-cover" autoplay loop muted></video>
         <img v-else-if="isImage" :src="currentUrl" class="w-full h-full object-cover" />
@@ -14,17 +13,17 @@
 
         <div
           class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-          <!-- Botão Remover -->
+
           <button @click="$emit('remove', fieldName)"
             class="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full text-slate-300 hover:bg-red-500/80 hover:text-white">
             <XMarkIcon class="w-4 h-4" />
           </button>
-          <!-- Botão Trocar -->
+
           <label :for="inputId" class="text-white font-semibold cursor-pointer">Trocar</label>
         </div>
       </template>
 
-      <!-- Estado Vazio -->
+
       <label v-else :for="inputId"
         class="text-center text-slate-400 cursor-pointer hover:text-amber-400 transition-colors">
         <component :is="placeholderIcon" class="w-8 h-8 mx-auto" />

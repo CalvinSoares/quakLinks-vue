@@ -1,39 +1,33 @@
 <template>
   <div
     class="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden px-4 font-sans">
-    <!-- Elementos de fundo -->
     <div class="absolute inset-0 overflow-hidden">
       <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
       <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse"
         style="animation-delay: 1s"></div>
     </div>
 
-    <!-- Card de Login com Animação de Entrada -->
     <div class="relative w-full max-w-sm transition-all duration-500 ease-in-out"
       :class="isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'">
       <div class="relative backdrop-blur-xl bg-slate-900/60 border border-slate-800/50 rounded-2xl shadow-2xl p-8">
-        <!-- Brilho superior -->
         <div
           class="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-yellow-500 to-transparent">
         </div>
 
         <div class="flex flex-col items-center text-center gap-6">
 
-          <!-- Seção de Logo (Estilo QuackLinks) -->
           <div class="flex flex-col items-center gap-2">
             <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-800 ring-1 ring-slate-700">
-              <!-- SVG de Pato (Exemplo para QuackLinks) -->
-              <img src="/duckbio.png" alt="QuackLinks Logo" class="w-9 h-7" />
+              <img src="/ducklogonatal.png" alt="QuackLinks Logo" class="w-9 h-7" />
 
             </div>
             <h1 class="text-2xl font-bold text-white">Bem-vindo(a)</h1>
             <p class="text-sm text-slate-400">Faça login para continuar.</p>
           </div>
 
-          <!-- Botões de Login Social Aprimorados -->
           <div class="w-full space-y-3">
-            <button
-              class="flex items-center justify-center gap-3 w-full py-3 text-sm font-semibold text-slate-800 bg-white rounded-lg hover:bg-slate-200 transition-colors base">
+            <a :href="googleLoginUrl"
+              class="flex items-center justify-center gap-3 w-full py-3 text-sm font-semibold text-slate-800 bg-white rounded-lg hover:bg-slate-200 transition-colors base cursor-pointer">
               <svg class="w-5 h-5" viewBox="0 0 48 48">
                 <path fill="#FFC107"
                   d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z">
@@ -49,7 +43,7 @@
                 </path>
               </svg>
               Continuar com Google
-            </button>
+            </a>
             <a :href="discordLoginUrl"
               class="flex items-center justify-center gap-3 w-full py-3 text-sm font-semibold text-white bg-[#24292F] rounded-lg hover:bg-[#30363d] transition-colors">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -60,7 +54,6 @@
             </a>
           </div>
 
-          <!-- Divisor -->
           <div class="relative w-full">
             <div class="absolute inset-0 flex items-center">
               <div class="w-full border-t border-slate-700/50"></div>
@@ -69,9 +62,7 @@
             </div>
           </div>
 
-          <!-- Formulário com E-mail e Senha -->
           <form @submit.prevent="handleLogin" class="w-full space-y-4">
-            <!-- Inputs com Floating Label mantidos -->
             <div class="relative">
               <input v-model="email" id="email" type="email" required :disabled="isLoading"
                 class="peer w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
@@ -135,7 +126,6 @@
 </template>
 
 <script setup lang="ts">
-// O SCRIPT PERMANECE O MESMO, APENAS COPIADO ABAIXO PARA COMPLETUDE
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
@@ -151,6 +141,7 @@ const isPasswordVisible = ref(false);
 
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
 const discordLoginUrl = `${apiUrl}/auth/discord`;
+const googleLoginUrl = `${apiUrl}/auth/google`;
 
 onMounted(() => {
   setTimeout(() => isMounted.value = true, 100);
@@ -180,7 +171,6 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-/* A animação de fade para o erro permanece útil */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;

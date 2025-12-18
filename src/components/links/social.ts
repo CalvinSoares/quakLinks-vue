@@ -29,7 +29,7 @@ export const socialProfiles: Social[] = [
   {
     name: "YouTube",
     icon: BrandYoutubeIcon,
-    placeholder: "youtube.com/channel/...",
+    placeholder: "youtu2be.com/channel/...",
   },
   {
     name: "Instagram",

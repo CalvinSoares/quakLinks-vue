@@ -14,9 +14,13 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
+    "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vueuse/core": "^14.0.0",
     "apexcharts": "^5.3.6",
     "axios": "^1.13.1",
+    "leaflet": "^1.9.4",
+    "loadsh": "^0.0.4",
+    "lodash": "^4.17.21",
     "lucide-vue-next": "^0.561.0",
     "pinia": "^3.0.3",
     "vue": "^3.5.22",
@@ -27,6 +31,8 @@
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
+    "@types/lodash": "^4.17.21",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
     "autoprefixer": "^10.4.21",

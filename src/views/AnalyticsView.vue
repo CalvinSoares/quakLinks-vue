@@ -16,7 +16,6 @@
                 </button>
             </div>
 
-            <!-- Loading State -->
             <div v-if="isLoading" class="flex items-center justify-center min-h-[400px]">
                 <div class="text-center space-y-4">
                     <div
@@ -26,7 +25,6 @@
                 </div>
             </div>
 
-            <!-- Error State -->
             <div v-else-if="error" class="text-center p-8 bg-slate-800/50 rounded-2xl border border-red-500/30">
                 <h2 class="text-2xl font-bold text-red-400">Ocorreu um erro</h2>
                 <p class="mt-2 text-slate-400">{{ error }}</p>
@@ -36,9 +34,7 @@
                 </button>
             </div>
 
-            <!-- Content -->
             <div v-else-if="analytics" class="space-y-6">
-                <!-- Resumo dos Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <StatCard title="Total Views" :value="analytics.totalViews" :icon="EyeIcon"
                         gradient-class="from-cyan-500 to-blue-500" />
@@ -48,11 +44,9 @@
                         :icon="CursorArrowRaysIcon" gradient-class="from-emerald-500 to-teal-500" />
                 </div>
 
-                <!-- Gráfico de Linha -->
                 <div class="p-6 bg-slate-900/50 border border-slate-700/50 rounded-2xl">
                     <h3 class="text-xl font-bold text-white mb-4">Views e Cliques ({{ selectedPeriodLabel }})</h3>
 
-                    <!-- Verifica se há dados antes de renderizar -->
                     <div v-if="chartSeries.length > 0 && chartCategories.length > 0">
                         <ApexLineChart :series="chartSeries" :categories="chartCategories" />
                     </div>
@@ -62,7 +56,6 @@
                     </div>
                 </div>
 
-                <!-- Grids de Topo -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <AnalyticsListCard title="Top Links" :items="topLinks" icon-color="text-purple-400" />
                     <AnalyticsListCard title="Top Referrers" :items="topReferrers" icon-color="text-sky-400" />
@@ -89,7 +82,7 @@ import ApexLineChart from '@/components/charts/ApexLineChart.vue';
 
 
 const analyticsStore = useAnalyticsStore();
-const { analytics, isLoading, error } = storeToRefs(analyticsStore); // Para reatividade
+const { analytics, isLoading, error } = storeToRefs(analyticsStore);
 
 onMounted(() => {
     if (!analytics.value) {

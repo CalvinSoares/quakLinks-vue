@@ -1,8 +1,7 @@
 <template>
     <div
-        class="min-h-screen bg-slate-950 text-white selection:bg-amber-400 selection:text-slate-900 overflow-x-hidden font-sans">
+        class="min-h-screen bg-[#0a0a0a] text-white selection:bg-amber-400 selection:text-slate-900 overflow-x-hidden font-sans">
 
-        <!-- HEADER HUD -->
         <header class="fixed top-0 left-0 right-0 z-50 pt-6 px-4 flex justify-center">
             <nav class="w-full max-w-5xl animate-slide-down">
                 <div class="relative group">
@@ -13,11 +12,11 @@
                     <div
                         class="relative bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex items-center justify-between p-2 pl-6 pr-2 transition-all duration-300 hover:border-white/20">
 
-                        <!-- Logo -->
                         <a href="/" class="flex items-center gap-3 cursor-pointer group/logo">
                             <div class="relative w-10 h-8 flex items-center justify-center">
-                                <div class="absolute inset-0 bg-amber-500 blur-lg opacity-20 animate-pulse-slow"></div>
-                                <img src="/duckbio.png" alt="Logo"
+                                <div class="absolute inset-0 bg-amber-500 blur-lg opacity-20 animate-pulse-slow">
+                                </div>
+                                <img src="/ducklogonatal.png" alt="Logo"
                                     class="w-8 h-auto relative z-10 transform group-hover/logo:rotate-12 transition-transform duration-300" />
                             </div>
                             <span class="font-bold text-lg tracking-tight hidden sm:block">
@@ -25,7 +24,7 @@
                             </span>
                         </a>
 
-                        <!-- Nav Links -->
+
                         <div
                             class="hidden md:flex items-center gap-1 bg-slate-950/50 rounded-xl p-1 border border-white/5">
                             <a v-for="item in navItems" :key="item.name" :href="item.href"
@@ -37,7 +36,7 @@
                             </a>
                         </div>
 
-                        <!-- Actions -->
+
                         <div class="flex items-center gap-3">
                             <a href="/login"
                                 class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block">
@@ -59,114 +58,190 @@
             </nav>
         </header>
 
-        <!-- HERO SECTION (A Nova Section) -->
-        <section id="hero" class="relative pt-44 pb-20 px-4 overflow-hidden">
-            <!-- Animated background gradients -->
-            <div class="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/30 rounded-full blur-[120px] animate-float">
-            </div>
-            <div
-                class="absolute top-40 right-1/4 w-96 h-96 bg-sky-500/20 rounded-full blur-[120px] animate-float-delayed">
-            </div>
-            <div
-                class="absolute bottom-0 left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] animate-pulse-slow">
+        <section id="hero" class="relative min-h-screen flex items-center pt-32 pb-20 px-4 overflow-hidden">
+
+            <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/20 rounded-full blur-[120px]">
+                </div>
+                <div
+                    class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-600/10 rounded-full blur-[120px]">
+                </div>
             </div>
 
-            <div class="container mx-auto max-w-7xl relative z-10">
-                <div class="text-center" :class="isVisible ? 'animate-fade-in-up' : 'opacity-0'">
+            <div class="container mx-auto max-w-7xl relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-                    <!-- Badge -->
+
+                <div class="text-left order-2 lg:order-1">
+
                     <div
-                        class="inline-flex items-center gap-2 px-5 py-2.5 mb-8 bg-gradient-to-r from-sky-500/10 to-amber-500/10 backdrop-blur-xl rounded-full border border-sky-400/20 shadow-lg animate-slide-down">
-                        <Sparkles :size="18" class="text-sky-400 animate-spin-slow" />
-                        <span
-                            class="text-sm font-bold bg-gradient-to-r from-sky-400 to-amber-400 bg-clip-text text-transparent">
-                            Novo: Integração com Spotify
+                        class="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-white/5 border border-white/10 rounded-full backdrop-blur-md animate-fade-in-up">
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                         </span>
-                        <div class="w-2 h-2 bg-sky-400 rounded-full animate-ping"></div>
+                        <span class="text-xs font-semibold text-slate-300 tracking-wide uppercase">Nova geração de
+                            Biolinks</span>
                     </div>
 
-                    <!-- Main headline -->
-                    <h1
-                        class="text-3xl sm:text-7xl lg:text-8xl font-black mb-8 tracking-tight leading-[0.9] animate-fade-in-up-delayed">
-                        <span class="block text-balance" style="animation-delay: 0.1s">
-                            Seus links,
-                        </span>
+
+                    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black mb-6 leading-[1.1] tracking-tight animate-fade-in-up"
+                        style="animation-delay: 100ms">
+                        Seu perfil, <br />
                         <span
-                            class="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 animate-gradient-x"
-                            style="animation-delay: 0.2s">
-                            seu estilo.
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-500 to-orange-500">
+                            outra dimensão.
                         </span>
                     </h1>
 
-                    <!-- Subtitle -->
-                    <p class="text-xl sm:text-2xl text-slate-400 mb-12 max-w-3xl mx-auto text-pretty leading-relaxed animate-fade-in-up"
-                        style="animation-delay: 0.3s">
-                        A plataforma de biolinks mais completa do Brasil.
-                        <span class="text-white font-semibold">Design premium</span>,
-                        <span class="text-white font-semibold">analytics avançado</span> e
-                        <span class="text-white font-semibold">100% personalizável</span>.
+
+                    <p class="text-lg text-slate-400 mb-10 max-w-lg leading-relaxed animate-fade-in-up"
+                        style="animation-delay: 200ms">
+                        A plataforma definitiva para centralizar sua identidade digital. Estética cyberpunk, analytics
+                        em tempo real e liberdade total.
                     </p>
 
-                    <!-- CTA Buttons -->
-                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in-up"
-                        style="animation-delay: 0.4s">
-                        <button
-                            class="group relative w-full sm:w-auto px-10 py-5 text-lg font-black bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 rounded-2xl overflow-hidden shadow-2xl shadow-amber-500/30 hover:shadow-amber-500/50 transition-all duration-300 hover:scale-105">
-                            <span class="relative z-10 flex items-center justify-center gap-3">
-                                Criar minha página
-                                <ArrowRight :size="22"
-                                    class="group-hover:translate-x-2 transition-transform duration-300" />
-                            </span>
-                            <div
-                                class="absolute inset-0 bg-gradient-to-r from-amber-500 to-yellow-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                            </div>
-                        </button>
 
-                        <button
-                            class="group w-full sm:w-auto px-10 py-5 text-lg font-black bg-slate-900/50 backdrop-blur-xl border-2 border-slate-700 text-white rounded-2xl hover:border-amber-400/50 transition-all duration-300 flex items-center justify-center gap-3 hover:scale-105">
-                            <div class="relative">
-                                <div
-                                    class="absolute inset-0 bg-amber-400 rounded-full blur-md opacity-0 group-hover:opacity-60 transition-opacity">
-                                </div>
-                                <Play :size="22" class="fill-current relative z-10" />
-                            </div>
-                            Ver demonstração
-                        </button>
+                    <div class="flex flex-wrap items-center gap-4 animate-fade-in-up" style="animation-delay: 300ms">
+                        <a href="/register"
+                            class="px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-slate-200 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                            Começar Agora
+                            <ArrowRight :size="18" />
+                        </a>
+                        <a href="#explore"
+                            class="px-8 py-4 bg-transparent border border-white/20 text-white font-bold rounded-xl hover:bg-white/5 transition-all flex items-center gap-2">
+                            <Play :size="18" />
+                            Ver Demo
+                        </a>
                     </div>
 
-                    <!-- Stats -->
-                    <div class="inline-flex flex-wrap items-center justify-center gap-6 sm:gap-12 py-8 px-10 rounded-3xl bg-slate-900/40 backdrop-blur-2xl border border-white/10 shadow-2xl animate-fade-in-up"
-                        style="animation-delay: 0.5s">
-                        <div v-for="stat in stats" :key="stat.label" class="stat-item text-center group cursor-default"
-                            @mouseenter="stat.hovered = true" @mouseleave="stat.hovered = false">
-                            <div class="relative">
-                                <div
-                                    class="absolute inset-0 bg-amber-400/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                </div>
-                                <div
-                                    class="text-4xl sm:text-5xl font-black relative z-10 bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
-                                    {{ stat.value }}
-                                </div>
-                            </div>
-                            <div
-                                class="text-slate-500 text-sm font-bold uppercase tracking-widest mt-2 group-hover:text-amber-400 transition-colors">
-                                {{ stat.label }}
-                            </div>
+
+                    <div class="mt-12 flex items-center gap-6 text-sm text-slate-500 animate-fade-in-up"
+                        style="animation-delay: 400ms">
+                        <div class="flex -space-x-3">
+                            <img class="w-10 h-10 rounded-full border-2 border-[#0a0a0a]"
+                                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" />
+                            <img class="w-10 h-10 rounded-full border-2 border-[#0a0a0a]"
+                                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ane" />
+                            <img class="w-10 h-10 rounded-full border-2 border-[#0a0a0a]"
+                                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bob" />
                         </div>
-                        <div
-                            class="hidden sm:block w-px h-16 bg-gradient-to-b from-transparent via-slate-700 to-transparent">
-                        </div>
+                        <p>Junte-se a <span class="text-white font-bold">50k+</span> creators</p>
                     </div>
                 </div>
+
+
+                <div
+                    class="relative flex justify-center lg:justify-end order-1 lg:order-2 [perspective:2000px] group/card">
+
+
+                    <div class="relative w-[280px] sm:w-[340px] aspect-[9/19] transition-all duration-700 ease-out transform-3d animate-float-3d
+                                [transform:rotateX(20deg)_rotateY(-25deg)_rotateZ(10deg)] 
+                                group-hover/card:[transform:rotateX(0deg)_rotateY(0deg)_rotateZ(0deg)_scale(1.05)]">
+
+
+                        <div
+                            class="absolute -inset-[2px] bg-gradient-to-tr from-amber-500 via-purple-500 to-sky-500 rounded-[2.5rem] blur-sm opacity-70">
+                        </div>
+
+                        <div
+                            class="relative w-full h-full bg-[#0f0f0f] rounded-[2.4rem] overflow-hidden border border-white/10 shadow-2xl">
+
+
+                            <div
+                                class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-40">
+                            </div>
+                            <div
+                                class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0f0f0f]/80 to-[#0f0f0f]">
+                            </div>
+
+
+                            <div class="relative z-10 flex flex-col items-center pt-16 px-6 h-full">
+
+                                <div
+                                    class="w-24 h-24 rounded-full border-2 border-amber-400 p-1 shadow-[0_0_20px_rgba(251,191,36,0.3)] mb-4">
+                                    <img src="/ducklogonatal.png"
+                                        class="w-full h-full rounded-full bg-slate-800 object-cover" />
+                                </div>
+
+
+                                <h3 class="text-2xl font-bold text-white mb-1">QuackUser</h3>
+                                <p class="text-xs text-amber-400 mb-8 font-mono">@quack_king</p>
+
+
+                                <div class="w-full space-y-3">
+                                    <div
+                                        class="w-full py-3 px-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-red-500 flex items-center justify-center text-xs font-bold">
+                                            YT</div>
+                                        <span class="text-sm font-medium">Inscreva-se</span>
+                                    </div>
+                                    <div
+                                        class="w-full py-3 px-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer">
+                                        <div class="w-8 h-8 rounded-lg bg-[#5865F2] flex items-center justify-center">
+                                            <Gamepad2 size="16" />
+                                        </div>
+                                        <span class="text-sm font-medium">Discord Server</span>
+                                    </div>
+                                    <div
+                                        class="w-full py-3 px-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer">
+                                        <div class="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center">
+                                            <Music size="16" />
+                                        </div>
+                                        <span class="text-sm font-medium">Spotify Playlist</span>
+                                    </div>
+                                </div>
+
+
+                                <div
+                                    class="mt-auto mb-8 w-full bg-black/40 backdrop-blur-md border border-white/5 rounded-xl p-3 flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-slate-700 rounded bg-[url('https://i.scdn.co/image/ab67616d0000b27341e31d6ea1d493dd77933ee5')] bg-cover">
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="h-2 w-20 bg-white/40 rounded mb-1.5"></div>
+                                        <div class="h-1.5 w-12 bg-white/20 rounded"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="w-0.5 h-3 bg-green-500 animate-pulse"></div>
+                                        <div class="w-0.5 h-5 bg-green-500 animate-pulse" style="animation-delay: 0.1s">
+                                        </div>
+                                        <div class="w-0.5 h-3 bg-green-500 animate-pulse" style="animation-delay: 0.2s">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-b-xl z-20">
+                            </div>
+                        </div>
+
+
+                        <div
+                            class="absolute inset-0 rounded-[2.5rem] bg-gradient-to-tr from-white/20 via-transparent to-transparent pointer-events-none z-30">
+                        </div>
+                    </div>
+
+
+                    <div
+                        class="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[80%] h-12 bg-black/50 blur-xl rounded-[100%] [transform:rotateX(60deg)] animate-shadow-pulse">
+                    </div>
+
+                </div>
             </div>
+
+
+            <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent z-10"></div>
         </section>
 
-        <!-- EXPLORE SECTION (Antigo Showcase) -->
-        <section id="explore" class="py-24 px-4 relative bg-slate-900/30 border-y border-white/5">
+
+        <section id="explore" class="py-24 px-4 relative bg-[#0f0f0f] border-t border-white/5">
             <div class="container mx-auto max-w-7xl">
                 <div class="grid lg:grid-cols-2 gap-16 items-center">
 
-                    <!-- Left: Controls -->
+
                     <div v-observe class="scroll-hidden space-y-8 order-2 lg:order-1">
                         <div>
                             <h3 class="text-4xl md:text-5xl font-black mb-6">Explore <span
@@ -177,7 +252,7 @@
                             </p>
                         </div>
 
-                        <!-- Style Switcher Tabs -->
+
                         <div class="space-y-4">
                             <div v-for="(profile, key) in demoProfiles" :key="key" @click="activeProfileKey = key"
                                 class="p-6 rounded-2xl border transition-all duration-300 cursor-pointer group relative overflow-hidden"
@@ -195,7 +270,7 @@
                                         <p class="text-sm text-slate-500">{{ profile.desc }}</p>
                                     </div>
                                 </div>
-                                <!-- Progress bar for active tab -->
+
                                 <div v-if="activeProfileKey === key"
                                     class="absolute bottom-0 left-0 h-1 bg-amber-400 transition-all duration-[4000ms] ease-linear w-full">
                                 </div>
@@ -203,26 +278,22 @@
                         </div>
                     </div>
 
-                    <!-- Right: The LIVE Preview -->
+
                     <div v-observe class="scroll-hidden order-1 lg:order-2 flex justify-center perspective-1000">
                         <div
                             class="relative w-[320px] sm:w-[380px] h-[700px] bg-slate-950 rounded-[3rem] border-[8px] border-slate-800 shadow-2xl overflow-hidden transform transition-all duration-500 hover:rotate-y-6 hover:scale-105">
 
-                            <!-- Dynamic Content Render based on activeProfile -->
                             <div class="w-full h-full relative overflow-y-auto custom-scrollbar transition-all duration-500"
                                 :style="getBackgroundStyle(currentDemo)">
 
-                                <!-- Overlays -->
                                 <div v-if="currentDemo.overlay === 'noise'"
                                     class="absolute inset-0 opacity-10 pointer-events-none bg-noise"></div>
                                 <div v-if="currentDemo.overlay === 'scanlines'"
                                     class="absolute inset-0 opacity-20 pointer-events-none bg-scanlines"></div>
                                 <div class="absolute inset-0 bg-black/20 pointer-events-none"></div>
 
-                                <!-- Content Container -->
                                 <div class="relative z-10 flex flex-col items-center pt-16 px-6 pb-10 min-h-full">
 
-                                    <!-- Avatar -->
                                     <div class="relative mb-6">
                                         <div class="w-24 h-24 rounded-full p-1" :style="getRingStyle(currentDemo)">
                                             <img :src="currentDemo.avatar"
@@ -230,7 +301,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Title / Username -->
                                     <h2 class="text-2xl font-bold mb-2 text-center"
                                         :class="getTitleClasses(currentDemo)" :style="{ color: currentDemo.textColor }"
                                         :data-text="currentDemo.username">
@@ -242,7 +312,6 @@
                                         {{ currentDemo.bio }}
                                     </p>
 
-                                    <!-- Links -->
                                     <div class="w-full space-y-4">
                                         <div v-for="(link, idx) in currentDemo.links" :key="idx"
                                             class="w-full p-4 rounded-xl flex items-center gap-3 transition-all duration-300 cursor-pointer group link-item"
@@ -253,7 +322,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Fake Spotify Widget -->
                                     <div v-if="currentDemo.showSpotify" class="mt-auto pt-8 w-full animate-fade-in">
                                         <div
                                             class="bg-black/40 backdrop-blur-md rounded-xl p-3 flex items-center gap-3 border border-white/10">
@@ -272,7 +340,6 @@
                                 </div>
                             </div>
 
-                            <!-- Phone Notch -->
                             <div
                                 class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-b-xl z-20">
                             </div>
@@ -282,8 +349,7 @@
             </div>
         </section>
 
-        <!-- FEATURES GRID -->
-        <section id="features" class="py-24 px-4">
+        <section id="features" class="py-24 px-4 bg-[#0a0a0a]">
             <div class="container mx-auto max-w-6xl">
                 <div v-observe class="scroll-hidden text-center mb-16">
                     <h3 class="text-4xl font-bold mb-4">Features <span class="text-amber-400">Insanas</span></h3>
@@ -313,7 +379,6 @@
             </div>
         </section>
 
-        <!-- PRICING SECTION -->
         <section id="pricing" class="py-24 px-4 bg-slate-900/20 border-y border-white/5">
             <div class="container mx-auto max-w-6xl">
                 <div v-observe class="scroll-hidden text-center mb-16">
@@ -355,8 +420,7 @@
             </div>
         </section>
 
-        <!-- CTA FINAL -->
-        <section class="py-32 px-4 relative overflow-hidden">
+        <section class="py-32 px-4 relative overflow-hidden bg-[#0a0a0a]">
             <div class="container mx-auto max-w-4xl relative z-10">
                 <div v-observe
                     class="scroll-scale-hidden relative rounded-[3rem] p-12 overflow-hidden text-center border border-amber-500/30 bg-slate-900/80 backdrop-blur-xl">
@@ -376,10 +440,9 @@
             </div>
         </section>
 
-        <!-- FOOTER -->
-        <footer class="border-t border-slate-800/50 py-12 text-center text-slate-500 text-sm">
+        <footer class="border-t border-slate-800/50 py-12 text-center text-slate-500 text-sm bg-[#0a0a0a]">
             <div class="flex items-center justify-center gap-2 mb-4 opacity-50 hover:opacity-100 transition-opacity">
-                <img src="/duckbio.png" class="w-6 h-auto grayscale" />
+                <img src="/ducklogonatal.png" class="w-6 h-auto grayscale" />
                 <span>QuackLinks &copy; 2025</span>
             </div>
         </footer>
@@ -395,7 +458,6 @@ import {
     Zap, Shield, Crown, Terminal, Gamepad2, Brush
 } from 'lucide-vue-next'
 
-// --- DIRETIVA DE SCROLL ---
 const vObserve = {
     mounted: (el) => {
         const observer = new IntersectionObserver((entries) => {
@@ -410,15 +472,6 @@ const vObserve = {
     }
 }
 
-// --- VARIÁVEIS ADICIONADAS PARA CORRIGIR O ERRO ---
-const isVisible = ref(false) // Controla a animação do Hero
-const stats = ref([
-    { value: '50K+', label: 'Usuários', hovered: false },
-    { value: '1M+', label: 'Cliques', hovered: false },
-    { value: '100+', label: 'Templates', hovered: false }
-])
-
-// --- DADOS DO PREVIEW INTERATIVO ---
 const activeProfileKey = ref('gamer')
 let intervalId = null
 
@@ -485,7 +538,6 @@ const demoProfiles = {
 
 const currentDemo = computed(() => demoProfiles[activeProfileKey.value])
 
-// --- LOGICA DE ESTILOS DO PREVIEW ---
 const getBackgroundStyle = (profile) => ({
     background: profile.background,
 })
@@ -510,9 +562,8 @@ const getLinkClasses = (profile) => {
     return ''
 }
 
-// --- DADOS GERAIS ---
 const navItems = [
-    { name: 'Showcase', href: '#showcase' },
+    { name: 'Showcase', href: '#explore' },
     { name: 'Features', href: '#features' },
     { name: 'Planos', href: '#pricing' }
 ]
@@ -532,11 +583,7 @@ const plans = [
     { name: 'Agency', price: 'R$ 99', features: ['10 Páginas', 'API Access', 'Suporte Prioritário'], cta: 'Contatar', popular: false },
 ]
 
-// Auto-rotate profiles & Set Visible
 onMounted(() => {
-    // IMPORTANTE: Ativar a flag para mostrar a Hero Section
-    isVisible.value = true
-
     const keys = Object.keys(demoProfiles)
     let idx = 0
     intervalId = setInterval(() => {
@@ -552,7 +599,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* UTILS */
 .custom-scrollbar::-webkit-scrollbar {
     width: 0px;
 }
@@ -574,7 +620,6 @@ onUnmounted(() => {
     transform: translateY(0) scale(1);
 }
 
-/* ANIMATIONS & FX */
 @keyframes slide-down {
     from {
         transform: translateY(-100%);
@@ -611,20 +656,6 @@ onUnmounted(() => {
     }
 }
 
-@keyframes gradient-x {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
 @keyframes slide-in-up {
     from {
         opacity: 0;
@@ -650,55 +681,48 @@ onUnmounted(() => {
     animation: pulse-slow 3s ease-in-out infinite;
 }
 
-.animate-gradient-x {
-    background-size: 200% auto;
-    animation: gradient-x 4s linear infinite;
-}
-
 .animate-fade-in {
     animation: slide-in-up 0.5s ease-out forwards;
 }
 
-.link-item {
-    opacity: 0;
-    animation: slide-in-up 0.5s ease-out forwards;
-}
-
-/* Animations extra do hero */
-@keyframes float {
+@keyframes float-3d {
 
     0%,
     100% {
-        transform: translate(0, 0);
+        transform: rotateX(20deg) rotateY(-25deg) rotateZ(10deg) translateY(0);
     }
 
     50% {
-        transform: translate(0, -20px);
+        transform: rotateX(20deg) rotateY(-25deg) rotateZ(10deg) translateY(-20px);
     }
 }
 
-@keyframes float-delayed {
+@keyframes shadow-pulse {
 
     0%,
     100% {
-        transform: translate(0, 0);
+        opacity: 0.5;
+        transform: translateX(-50%) rotateX(60deg) scale(1);
     }
 
     50% {
-        transform: translate(0, -10px);
+        opacity: 0.3;
+        transform: translateX(-50%) rotateX(60deg) scale(0.9);
     }
 }
 
-.animate-float {
-    animation: float 6s ease-in-out infinite;
+.animate-float-3d {
+    animation: float-3d 6s ease-in-out infinite;
 }
 
-.animate-float-delayed {
-    animation: float 8s ease-in-out infinite;
-    animation-delay: 1s;
+.animate-shadow-pulse {
+    animation: shadow-pulse 6s ease-in-out infinite;
 }
 
-/* FX Patterns */
+.transform-3d {
+    transform-style: preserve-3d;
+}
+
 .bg-scanlines {
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2));
     background-size: 100% 4px;
@@ -708,7 +732,6 @@ onUnmounted(() => {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
-/* Glitch Effect */
 .effect-glitch {
     position: relative;
 }
@@ -759,7 +782,6 @@ onUnmounted(() => {
     }
 }
 
-/* Typewriter */
 .typewriter {
     overflow: hidden;
     white-space: nowrap;
@@ -791,7 +813,6 @@ onUnmounted(() => {
     }
 }
 
-/* Neon */
 .effect-neon {
     text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #00ff9d, 0 0 40px #00ff9d;
 }

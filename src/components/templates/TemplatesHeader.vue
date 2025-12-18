@@ -1,4 +1,3 @@
-<!-- src/components/templates/TemplatesHeader.vue -->
 <template>
   <header class="mb-8 flex-shrink-0">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
@@ -17,7 +16,7 @@
       </button>
     </div>
     <div class="mt-8">
-      <!-- Container das abas -->
+
       <div class="flex items-center gap-1 bg-slate-800/50 p-1 rounded-xl border border-slate-700/50 w-fit">
         <button v-for="tab in tabs" :key="tab.id" @click="$emit('tab-change', tab.id)" :class="[
           'px-4 py-2.5 font-semibold text-sm transition-all duration-300 rounded-lg flex items-center gap-2',

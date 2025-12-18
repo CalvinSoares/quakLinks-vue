@@ -1,12 +1,9 @@
 <template>
-  <!-- O container agora tem padding-top para evitar o "notch" e é relativo para o player de áudio -->
-  <div v-if="previewData" class="w-full h-full relative  bg-slate-950">
+  <div v-if="previewData" class="w-full h-full relative bg-slate-950 custom-scrollbar h-full overflow-y-auto">
 
-    <!-- ADICIONADO: O AudioPlayer agora faz parte do preview -->
     <AudioPlayer v-if="directAudios.length > 0" :audios="directAudios" :shuffle="previewData.shuffleAudios"
-      :show-widget="previewData.showAudioPlayer" />
+      :show-widget="previewData.showAudioPlayer" top="top-10" />
 
-    <!-- O PageRenderer continua sendo o coração da UI -->
     <PageRenderer :page="pageWithLinks" />
 
   </div>
@@ -35,6 +32,7 @@ const pageWithLinks = computed(() => {
     links: pageStore.currentPage?.links || [],
     user: pageStore.currentPage?.user || null,
     audios: pageStore.currentPage?.audios || [],
+    blocks: pageStore.currentPage?.blocks || [],
   };
 });
 

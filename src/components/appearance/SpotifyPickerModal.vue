@@ -1,17 +1,13 @@
-<!-- components/appearance/SpotifyPickerModal.vue -->
 <template>
     <Modal :is-open="true" title="Adicionar do Spotify" @close="$emit('close')">
         <div class="flex flex-col h-full">
-            <!-- Conteúdo principal que se expande e rola -->
             <div class="flex-1 p-4 sm:p-6 overflow-y-auto">
-                <!-- Estado de Carregamento -->
                 <div v-if="spotifyStore.isLoading" class="flex items-center justify-center h-full text-center p-8">
                     <div>
                         <span class="animate-spin ..."></span> Verificando conexão...
                     </div>
                 </div>
 
-                <!-- Botão de Conexão -->
                 <div v-else-if="!spotifyStore.isConnected"
                     class="flex items-center justify-center h-full text-center p-8">
                     <div class="space-y-4">
@@ -24,12 +20,10 @@
                     </div>
                 </div>
 
-                <!-- Interface de Busca -->
                 <div v-else class="space-y-4">
                     <input v-model="searchQuery" type="text" placeholder="Buscar por música ou artista..."
                         class="input-dark w-full" />
 
-                    <!-- MODIFICADO: Removido max-h e overflow daqui, pois o pai agora controla a rolagem -->
                     <div class="space-y-2 pr-2">
                         <div v-if="isSearching" class="text-center py-4">Buscando...</div>
                         <div v-for="track in searchResults" :key="track.id" @click="selectTrack(track)"
@@ -74,26 +68,23 @@ const performSearch = useDebounceFn(async () => {
     isSearching.value = true;
     searchResults.value = await spotifyStore.searchTracks(searchQuery.value);
     isSearching.value = false;
-}, 500); // Debounce de 500ms
+}, 500);
 
 watch(searchQuery, performSearch);
 
 const selectTrack = (track: SpotifyTrack) => {
-    // 1. Pega o nome do artista de forma segura
     const artistName = track.artists && track.artists.length > 0
         ? track.artists[0]?.name
-        : 'Artista Desconhecido'; // Fallback caso não haja artista
+        : 'Artista Desconhecido';
 
-    // 2. Monta o título
     const title = `${track.name} - ${artistName}`;
 
-    // 3. Pega a URL da capa de forma segura
-    const coverUrl = track.album?.images?.[0]?.url || null; // Fallback para null se não houver imagem
+    const coverUrl = track.album?.images?.[0]?.url || null;
 
     const dataToSave = {
         type: 'SPOTIFY' as const,
         title: title,
-        url: track.external_urls.spotify, // A URL principal da música é garantida
+        url: track.external_urls.spotify,
         coverUrl: coverUrl,
         spotifyTrackId: track.id
     };

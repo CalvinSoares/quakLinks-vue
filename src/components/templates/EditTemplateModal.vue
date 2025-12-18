@@ -1,10 +1,8 @@
-<!-- src/components/templates/EditTemplateModal.vue -->
 <template>
   <BaseModal :is-open="isOpen" @close="$emit('close')" max-width="md">
     <template #title>Editar Template</template>
 
     <form v-if="template" @submit.prevent="handleSubmit" class="mt-6 space-y-4">
-      <!-- Os mesmos inputs do modal de criação, usando v-model -->
       <div>
         <label for="edit-name" class="form-label">Nome do Template</label>
         <input v-model="form.name" id="edit-name" type="text" required class="form-input" />
@@ -13,7 +11,6 @@
         <label class="form-label">Imagem de Preview</label>
         <div
           class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-slate-700 border-dashed rounded-md">
-          <!-- Estado inicial ou quando há uma imagem existente -->
           <div v-if="!preview && form.previewImageUrl" class="relative w-full aspect-video">
             <img :src="form.previewImageUrl" class="w-full h-full object-contain rounded-md" />
             <label for="edit-file-upload"
@@ -23,7 +20,6 @@
                 accept="image/png, image/jpeg, image/gif">
             </label>
           </div>
-          <!-- Estado quando uma nova imagem foi selecionada -->
           <div v-else-if="preview" class="relative w-full aspect-video">
             <img :src="preview" class="w-full h-full object-contain rounded-md" />
             <button @click="removeFile" type="button"
@@ -33,7 +29,6 @@
               </svg>
             </button>
           </div>
-          <!-- Estado vazio (sem imagem inicial ou nova) -->
           <div v-else class="space-y-1 text-center">
             <svg class="mx-auto h-12 w-12 text-slate-500" stroke="currentColor" fill="none" viewBox="0 0 48 48"
               aria-hidden="true">
@@ -84,14 +79,13 @@ import { useTemplatesStore, type CreateTemplateInput, type Template } from '@/st
 import BaseModal from '../modals/BaseModal.vue';
 import { toast } from 'vue-sonner';
 
-// ... (toda a lógica do script setup permanece a mesma da versão anterior)
 const props = defineProps<{ isOpen: boolean, template: Template | null }>();
 const emit = defineEmits(['close']);
 const store = useTemplatesStore();
 
 const isLoading = ref(false);
 const tagsInput = ref('');
-const preview = ref<string | null>(null); // Preview para o *novo* arquivo
+const preview = ref<string | null>(null);
 const selectedFile = ref<File | null>(null);
 type EditTemplateForm = Omit<Partial<CreateTemplateInput>, 'tags'>;
 
@@ -127,13 +121,13 @@ function handleFileChange(event: Event) {
 function removeFile() {
   selectedFile.value = null;
   preview.value = null;
-  // Limpa o input
+
   const input = document.getElementById('edit-file-upload') as HTMLInputElement;
   if (input) input.value = '';
 }
 
 function resetAndClose() {
-  removeFile(); // Garante que o preview seja limpo
+  removeFile();
   emit('close');
 }
 
@@ -141,13 +135,12 @@ async function handleSubmit() {
   if (!props.template) return;
   isLoading.value = true;
 
-  // Monta o payload apenas com os dados a serem enviados
+
   const payload: Partial<CreateTemplateInput> = {
     ...form,
     tags: tagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean),
   };
 
-  // Se um novo arquivo foi selecionado, adiciona ao payload
   if (selectedFile.value) {
     payload.previewImageFile = selectedFile.value;
   }

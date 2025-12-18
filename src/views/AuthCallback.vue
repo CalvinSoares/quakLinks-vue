@@ -29,7 +29,7 @@ onMounted(async () => {
         } catch (pageError) {
           console.warn("Usuário logado, mas erro ao buscar página (pode ser novo usuário):", pageError);
         }
-        router.push('/dashboard');
+        router.push('/dashboard/overview');
 
       } else {
         throw new Error("Falha ao recuperar usuário");
