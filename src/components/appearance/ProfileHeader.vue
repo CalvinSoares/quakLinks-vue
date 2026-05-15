@@ -62,7 +62,7 @@ import { useAuthStore } from '@/store/auth';
 const props = defineProps<{ page: any }>();
 const { user } = useAuthStore();
 
-const displayName = computed(() => user?.name || props.page.slug || 'User');
+const displayName = computed(() => props.page.title || props.page.slug || user?.name || 'User');
 
 const finalAvatarUrl = computed(() => {
     if (props.page.avatarUrl) {

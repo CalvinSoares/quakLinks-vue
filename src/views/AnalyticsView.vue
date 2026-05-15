@@ -45,21 +45,16 @@
                 </div>
 
                 <div class="p-6 bg-slate-900/50 border border-slate-700/50 rounded-2xl">
-                    <h3 class="text-xl font-bold text-white mb-4">Views e Cliques ({{ selectedPeriodLabel }})</h3>
-
-                    <div v-if="chartSeries.length > 0 && chartCategories.length > 0">
-                        <ApexLineChart :series="chartSeries" :categories="chartCategories" />
-                    </div>
-
-                    <div v-else class="flex items-center justify-center h-[350px] text-slate-500">
-                        <p>Não há dados suficientes para exibir o gráfico.</p>
-                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Resumo da Página</h3>
+                    <p class="text-slate-400">
+                        Exibindo métricas agregadas de <span class="text-white font-semibold">/{{ analytics.slug }}</span>
+                        para {{ selectedPeriodLabel.toLowerCase() }}.
+                    </p>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <AnalyticsListCard title="Top Links" :items="topLinks" icon-color="text-purple-400" />
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <AnalyticsListCard title="Top Blocos" :items="topBlocks" icon-color="text-purple-400" />
                     <AnalyticsListCard title="Top Referrers" :items="topReferrers" icon-color="text-sky-400" />
-                    <AnalyticsListCard title="Top Countries" :items="topCountries" icon-color="text-green-400" />
                 </div>
             </div>
         </div>
@@ -78,7 +73,6 @@ import { ChartBarIcon, EyeIcon, CursorArrowRaysIcon } from '@heroicons/vue/24/ou
 import { storeToRefs } from 'pinia';
 import { ClickIcon } from 'vue-tabler-icons';
 import OverviewHeader from '@/components/dashboard/OverviewHeader.vue';
-import ApexLineChart from '@/components/charts/ApexLineChart.vue';
 
 
 const analyticsStore = useAnalyticsStore();
@@ -107,29 +101,6 @@ function handlePeriodChange(newPeriod: TimePeriod) {
     analyticsStore.fetchAnalytics(newPeriod);
 }
 
-
-const chartSeries = computed(() => {
-    if (!analytics.value) return [];
-    return [
-        {
-            name: 'Views',
-            data: analytics.value.viewsOverTime.map(item => item.views),
-        },
-        {
-            name: 'Cliques',
-            data: analytics.value.clicksOverTime.map(item => item.clicks),
-        },
-    ];
-});
-
-const chartCategories = computed(() => {
-    if (!analytics.value) return [];
-    return analytics.value.viewsOverTime.map(item =>
-        new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-    );
-});
-
-const topLinks = computed(() => analytics.value?.topLinks.map(l => ({ label: l.title, value: l.clicks })));
+const topBlocks = computed(() => analytics.value?.topBlocks.map(block => ({ label: block.title || 'Bloco', value: block.clicks })));
 const topReferrers = computed(() => analytics.value?.topReferrers.map(r => ({ label: r.source, value: r.views })));
-const topCountries = computed(() => analytics.value?.topCountries.map(c => ({ label: c.country, value: c.views })));
 </script>

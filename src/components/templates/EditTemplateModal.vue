@@ -75,7 +75,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue';
-import { useTemplatesStore, type CreateTemplateInput, type Template } from '@/store/templates';
+import { useTemplatesStore, type Template, type UpdateTemplateInput } from '@/store/templates';
 import BaseModal from '../modals/BaseModal.vue';
 import { toast } from 'vue-sonner';
 
@@ -87,7 +87,7 @@ const isLoading = ref(false);
 const tagsInput = ref('');
 const preview = ref<string | null>(null);
 const selectedFile = ref<File | null>(null);
-type EditTemplateForm = Omit<Partial<CreateTemplateInput>, 'tags'>;
+type EditTemplateForm = Partial<Omit<UpdateTemplateInput, 'tags'>>;
 
 const form = reactive<EditTemplateForm>({});
 
@@ -136,8 +136,10 @@ async function handleSubmit() {
   isLoading.value = true;
 
 
-  const payload: Partial<CreateTemplateInput> = {
-    ...form,
+  const payload: UpdateTemplateInput = {
+    name: form.name || '',
+    previewImageUrl: form.previewImageUrl,
+    visibility: form.visibility || 'PUBLIC',
     tags: tagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean),
   };
 

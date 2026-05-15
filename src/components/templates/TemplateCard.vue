@@ -44,15 +44,33 @@
           class="action-button bg-sky-500/20 border-2 border-sky-400/50 text-sky-300 hover:bg-sky-500/40 hover:border-sky-400">Ver
           Detalhes</button>
       </div>
-      <div v-else class="flex flex-col gap-3 w-full transform transition-all duration-300">
+      <div v-else-if="variant === 'mine'" class="flex flex-col gap-3 w-full transform transition-all duration-300">
         <button @click.stop="$emit('apply', template.id)"
           class="action-button bg-amber-400 text-slate-900  hover:bg-amber-300 shadow-lg shadow-amber-400/30">
           Usar Template
         </button>
         <button @click.stop="$emit('edit', template)"
-          class="action-button bg-sky-500/80 hover:bg-sky-500 border border-sky-600 hover:shadow-lg hover:shadow-sky-500/30">Editar</button>
+          class="action-button bg-violet-500/20 border-2 border-violet-400/40 text-violet-200 hover:bg-violet-500/40 hover:border-violet-300">
+          Editar
+        </button>
+        <button @click.stop="$emit('view', template.id)"
+          class="action-button bg-sky-500/20 border-2 border-sky-400/50 text-sky-300 hover:bg-sky-500/40 hover:border-sky-400">Ver
+          Detalhes</button>
         <button @click.stop="$emit('delete', template.id)"
           class="action-button bg-red-600/80 hover:bg-red-600 border border-red-700 hover:shadow-lg hover:shadow-red-600/30">Excluir</button>
+      </div>
+      <div v-else class="flex flex-col gap-3 w-full transform transition-all duration-300">
+        <button @click.stop="$emit('apply', template.id)"
+          class="action-button bg-amber-400 text-slate-900  hover:bg-amber-300 shadow-lg shadow-amber-400/30">
+          Usar Template
+        </button>
+        <button @click.stop="$emit('favorite', template)"
+          class="action-button bg-slate-700/90 hover:bg-slate-600 border border-slate-600 hover:border-red-400 hover:text-red-300">
+          Favoritar
+        </button>
+        <button @click.stop="$emit('view', template.id)"
+          class="action-button bg-sky-500/20 border-2 border-sky-400/50 text-sky-300 hover:bg-sky-500/40 hover:border-sky-400">Ver
+          Detalhes</button>
       </div>
     </div>
   </div>

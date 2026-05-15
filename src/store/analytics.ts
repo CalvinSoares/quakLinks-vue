@@ -6,14 +6,13 @@ export type TimePeriod = "7d" | "30d" | "90d" | "all";
 
 // --- DEFINIÇÃO DE TIPOS ---
 export interface AnalyticsData {
+  pageId: string;
+  slug: string;
   totalViews: number;
   totalClicks: number;
   clickThroughRate: number;
-  viewsOverTime: { date: string; views: number }[];
-  clicksOverTime: { date: string; clicks: number }[];
-  topLinks: { title: string; url: string; clicks: number }[];
+  topBlocks: { blockId: string; title: string; clicks: number }[];
   topReferrers: { source: string; views: number }[];
-  topCountries: { country: string; views: number }[];
 }
 
 export const useAnalyticsStore = defineStore("analytics", () => {
@@ -25,8 +24,7 @@ export const useAnalyticsStore = defineStore("analytics", () => {
     isLoading.value = true;
     error.value = null;
     try {
-      // Supondo que você criará a rota GET /analytics no backend
-      const response = await api.get<AnalyticsData>("/analytics/my-page", {
+      const response = await api.get<AnalyticsData>("/analytics/me", {
         params: { period },
       });
       analytics.value = response.data;

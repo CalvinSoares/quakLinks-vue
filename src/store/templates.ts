@@ -18,7 +18,6 @@ export interface Template {
   name: string;
   previewImageUrl: string;
   visibility: "PUBLIC" | "PRIVATE" | "UNLISTED";
-  pageData: Record<string, any>;
   createdAt: string;
   creator: TemplateCreator;
   tags: TemplateTag[];
@@ -27,6 +26,10 @@ export interface Template {
   };
   isNew?: boolean;
   isFavorited?: boolean;
+  updatedAt?: string;
+  pageSnapshot?: Record<string, unknown>;
+  blockSnapshots?: Array<Record<string, unknown>>;
+  audioSnapshots?: Array<Record<string, unknown>>;
 }
 
 export interface TemplateListItem {
@@ -61,6 +64,80 @@ export interface CreateTemplateInput {
   visibility: "PUBLIC" | "PRIVATE" | "UNLISTED";
 }
 
+export interface UpdateTemplateInput {
+  name: string;
+  previewImageFile?: File;
+  previewImageUrl?: string;
+  tags: string[];
+  visibility: "PUBLIC" | "PRIVATE" | "UNLISTED";
+}
+
+interface TemplateSummaryResponse {
+  id: string;
+  creatorId: string;
+  creatorName: string;
+  name: string;
+  previewImageUrl: string;
+  tags: string[];
+  visibility: "PUBLIC" | "PRIVATE" | "UNLISTED";
+  blockCount: number;
+  favoriteCount: number;
+  favorited: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface TemplateResponse extends TemplateSummaryResponse {
+  pageSnapshot: Record<string, unknown>;
+  blockSnapshots: Array<Record<string, unknown>>;
+  audioSnapshots: Array<Record<string, unknown>>;
+}
+
+interface PublicTemplateListResponse {
+  templates: TemplateSummaryResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+interface PopularTemplateTagResponse {
+  name: string;
+  usageCount: number;
+}
+
+function mapTags(tags: string[]): TemplateTag[] {
+  return tags.map((name) => ({ name }));
+}
+
+function mapSummary(template: TemplateSummaryResponse): TemplateListItem {
+  return {
+    id: template.id,
+    name: template.name,
+    previewImageUrl: template.previewImageUrl,
+    visibility: template.visibility,
+    createdAt: template.createdAt,
+    creator: {
+      id: template.creatorId,
+      name: template.creatorName,
+    },
+    tags: mapTags(template.tags),
+    _count: {
+      favoritedBy: template.favoriteCount,
+    },
+    isFavorited: template.favorited,
+  };
+}
+
+function mapTemplate(template: TemplateResponse): Template {
+  return {
+    ...mapSummary(template),
+    updatedAt: template.updatedAt,
+    pageSnapshot: template.pageSnapshot,
+    blockSnapshots: template.blockSnapshots,
+    audioSnapshots: template.audioSnapshots,
+  };
+}
+
 export const useTemplatesStore = defineStore("templates", () => {
   const templates = ref<TemplateListItem[]>([]);
   const myTemplates = ref<TemplateListItem[]>([]);
@@ -88,6 +165,30 @@ export const useTemplatesStore = defineStore("templates", () => {
     tags: undefined,
   });
 
+  async function ensureSelectedPageId(action: string) {
+    const pageStore = usePageStore();
+
+    if (pageStore.currentPage?.id) {
+      return pageStore.currentPage.id;
+    }
+
+    if (pageStore.userPages.length === 0) {
+      await pageStore.fetchUserPages();
+    }
+
+    if (pageStore.userPages[0]?.id) {
+      return pageStore.userPages[0].id;
+    }
+
+    await pageStore.fetchMyPage();
+
+    if (pageStore.currentPage?.id) {
+      return pageStore.currentPage.id;
+    }
+
+    throw new Error(`Selecione uma pagina antes de ${action}.`);
+  }
+
   async function fetchTemplates(loadMore = false) {
     if (isLoading.value) return;
     isLoading.value = true;
@@ -101,12 +202,12 @@ export const useTemplatesStore = defineStore("templates", () => {
     filters.page = pagination.page;
 
     try {
-      const response = await api.get<{
-        templates: TemplateListItem[];
-        total: number;
-      }>("/templates", { params: filters });
+      const response = await api.get<PublicTemplateListResponse>(
+        "/public/templates",
+        { params: filters },
+      );
 
-      const newTemplates = response.data.templates;
+      const newTemplates = response.data.templates.map(mapSummary);
       templates.value = loadMore
         ? [...templates.value, ...newTemplates]
         : newTemplates;
@@ -127,8 +228,9 @@ export const useTemplatesStore = defineStore("templates", () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const response = await api.get<TemplateListItem[]>("/templates/mine");
-      myTemplates.value = response.data;
+      const response =
+        await api.get<TemplateSummaryResponse[]>("/templates/mine");
+      myTemplates.value = response.data.map(mapSummary);
     } catch (err: any) {
       error.value =
         err.response?.data?.message || "Falha ao buscar seus templates.";
@@ -140,11 +242,11 @@ export const useTemplatesStore = defineStore("templates", () => {
   async function fetchFavoriteTemplates() {
     isLoading.value = true;
     try {
-      const response = await api.get<TemplateListItem[]>(
-        "/templates/favorites"
+      const response = await api.get<TemplateSummaryResponse[]>(
+        "/templates/favorites",
       );
 
-      favoriteTemplates.value = response.data;
+      favoriteTemplates.value = response.data.map(mapSummary);
     } catch (err) {
       console.error(err);
     } finally {
@@ -155,9 +257,11 @@ export const useTemplatesStore = defineStore("templates", () => {
   async function fetchRecentTemplates() {
     isLoading.value = true;
     try {
-      const response = await api.get<TemplateListItem[]>("/templates/recent");
+      const response = await api.get<TemplateSummaryResponse[]>(
+        "/public/templates/recent",
+      );
 
-      recentTemplates.value = response.data;
+      recentTemplates.value = response.data.map(mapSummary);
     } catch (err) {
       console.error(err);
     } finally {
@@ -168,8 +272,10 @@ export const useTemplatesStore = defineStore("templates", () => {
   async function fetchTemplateById(id: string) {
     isLoading.value = true;
     try {
-      const response = await api.get<Template>(`/templates/${id}`);
-      selectedTemplate.value = response.data;
+      const response = await api.get<TemplateResponse>(
+        `/public/templates/${id}`,
+      );
+      selectedTemplate.value = mapTemplate(response.data);
     } catch (err: any) {
       error.value = `Could not fetch template ${id}.`;
     } finally {
@@ -179,10 +285,10 @@ export const useTemplatesStore = defineStore("templates", () => {
 
   async function fetchPopularTags() {
     try {
-      const response = await api.get<{ name: string }[]>(
-        "/templates/tags/popular"
+      const response = await api.get<PopularTemplateTagResponse[]>(
+        "/public/templates/tags/popular",
       );
-      popularTags.value = response.data;
+      popularTags.value = response.data.map((tag) => ({ name: tag.name }));
     } catch (err) {
       console.error("Failed to fetch popular tags:", err);
     }
@@ -207,7 +313,9 @@ export const useTemplatesStore = defineStore("templates", () => {
 
   async function applyTemplate(templateId: string) {
     try {
-      await api.post(`/templates/${templateId}/apply`);
+      const pageId = await ensureSelectedPageId("aplicar um template");
+
+      await api.post(`/templates/${templateId}/apply`, { pageId });
       const pageStore = usePageStore();
       await pageStore.fetchMyPage();
       return true;
@@ -238,58 +346,70 @@ export const useTemplatesStore = defineStore("templates", () => {
 
   async function createTemplate(data: CreateTemplateInput) {
     try {
+      const pageId = await ensureSelectedPageId("criar um template");
       const uploadedImageUrl = await uploadFileWithSignedUrl(
         data.previewImageFile,
-        "template_preview"
+        "template_preview",
       );
 
       const payload = {
+        pageId,
         name: data.name,
         previewImageUrl: uploadedImageUrl,
         tags: data.tags,
         visibility: data.visibility,
       };
 
-      const response = await api.post<Template>("/templates", payload);
+      const response = await api.post<TemplateResponse>("/templates", payload);
+      const createdTemplate = mapTemplate(response.data);
 
       if (Array.isArray(myTemplates.value)) {
-        myTemplates.value.unshift(response.data);
+        myTemplates.value.unshift(createdTemplate);
       }
 
-      return response.data;
+      return createdTemplate;
     } catch (err: any) {
       console.error("Falha ao criar o template:", err);
       throw new Error(
-        err.response?.data?.message || "Não foi possível criar o template."
+        err.response?.data?.message || "Não foi possível criar o template.",
       );
     }
   }
 
-  async function updateTemplate(
-    id: string,
-    data: Partial<CreateTemplateInput>
-  ) {
+  async function updateTemplate(id: string, data: UpdateTemplateInput) {
     try {
-      const payload: any = { ...data };
+      const previewImageUrl = data.previewImageFile
+        ? await uploadFileWithSignedUrl(
+            data.previewImageFile,
+            "template_preview",
+          )
+        : data.previewImageUrl;
 
-      if (data.previewImageFile) {
-        payload.previewImageUrl = await uploadFileWithSignedUrl(
-          data.previewImageFile,
-          "template_preview"
-        );
+      if (!previewImageUrl) {
+        throw new Error("Informe uma imagem de preview para o template.");
       }
-      delete payload.previewImageFile;
 
-      const response = await api.put<Template>(`/templates/${id}`, payload);
-      const index = myTemplates.value.findIndex((t) => t.id === id);
-      if (index !== -1) {
-        myTemplates.value[index] = response.data;
+      const response = await api.put<TemplateResponse>(`/templates/${id}`, {
+        name: data.name,
+        previewImageUrl,
+        tags: data.tags,
+        visibility: data.visibility,
+      });
+
+      const updatedTemplate = mapTemplate(response.data);
+      myTemplates.value = myTemplates.value.map((template) =>
+        template.id === id ? updatedTemplate : template,
+      );
+
+      if (selectedTemplate.value?.id === id) {
+        selectedTemplate.value = updatedTemplate;
       }
-      return response.data;
+
+      return updatedTemplate;
     } catch (err: any) {
-      console.error(`Failed to update template ${id}:`, err);
+      console.error(`Falha ao editar o template ${id}:`, err);
       throw new Error(
-        err.response?.data?.message || "Could not update template."
+        err.response?.data?.message || "Nao foi possivel editar o template.",
       );
     }
   }
@@ -302,7 +422,7 @@ export const useTemplatesStore = defineStore("templates", () => {
     } catch (err: any) {
       console.error(`Failed to delete template ${id}:`, err);
       throw new Error(
-        err.response?.data?.message || "Could not delete template."
+        err.response?.data?.message || "Could not delete template.",
       );
     }
   }

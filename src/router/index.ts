@@ -1,18 +1,19 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/store/auth";
 
-import LoginView from "@/views/LoginView.vue";
-import RegisterView from "@/views/RegisterView.vue";
-import UserPageView from "@/views/UserPageView.vue";
-import AppearanceView from "@/views/AppearanceView.vue";
-import AccountOverview from "../views/AccountOverview.vue";
-import VerifyEmailView from "@/views/VerifyEmailView.vue";
-import AccountSettingsView from "@/views/AccountSettingsView.vue";
-import TemplatesView from "@/views/TemplatesView.vue";
-import AuthCallback from "@/views/AuthCallback.vue";
-import AnalyticsView from "@/views/AnalyticsView.vue";
-import LandingPage from "@/views/Landing-Page.vue";
-import PagesManager from "@/views/PagesManager.vue";
+const LoginView = () => import("@/views/LoginView.vue");
+const RegisterView = () => import("@/views/RegisterView.vue");
+const UserPageView = () => import("@/views/UserPageView.vue");
+const AppearanceView = () => import("@/views/AppearanceView.vue");
+const AccountOverview = () => import("../views/AccountOverview.vue");
+const VerifyEmailView = () => import("@/views/VerifyEmailView.vue");
+const AccountSettingsView = () => import("@/views/AccountSettingsView.vue");
+const TemplatesView = () => import("@/views/TemplatesView.vue");
+const AuthCallback = () => import("@/views/AuthCallback.vue");
+const AnalyticsView = () => import("@/views/AnalyticsView.vue");
+const LandingPage = () => import("@/views/Landing-Page.vue");
+const PagesManager = () => import("@/views/PagesManager.vue");
+const SpotifyCallback = () => import("@/views/SpotifyCallback.vue");
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +37,10 @@ const router = createRouter({
       path: "/verify-email",
       name: "verify-email",
       component: VerifyEmailView,
+    },
+    {
+      path: "/dashboard",
+      redirect: "/dashboard/overview",
     },
 
     {
@@ -81,16 +86,14 @@ const router = createRouter({
       component: UserPageView,
     },
     {
-      path: "/",
-      redirect: () => {
-        const auth = useAuthStore();
-        return auth.isAuthenticated ? "/dashboard/overview" : "/login";
-      },
-    },
-    {
-      path: "/auth/callback",
+      path: "/auth/callback/:provider?",
       name: "authCallback",
       component: AuthCallback,
+    },
+    {
+      path: "/spotify/callback",
+      name: "spotify-callback",
+      component: SpotifyCallback,
     },
   ],
 });

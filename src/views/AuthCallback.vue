@@ -5,10 +5,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/store/auth';
-import { usePageStore } from '@/store/page';
+import { onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "@/store/auth";
+import { usePageStore } from "@/store/page";
 
 const route = useRoute();
 const router = useRouter();
@@ -16,30 +16,37 @@ const authStore = useAuthStore();
 const pageStore = usePageStore();
 
 onMounted(async () => {
-  const token = Array.isArray(route.query.token) ? route.query.token[0] : route.query.token;
+  const code = Array.isArray(route.query.code) ? route.query.code[0] : route.query.code;
+  const state = Array.isArray(route.query.state) ? route.query.state[0] : route.query.state;
+  const providerFromQuery = Array.isArray(route.query.provider)
+    ? route.query.provider[0]
+    : route.query.provider;
+  const providerFromParams = Array.isArray(route.params.provider)
+    ? route.params.provider[0]
+    : route.params.provider;
 
-  if (token) {
-    authStore.setToken(token);
+  if (!code || !state) {
+    router.push("/login?error=missing_oauth_params");
+    return;
+  }
+
+  try {
+    await authStore.completeSocialLogin({
+      provider: providerFromQuery?.toString() ?? providerFromParams?.toString() ?? null,
+      code: code.toString(),
+      state: state.toString(),
+    });
+
     try {
-      await authStore.fetchUser();
-
-      if (authStore.user) {
-        try {
-          await pageStore.fetchMyPage();
-        } catch (pageError) {
-          console.warn("Usuário logado, mas erro ao buscar página (pode ser novo usuário):", pageError);
-        }
-        router.push('/dashboard/overview');
-
-      } else {
-        throw new Error("Falha ao recuperar usuário");
-      }
-    } catch (e) {
-      console.error("Erro no callback de auth:", e);
-      router.push('/login?error=auth_failed');
+      await pageStore.fetchMyPage();
+    } catch (pageError) {
+      console.warn("Usuario autenticado, mas sem pagina pronta para edicao.", pageError);
     }
-  } else {
-    router.push('/login?error=no_token');
+
+    await router.push("/dashboard/overview");
+  } catch (error) {
+    console.error("Erro no callback de auth:", error);
+    await router.push("/login?error=auth_failed");
   }
 });
 </script>

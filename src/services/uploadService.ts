@@ -2,8 +2,16 @@ import axios from "axios";
 import api from "./api";
 
 interface SignedUrlResponse {
+  assetId: string;
+  assetStatus: string;
   signedUrl: string;
   finalFileUrl: string;
+}
+
+interface ManagedAssetResponse {
+  id: string;
+  fileUrl: string;
+  status: string;
 }
 
 export async function uploadFileWithSignedUrl(
@@ -23,7 +31,7 @@ export async function uploadFileWithSignedUrl(
       uploadType: uploadType,
     });
 
-    const { signedUrl, finalFileUrl } = response.data;
+    const { assetId, signedUrl, finalFileUrl } = response.data;
 
     await axios.put(signedUrl, file, {
       headers: {
@@ -31,7 +39,11 @@ export async function uploadFileWithSignedUrl(
       },
     });
 
-    return finalFileUrl;
+    const completed = await api.post<ManagedAssetResponse>(
+      `/uploads/assets/${assetId}/complete`
+    );
+
+    return completed.data.fileUrl || finalFileUrl;
   } catch (error) {
     console.error("Falha no processo de upload:", error);
     throw new Error("Não foi possível enviar o arquivo.");

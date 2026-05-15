@@ -1,64 +1,126 @@
-# biolinks
+# quakLinks-vue
 
-This template should help get you started developing with Vue 3 in Vite.
+Frontend em `Vue 3 + Vite + TypeScript` alinhado ao backend Spring em `demo`.
 
-## Recommended IDE Setup
+## Stack
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- `Vue 3`
+- `TypeScript`
+- `Vite`
+- `Pinia`
+- `Vue Router`
+- `Axios`
+- `Vitest`
+- `Vue Test Utils`
+- `MSW`
+- `Playwright`
 
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+## Setup
 
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+## Ambiente
+
+Variavel principal esperada:
+
+```env
+VITE_API_URL=http://localhost:8080/api
+```
+
+Voce pode copiar `.env.example` para `.env` antes de rodar o frontend.
+
+Se essa variavel apontar para a API Node legada, o frontend volta a consumir contratos antigos e parte dos fluxos abaixo quebra.
+
+## Scripts
 
 ```sh
 npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
 npm run build
+npm test
+npm run test:e2e
 ```
 
+## Fluxos Alinhados
 
-melhorar cards no overview
-arrumar bugs em templtaes
-analisar sobre os dominios costomizados
-aplicar e criar modal de plano premium
-verificar plano na stripe
-aplicar badge de premium em certas partes 
-ajustar link do google para produção
-ajustar card interno no preview pra n quebrar o layout
+### Auth
 
-criar section de integrações com videos(youtube, twitch, ticket, etc...), spotufy, inscrever no yotube, tiktok, pinterest, instagram, facebook, xtwiter, googlemaps, threads, etc..
+- login e registro com `accessToken + refreshToken`
+- refresh automatico em `401`
+- `logout` e `logout all sessions`
+- listagem de sessoes da conta
+- OAuth social por `Google` e `Discord` com `authorize -> callback(code,state)`
+- validacao fail-fast de `provider/state` pendente no callback
+- leitura de contas sociais conectadas via `/auth/me`
+- troca de email
+- troca de senha
+- unlink de `Google` e `Discord`
 
-criar sectionbs de carrosel, serviços, imagens, produtos, videos, portfolgio, etc..
+### Spotify
 
-refatorar logica de paginas, usuario deve ter uma lista da paginas dele existentes, criar limite baseado no plano
+- `GET /spotify/authorize`
+- `GET /spotify/callback`
+- `GET /spotify/connection`
+- `POST /spotify/sync`
+- `DELETE /spotify/connection`
 
-criar countador, evento, etc..
+### Paginas E Upload
 
+- `pages/me`, `pages`, `pages/{pageId}`
+- `blocks` e `audios` por `pageId`
+- fluxo de upload gerenciado:
+  - signed URL
+  - upload binario
+  - complete asset
 
+### Templates
 
+- listagem publica em `/public/templates`
+- recentes e tags populares em `/public/templates/recent` e `/public/templates/tags/popular`
+- favoritos
+- `mine`
+- criar template com `pageId`
+- aplicar template com `pageId`
+- editar metadados do template autenticado
+- deletar template
 
+## Cobertura Atual
 
+### Unit/Component
 
-aplicar troca de idiomas
-aplicar tema branco
+- `auth`
+- `page`
+- `analytics`
+- `templates`
+- `user`
+- `uploadService`
+- callback OAuth
+- `AppearanceSidebar`
+- `AppearancePreviewPanel`
+- `AppearanceProfileTab`
+- `AppearanceStyleTab`
+- `AppearanceBackgroundTab`
+- `AppearanceUnsavedChangesModal`
+
+### E2E
+
+- guard de rota protegida
+- callback OAuth principal
+- sessoes em `/settings`
+- unlink social em `/dashboard/overview`
+- troca de email com logout/redirect em `/settings`
+- troca de senha com logout/redirect em `/settings`
+- erro de credenciais invalidas em troca de email/senha
+
+## Observacoes
+
+- `npm test` ainda pode emitir warnings de parse CSS do `jsdom` em componentes visuais legacy; hoje eles nao quebram a suite.
+- `npm run build` esta limpo dos warnings anteriores de `browserslist`, assets estaticos (`/noise.png`, `/scanlines.png`) e chunks grandes.
+- a edicao de template atualiza metadados e preview; ela nao recria o snapshot do conteudo da pagina.
+- `AppearanceView.vue` ja foi dividida em subcomponentes para `profile`, `style`, `background`, `extras`, editor de blocos, sidebar, painel de preview e modal de alteracoes nao salvas.
+
+## Proximos Itens Tecnicos
+
+- decidir se vale manter ou remover componentes visuais legacy que ainda geram warnings de CSS no `jsdom`
+- considerar testes de componente para `AppearanceBlockEditorModal` e `AppearanceExtrasTab`

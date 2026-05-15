@@ -1,94 +1,96 @@
 <template>
-    <Modal :is-open="true" title="Adicionar do Spotify" @close="$emit('close')">
-        <div class="flex flex-col h-full">
-            <div class="flex-1 p-4 sm:p-6 overflow-y-auto">
-                <div v-if="spotifyStore.isLoading" class="flex items-center justify-center h-full text-center p-8">
-                    <div>
-                        <span class="animate-spin ..."></span> Verificando conexão...
-                    </div>
-                </div>
-
-                <div v-else-if="!spotifyStore.isConnected"
-                    class="flex items-center justify-center h-full text-center p-8">
-                    <div class="space-y-4">
-                        <p class="text-slate-400">Conecte sua conta do Spotify para pesquisar e adicionar suas músicas
-                            favoritas.</p>
-                        <a :href="spotifyStore.connectUrl"
-                            class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 text-white font-bold rounded-full">
-                            Conectar com Spotify
-                        </a>
-                    </div>
-                </div>
-
-                <div v-else class="space-y-4">
-                    <input v-model="searchQuery" type="text" placeholder="Buscar por música ou artista..."
-                        class="input-dark w-full" />
-
-                    <div class="space-y-2 pr-2">
-                        <div v-if="isSearching" class="text-center py-4">Buscando...</div>
-                        <div v-for="track in searchResults" :key="track.id" @click="selectTrack(track)"
-                            class="flex items-center gap-4 p-2 rounded-lg hover:bg-slate-800 cursor-pointer transition-colors">
-                            <img :src="track.album.images[2]?.url || track.album.images[0]?.url"
-                                class="w-12 h-12 rounded flex-shrink-0" alt="Capa do álbum">
-                            <div class="flex-1 min-w-0">
-                                <p class="font-semibold text-white truncate">{{ track.name }}</p>
-                                <p class="text-sm text-slate-400 truncate">{{track.artists.map(a => a.name).join(', ')}}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <Modal :is-open="true" title="Spotify" @close="$emit('close')">
+    <div class="flex flex-col h-full">
+      <div class="flex-1 p-4 sm:p-6 overflow-y-auto">
+        <div v-if="spotifyStore.isLoading" class="flex items-center justify-center h-full text-center p-8">
+          <div>
+            <span class="animate-spin ..."></span> Verificando conexao...
+          </div>
         </div>
-    </Modal>
+
+        <div v-else-if="!spotifyStore.isConnected" class="flex items-center justify-center h-full text-center p-8">
+          <div class="space-y-4">
+            <p class="text-slate-400">
+              Conecte sua conta do Spotify para sincronizar o perfil no produto.
+            </p>
+            <button @click="handleConnect"
+              class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 text-white font-bold rounded-full">
+              Conectar com Spotify
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="space-y-5">
+          <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+            <div class="flex items-center gap-4">
+              <img v-if="spotifyStore.connection?.avatarUrl" :src="spotifyStore.connection.avatarUrl"
+                class="h-16 w-16 rounded-full object-cover" alt="Avatar do Spotify" />
+              <div class="space-y-1 text-left">
+                <p class="text-lg font-semibold text-white">
+                  {{ spotifyStore.connection?.spotifyUserName || "Conta conectada" }}
+                </p>
+                <p class="text-sm text-slate-400">
+                  {{ spotifyStore.connection?.spotifyUserEmail || "Email nao informado pelo Spotify" }}
+                </p>
+                <p class="text-xs text-slate-500">
+                  Plano {{ spotifyStore.connection?.product || "desconhecido" }} ·
+                  Pais {{ spotifyStore.connection?.country || "--" }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-sm text-slate-400">
+            A busca de faixas ainda nao foi portada para a API Spring. Por enquanto, esta tela serve para conectar e
+            sincronizar o perfil do Spotify.
+          </p>
+
+          <div class="flex gap-3">
+            <button @click="handleSync"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg">
+              Sincronizar perfil
+            </button>
+            <button @click="$emit('close')"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-200 font-semibold rounded-lg">
+              Fechar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
-import Modal from '../dashboard/Modal.vue';
-import { useSpotifyStore, type SpotifyTrack } from '@/store/spotify';
-import { useDebounceFn } from '@vueuse/core';
+import { onMounted } from "vue";
+import { toast } from "vue-sonner";
+import Modal from "../dashboard/Modal.vue";
+import { useSpotifyStore } from "@/store/spotify";
 
-const emit = defineEmits(['close', 'save']);
+defineEmits(["close", "save"]);
 
 const spotifyStore = useSpotifyStore();
-const searchQuery = ref('');
-const searchResults = ref<SpotifyTrack[]>([]);
-const isSearching = ref(false);
 
 onMounted(() => {
-    spotifyStore.checkConnectionStatus();
+  spotifyStore.checkConnectionStatus();
 });
 
-const performSearch = useDebounceFn(async () => {
-    if (searchQuery.value.length < 3) {
-        searchResults.value = [];
-        return;
-    }
-    isSearching.value = true;
-    searchResults.value = await spotifyStore.searchTracks(searchQuery.value);
-    isSearching.value = false;
-}, 500);
+async function handleConnect() {
+  try {
+    await spotifyStore.startConnection();
+  } catch (error) {
+    console.error("Erro ao iniciar conexao com Spotify:", error);
+    toast.error("Nao foi possivel iniciar a conexao com Spotify.");
+  }
+}
 
-watch(searchQuery, performSearch);
-
-const selectTrack = (track: SpotifyTrack) => {
-    const artistName = track.artists && track.artists.length > 0
-        ? track.artists[0]?.name
-        : 'Artista Desconhecido';
-
-    const title = `${track.name} - ${artistName}`;
-
-    const coverUrl = track.album?.images?.[0]?.url || null;
-
-    const dataToSave = {
-        type: 'SPOTIFY' as const,
-        title: title,
-        url: track.external_urls.spotify,
-        coverUrl: coverUrl,
-        spotifyTrackId: track.id
-    };
-
-    emit('save', dataToSave);
-};
+async function handleSync() {
+  try {
+    await spotifyStore.syncProfile();
+    toast.success("Perfil do Spotify sincronizado.");
+  } catch (error) {
+    console.error("Erro ao sincronizar perfil do Spotify:", error);
+    toast.error("Nao foi possivel sincronizar o perfil do Spotify.");
+  }
+}
 </script>

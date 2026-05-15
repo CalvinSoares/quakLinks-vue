@@ -130,17 +130,14 @@ const handleRegister = async () => {
   success.value = null;
   isLoading.value = true;
   try {
-    const response = await authStore.register({
+    await authStore.register({
       name: name.value,
       email: email.value,
       password: password.value
     });
     success.value = 'Conta criada com sucesso! Redirecionando...';
     setTimeout(() => {
-      router.push({
-        name: 'verify-email',
-        query: { email: email.value }
-      });
+      router.push('/dashboard/overview');
     }, 2000);
 
   } catch (err: any) {

@@ -15,15 +15,14 @@
 
         <TemplatesGrid v-else :templates="currentList" :variant="activeTab"
           :has-more="activeTab === 'explore' && store.pagination.hasMore" :is-loading="store.isLoading"
-          @view="openQuickViewModal" @apply="handleApply" @favorite="handleFavorite" @edit="handleEdit"
+          @view="openQuickViewModal" @apply="handleApply" @favorite="handleFavorite" @edit="openEditModal"
           @delete="handleDelete" @load-more="loadMore" />
       </main>
 
       <QuickViewModal :is-open="isQuickViewModalOpen" :template="templateForQuickView"
         @close="isQuickViewModalOpen = false" @apply="handleApply" @favorite="handleFavorite" />
       <CreateTemplateModal :is-open="isCreateModalOpen" @close="isCreateModalOpen = false" />
-      <EditTemplateModal v-if="templateToEdit" :template="templateToEdit" :is-open="isEditModalOpen"
-        @close="isEditModalOpen = false" />
+      <EditTemplateModal :is-open="isEditModalOpen" :template="templateForEdit" @close="isEditModalOpen = false" />
     </div>
   </DashboardLayout>
 </template>
@@ -34,7 +33,6 @@ import { useTemplatesStore, type Template, type TemplateListItem } from '@/store
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 
 import CreateTemplateModal from '@/components/templates/CreateTemplateModal.vue'
-import EditTemplateModal from '@/components/templates/EditTemplateModal.vue'
 import { useDebounceFn } from '@vueuse/core'
 import TemplatesHeader from '@/components/templates/TemplatesHeader.vue'
 import TemplatesSearch from '@/components/templates/TemplatesSearch.vue'
@@ -43,6 +41,7 @@ import TemplatesEmpty from '@/components/templates/TemplatesEmpty.vue'
 import TemplatesGrid from '@/components/templates/TemplatesGrid.vue'
 import { toast } from 'vue-sonner'
 import QuickViewModal from '@/components/templates/QuickViewModal.vue'
+import EditTemplateModal from '@/components/templates/EditTemplateModal.vue'
 
 type TabId = 'explore' | 'favorites' | 'recent' | 'mine';
 
@@ -54,10 +53,10 @@ const creatorQuery = ref('')
 const sortBy = ref<'popular' | 'newest' | 'oldest'>('popular')
 
 const isCreateModalOpen = ref(false)
-const isEditModalOpen = ref(false)
-const templateToEdit = ref<Template | null>(null)
 const isQuickViewModalOpen = ref(false);
+const isEditModalOpen = ref(false);
 const templateForQuickView = ref<TemplateListItem | null>(null);
+const templateForEdit = ref<Template | null>(null);
 
 const currentList = computed(() => {
   switch (activeTab.value) {
@@ -109,18 +108,12 @@ function openQuickViewModal(templateId: string) {
     isQuickViewModalOpen.value = true;
   }
 }
-async function handleEdit(item: TemplateListItem) {
-  await store.fetchTemplateById(item.id);
 
-  if (store.selectedTemplate) {
-    templateToEdit.value = store.selectedTemplate;
-
-    isEditModalOpen.value = true;
-  } else {
-    toast.error("Error: Could not load template details for editing.");
-  }
+async function openEditModal(template: TemplateListItem) {
+  await store.fetchTemplateById(template.id);
+  templateForEdit.value = store.selectedTemplate;
+  isEditModalOpen.value = true;
 }
-
 function loadMore() {
   store.fetchTemplates(true)
 }

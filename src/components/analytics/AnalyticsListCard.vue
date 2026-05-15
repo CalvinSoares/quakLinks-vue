@@ -18,11 +18,12 @@
 <script setup lang="ts">
 import { LinkIcon, PaperAirplaneIcon, GlobeAltIcon } from '@heroicons/vue/24/outline';
 import type { FunctionalComponent, HTMLAttributes, VNodeProps } from 'vue';
-type IconMapKeys = 'Top Links' | 'Top Referrers' | 'Top Countries';
+type IconMapKeys = 'Top Links' | 'Top Referrers' | 'Top Countries' | 'Top Blocos';
 
 // 2. Definir o tipo do mapa de ícones de forma explícita
 const iconMap: Record<IconMapKeys, FunctionalComponent<HTMLAttributes & VNodeProps>> = {
     'Top Links': LinkIcon,
+    'Top Blocos': LinkIcon,
     'Top Referrers': PaperAirplaneIcon,
     'Top Countries': GlobeAltIcon
 };

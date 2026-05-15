@@ -12,10 +12,10 @@
             <div v-else class="w-full h-full bg-cover bg-center transition-all duration-700"
                 :style="mediaBackgroundStyle"></div>
             <div v-if="page.backgroundOverlay === 'noise'"
-                class="absolute inset-0 z-[1] opacity-10 pointer-events-none bg-[url('/noise.png')] animate-pulse">
+                class="absolute inset-0 z-[1] opacity-10 pointer-events-none bg-noise-overlay animate-pulse">
             </div>
             <div v-if="page.backgroundOverlay === 'scanlines'"
-                class="absolute inset-0 z-[1] pointer-events-none bg-[url('/scanlines.png')] bg-cover opacity-20"></div>
+                class="absolute inset-0 z-[1] pointer-events-none bg-scanlines-overlay opacity-20"></div>
             <div v-if="page.backgroundOverlay === 'vignette'"
                 class="absolute inset-0 z-[1] pointer-events-none bg-radial-vignette"></div>
         </div>
@@ -229,6 +229,23 @@ function getSoundCloudEmbedUrl(url: string): string {
 
 .bg-radial-vignette {
     background: radial-gradient(circle, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.8) 100%);
+}
+
+.bg-noise-overlay {
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.18) 0 1px, transparent 1px),
+        radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px),
+        radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.14) 0 1px, transparent 1px),
+        radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.1) 0 1px, transparent 1px);
+    background-size: 12px 12px, 18px 18px, 14px 14px, 20px 20px;
+}
+
+.bg-scanlines-overlay {
+    background-image: repeating-linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.12) 0,
+            rgba(255, 255, 255, 0.12) 1px,
+            transparent 1px,
+            transparent 4px);
 }
 
 .typewriter {

@@ -49,7 +49,7 @@
                 <p class="text-slate-400 text-xs truncate">{{ user?.email }}</p>
                 <div
                   class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
-                  {{ user?.role === 'PREMIUM' ? 'PRO MEMBER ⚡' : 'FREE PLAN' }}
+                  {{ authStore.isPremium ? 'PRO MEMBER ⚡' : 'FREE PLAN' }}
                 </div>
               </div>
             </div>
@@ -138,17 +138,12 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            <div class="relative overflow-hidden rounded-2xl border transition-all duration-300 group"
-              :class="isDiscordConnected ? 'bg-[#5865F2]/10 border-[#5865F2]/30' : 'bg-slate-900 border-slate-800 hover:border-slate-700'">
-
-              <div v-if="isDiscordConnected"
-                class="absolute -right-10 -top-10 w-40 h-40 bg-[#5865F2]/20 blur-[60px] rounded-full pointer-events-none">
-              </div>
-
-              <div class="p-5 flex items-center justify-between relative z-10">
+            <div
+              class="relative overflow-hidden rounded-2xl border transition-all duration-300 group bg-slate-900 border-slate-800 hover:border-slate-700">
+              <div class="p-5 flex items-center justify-between gap-4 relative z-10">
                 <div class="flex items-center gap-4">
-                  <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg"
-                    :class="isDiscordConnected ? 'bg-[#5865F2]' : 'bg-slate-800 text-slate-500'">
+                  <div
+                    class="w-12 h-12 rounded-xl flex items-center justify-center bg-slate-800 text-slate-500 shadow-lg">
                     <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
                       <path
                         d="M20.317 4.3698a19.7913 19.7913 0 00-4.8852-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4464.8245-.666 1.2828-1.5796-.3418-3.2142-.3418-4.7938 0-.2196-.4583-.455-.9075-.666-1.2828a.0741.0741 0 00-.0785-.0371 19.7364 19.7364 0 00-4.8852 1.5152.0691.0691 0 00-.0321.0262c-1.8988 4.6534-2.3168 9.541-1.7827 14.0416a.0741.0741 0 00.0785.062c1.4892-.259 2.9304-.7531 4.3085-1.4093a.0741.0741 0 00.042-.0372c-.177-.323-.342-.6526-.5-.9865a.0741.0741 0 01.012-.0819c.1252-.0941.251-.191.3765-.2911a.0741.0741 0 01.078-.012c4.1325 1.631 8.563 1.631 12.6954 0a.0741.0741 0 01.0785.012c.1255.1001.2515.197.3765.2911a.0741.0741 0 01.012.0819c-.158.3339-.323.6635-.5.9865a.0741.0741 0 00.042.0372c1.378.6562 2.8193 1.1503 4.3085 1.4093a.0741.0741 0 00.0785-.062c.54-4.494.12-9.382-1.7828-14.0416a.0691.0691 0 00-.032-.0262zM8.02 15.3312c-.8325 0-1.5097-.682-1.5097-1.523 0-.841.6772-1.523 1.5097-1.523s1.5097.682 1.5097 1.523c0 .841-.6772 1.523-1.5097 1.523zm7.96 0c-.8325 0-1.5097-.682-1.5097-1.523 0-.841.6772-1.523 1.5097-1.523s1.5097.682 1.5097 1.523c0 .841-.6772 1.523-1.5097 1.523z" />
@@ -156,31 +151,23 @@
                   </div>
                   <div>
                     <h3 class="font-bold text-white">Discord</h3>
-                    <p v-if="isDiscordConnected" class="text-[#5865F2] text-xs font-bold tracking-wide mt-0.5">CONECTADO
-                    </p>
-                    <p v-else class="text-slate-500 text-xs">Não conectado</p>
+                    <p class="text-slate-500 text-xs">{{ discordStatusText }}</p>
                   </div>
                 </div>
 
-                <div v-if="isDiscordConnected">
-                  <button @click="openDisconnectModal('discord')"
-                    class="px-3 py-1.5 text-xs font-bold text-white bg-[#5865F2] hover:bg-[#4752C4] rounded-lg transition-colors">
-                    Desconectar
-                  </button>
-                </div>
-                <div v-else>
-                  <a :href="discordLoginUrl"
-                    class="px-4 py-2 text-xs font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white rounded-lg transition-colors border border-slate-700">
-                    Conectar
-                  </a>
-                </div>
+                <button type="button"
+                  @click="authStore.isDiscordConnected ? handleSocialUnlink('discord') : handleSocialConnect('discord')"
+                  class="px-4 py-2 text-xs font-bold rounded-lg transition-colors border" :class="authStore.isDiscordConnected
+                    ? 'text-red-300 bg-red-500/10 hover:bg-red-500/20 border-red-500/20'
+                    : 'text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white border-slate-700'">
+                  {{ authStore.isDiscordConnected ? 'Desvincular' : 'Conectar' }}
+                </button>
               </div>
             </div>
 
-            <div class="relative overflow-hidden rounded-2xl border transition-all duration-300 group"
-              :class="isGoogleConnected ? 'bg-white/5 border-white/10' : 'bg-slate-900 border-slate-800 hover:border-slate-700'">
-
-              <div class="p-5 flex items-center justify-between relative z-10">
+            <div
+              class="relative overflow-hidden rounded-2xl border transition-all duration-300 group bg-slate-900 border-slate-800 hover:border-slate-700">
+              <div class="p-5 flex items-center justify-between gap-4 relative z-10">
                 <div class="flex items-center gap-4">
                   <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-white text-slate-900 shadow-lg">
                     <svg class="w-6 h-6" viewBox="0 0 24 24">
@@ -200,61 +187,34 @@
                   </div>
                   <div>
                     <h3 class="font-bold text-white">Google</h3>
-                    <p v-if="isGoogleConnected" class="text-green-400 text-xs font-bold tracking-wide mt-0.5">CONECTADO
-                    </p>
-                    <p v-else class="text-slate-500 text-xs">Não conectado</p>
+                    <p class="text-slate-500 text-xs">{{ googleStatusText }}</p>
                   </div>
                 </div>
 
-                <div v-if="isGoogleConnected">
-                  <button @click="openDisconnectModal('google')"
-                    class="px-3 py-1.5 text-xs font-bold text-slate-300 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 border border-slate-700 rounded-lg transition-all">
-                    Desvincular
-                  </button>
-                </div>
-                <div v-else>
-                  <a :href="googleLoginUrl"
-                    class="px-4 py-2 text-xs font-bold text-slate-900 bg-white hover:bg-gray-200 rounded-lg transition-colors">
-                    Conectar
-                  </a>
-                </div>
+                <button type="button"
+                  @click="authStore.isGoogleConnected ? handleSocialUnlink('google') : handleSocialConnect('google')"
+                  class="px-4 py-2 text-xs font-bold rounded-lg transition-colors" :class="authStore.isGoogleConnected
+                    ? 'text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20'
+                    : 'text-slate-900 bg-white hover:bg-gray-200'">
+                  {{ authStore.isGoogleConnected ? 'Desvincular' : 'Conectar' }}
+                </button>
               </div>
             </div>
 
           </div>
         </div>
-
       </div>
-    </div>
 
-    <Modal :is-open="isUsernameModalOpen" @close="isUsernameModalOpen = false" title="Editar Usuário">
-      <div class="p-6 space-y-4">
-        <label class="block text-sm font-medium text-slate-400 mb-1">Novo nome de usuário</label>
-        <input v-model="newUsername" type="text" class="input-modern" placeholder="Ex: John Doe" />
-        <button @click="handleUpdateUsername" :disabled="isLoading" class="btn-primary w-full">
-          {{ isLoading ? 'Salvando...' : 'Salvar Alterações' }}
-        </button>
-      </div>
-    </Modal>
-
-    <Modal :is-open="isDisconnectModalOpen" @close="isDisconnectModalOpen = false" title="Desconectar Conta">
-      <div class="p-6 space-y-4 text-center">
-        <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-2">
-          <ArrowLeftEndOnRectangleIcon class="w-6 h-6" />
-        </div>
-        <p class="text-slate-300 text-sm">
-          Tem certeza que deseja desvincular sua conta do
-          <span class="capitalize font-bold text-white">{{ disconnectTarget }}</span>?
-          Isso pode afetar seu login se for seu único método de acesso.
-        </p>
-        <div class="flex gap-3 pt-2">
-          <button @click="isDisconnectModalOpen = false" class="btn-secondary flex-1">Cancelar</button>
-          <button @click="handleDisconnectAccount" :disabled="isLoading" class="btn-danger flex-1">
-            {{ isLoading ? 'Removendo...' : 'Sim, desconectar' }}
+      <Modal :is-open="isUsernameModalOpen" @close="isUsernameModalOpen = false" title="Editar Usuário">
+        <div class="p-6 space-y-4">
+          <label class="block text-sm font-medium text-slate-400 mb-1">Novo nome de usuário</label>
+          <input v-model="newUsername" type="text" class="input-modern" placeholder="Ex: John Doe" />
+          <button @click="handleUpdateUsername" :disabled="isLoading" class="btn-primary w-full">
+            {{ isLoading ? 'Salvando...' : 'Salvar Alterações' }}
           </button>
         </div>
-      </div>
-    </Modal>
+      </Modal>
+    </div>
 
   </DashboardLayout>
 </template>
@@ -274,7 +234,6 @@ import {
   ArrowRightIcon,
   LinkIcon,
   DocumentDuplicateIcon,
-  ArrowLeftEndOnRectangleIcon
 } from '@heroicons/vue/24/outline';
 import { toast } from 'vue-sonner';
 
@@ -283,8 +242,6 @@ const pageStore = usePageStore();
 const userStore = useUserStore();
 
 const isUsernameModalOpen = ref(false);
-const isDisconnectModalOpen = ref(false);
-const disconnectTarget = ref<'discord' | 'google'>('discord');
 const newUsername = ref('');
 const isLoading = ref(false);
 
@@ -294,34 +251,31 @@ onMounted(() => {
 
 const user = computed(() => authStore.user);
 const isDataLoaded = computed(() => !!user.value);
+const discordStatusText = computed(() =>
+  authStore.isDiscordConnected
+    ? 'Conta vinculada para login social.'
+    : 'Conecte para autenticar ou vincular novamente.'
+);
+const googleStatusText = computed(() =>
+  authStore.isGoogleConnected
+    ? 'Conta vinculada para login social.'
+    : 'Conecte para autenticar ou vincular novamente.'
+);
 
 const sidebarAvatarUrl = computed(() => {
   return user.value?.image || `https://ui-avatars.com/api/?name=${user.value?.name}&background=fbbd24&color=1e293b&bold=true`;
 });
 
-const isDiscordConnected = computed(() => user.value?.accounts?.some(acc => acc.provider === 'discord') ?? false);
-const isGoogleConnected = computed(() => user.value?.accounts?.some(acc => acc.provider === 'google') ?? false);
-
-const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
-const tokenParam = authStore.token ? `?token=${authStore.token}` : '';
-const discordLoginUrl = `${apiUrl}/auth/discord${tokenParam}`;
-const googleLoginUrl = `${apiUrl}/auth/google${tokenParam}`;
-
 const completion = computed(() => {
   const tasks = [
     { label: 'Definir Avatar', completed: !!user.value?.image },
     { label: 'Criar Página', completed: (pageStore.userPages?.length || 0) > 0 },
-    { label: 'Conectar Conta', completed: isDiscordConnected.value || isGoogleConnected.value },
+    { label: 'Conectar Spotify', completed: !!user.value?.spotifyConnection },
   ];
   const completedCount = tasks.filter(t => t.completed).length;
   const percentage = Math.round((completedCount / tasks.length) * 100);
   return { percentage, tasks };
 });
-
-function openDisconnectModal(target: 'discord' | 'google') {
-  disconnectTarget.value = target;
-  isDisconnectModalOpen.value = true;
-}
 
 function openUsernameModal() {
   newUsername.value = user.value?.name || '';
@@ -339,15 +293,25 @@ async function handleUpdateUsername() {
   finally { isLoading.value = false; }
 }
 
-async function handleDisconnectAccount() {
-  isLoading.value = true;
+async function handleSocialConnect(provider: 'discord' | 'google') {
   try {
-    await userStore.unlinkAccount(disconnectTarget.value);
-    isDisconnectModalOpen.value = false;
-    toast.success(`Conta ${disconnectTarget.value} desconectada.`);
-    await authStore.fetchUser();
-  } catch (e: any) { toast.error(e.message || "Erro ao desconectar"); }
-  finally { isLoading.value = false; }
+    await authStore.startSocialLogin(provider);
+  } catch (e: any) {
+    toast.error(
+      e.response?.data?.message ||
+      e.message ||
+      `Erro ao iniciar conexao com ${provider}.`,
+    );
+  }
+}
+
+async function handleSocialUnlink(provider: 'discord' | 'google') {
+  try {
+    await userStore.unlinkAccount(provider);
+    toast.success(`Conta ${provider} desvinculada com sucesso.`);
+  } catch (e: any) {
+    toast.error(e.message || `Erro ao desvincular ${provider}.`);
+  }
 }
 </script>
 

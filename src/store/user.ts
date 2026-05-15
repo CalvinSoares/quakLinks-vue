@@ -19,6 +19,21 @@ interface UpdatePasswordPayload {
   confirmNewPassword?: string;
 }
 
+interface CustomDomainResponse {
+  id: string;
+  pageId: string;
+  domain: string;
+  verified: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface VerifyCustomDomainResponse {
+  success: boolean;
+  message: string;
+  domain: CustomDomainResponse;
+}
+
 export const useUserStore = defineStore("user", () => {
   async function updateUserProfile(data: UserUpdatePayload) {
     const authStore = useAuthStore();
@@ -29,10 +44,8 @@ export const useUserStore = defineStore("user", () => {
     }
 
     try {
-      const response = await api.put(`/users/${currentUser.id}`, data);
-
-      authStore.setUser(response.data);
-
+      const response = await api.put(`/users/me`, data);
+      await authStore.fetchUser();
       return response.data;
     } catch (err: any) {
       console.error("Erro ao atualizar o perfil:", err);
@@ -43,64 +56,65 @@ export const useUserStore = defineStore("user", () => {
   }
 
   async function updateEmail(payload: UpdateEmailPayload) {
-    try {
-      const response = await api.put("/account/email", payload);
+    if (!payload.currentPassword || !payload.newEmail) {
+      throw new Error("Preencha a senha atual e o novo e-mail.");
+    }
 
-      return response.data;
+    if (payload.newEmail !== payload.confirmNewEmail) {
+      throw new Error("A confirmacao do novo e-mail nao confere.");
+    }
+
+    try {
+      await api.put("/auth/email", {
+        currentPassword: payload.currentPassword,
+        newEmail: payload.newEmail,
+      });
+      return true;
     } catch (err: any) {
       throw new Error(
-        err.response?.data?.message || "Erro ao atualizar e-mail."
+        err.response?.data?.message || "Nao foi possivel alterar o e-mail.",
       );
     }
   }
 
   async function updatePassword(payload: UpdatePasswordPayload) {
+    if (!payload.currentPassword || !payload.newPassword) {
+      throw new Error("Preencha a senha atual e a nova senha.");
+    }
+
+    if (payload.newPassword !== payload.confirmNewPassword) {
+      throw new Error("A confirmacao da nova senha nao confere.");
+    }
+
     try {
-      const response = await api.put("/account/password", payload);
-      return response.data;
+      await api.put("/auth/password", {
+        currentPassword: payload.currentPassword,
+        newPassword: payload.newPassword,
+      });
+      return true;
     } catch (err: any) {
       throw new Error(
-        err.response?.data?.message || "Erro ao atualizar senha."
+        err.response?.data?.message || "Nao foi possivel alterar a senha.",
       );
     }
   }
 
   async function unlinkDiscord() {
-    const authStore = useAuthStore();
-    if (!authStore.user) {
-      throw new Error("Usuário não autenticado.");
-    }
-
-    try {
-      const response = await api.delete("/users/me/connections/discord");
-      authStore.setUser(response.data);
-
-      return response.data;
-    } catch (err: any) {
-      console.error("Erro ao desvincular conta do Discord:", err);
-      throw new Error(
-        err.response?.data?.message || "Não foi possível desvincular a conta."
-      );
-    }
+    return unlinkAccount("discord");
   }
 
   // Função genérica para desvincular contas
   async function unlinkAccount(provider: "discord" | "google") {
     const authStore = useAuthStore();
-    if (!authStore.user) throw new Error("Usuário não autenticado.");
 
     try {
-      const endpoint =
-        provider === "discord"
-          ? "/users/me/connections/discord"
-          : `/users/me/connections/${provider}`;
-
-      const response = await api.delete(endpoint);
-      authStore.setUser(response.data);
-      return response.data;
+      await api.delete(`/auth/connections/${provider}`);
+      await authStore.fetchUser();
+      return true;
     } catch (err: any) {
       throw new Error(
-        err.response?.data?.message || `Erro ao desvincular ${provider}.`
+        err.response?.data?.message ||
+          `Nao foi possivel desvincular ${provider}.`,
       );
     }
   }
@@ -117,76 +131,61 @@ export const useUserStore = defineStore("user", () => {
     } catch (err: any) {
       console.error("Erro ao iniciar o checkout:", err);
       throw new Error(
-        err.response?.data?.message || "Não foi possível iniciar o pagamento."
+        err.response?.data?.message || "Não foi possível iniciar o pagamento.",
       );
     }
   }
 
-  async function fetchCustomDomain() {
-    const authStore = useAuthStore();
-    if (!authStore.isPremium || !authStore.user) return;
-
+  async function fetchCustomDomain(pageId: string) {
     try {
-      const response = await api.get("/domains");
-
-      if (authStore.user) {
-        authStore.user.CustomDomain = response.data;
-      }
+      const response = await api.get<CustomDomainResponse>(
+        `/pages/${pageId}/domain`,
+      );
+      return response.data;
     } catch (err: any) {
-      console.error("Erro ao buscar o estado do domínio:", err);
+      if (err.response?.status === 404) {
+        return null;
+      }
+      console.error("Erro ao buscar o estado do dominio:", err);
+      throw new Error(
+        err.response?.data?.message || "Erro ao buscar dominio customizado.",
+      );
     }
   }
 
-  async function addCustomDomain(domain: string) {
-    const authStore = useAuthStore();
-
+  async function addCustomDomain(pageId: string, domain: string) {
     try {
-      const response = await api.post("/domains", { domain });
-
-      if (authStore.user) {
-        authStore.user.CustomDomain = response.data;
-      }
-
+      const response = await api.post<CustomDomainResponse>(
+        `/pages/${pageId}/domain`,
+        { domain },
+      );
       return response.data;
     } catch (err: any) {
       throw new Error(
-        err.response?.data?.message || "Erro ao adicionar domínio."
+        err.response?.data?.message || "Erro ao adicionar dominio.",
       );
     }
   }
 
-  async function removeCustomDomain() {
-    const authStore = useAuthStore();
+  async function removeCustomDomain(pageId: string) {
     try {
-      await api.delete("/domains");
-
-      if (authStore.user) {
-        authStore.user.CustomDomain = null;
-      }
+      await api.delete(`/pages/${pageId}/domain`);
     } catch (err: any) {
       throw new Error(
-        err.response?.data?.message || "Erro ao remover domínio."
+        err.response?.data?.message || "Erro ao remover dominio.",
       );
     }
   }
 
-  async function verifyCustomDomain() {
-    const authStore = useAuthStore();
-
+  async function verifyCustomDomain(pageId: string) {
     try {
-      const response = await api.post("/domains/verify");
-      if (
-        authStore.user &&
-        authStore.user.CustomDomain &&
-        response.data.success
-      ) {
-        authStore.user.CustomDomain.verified = true;
-      }
-
+      const response = await api.post<VerifyCustomDomainResponse>(
+        `/pages/${pageId}/domain/verify`,
+      );
       return response.data;
     } catch (err: any) {
       throw new Error(
-        err.response?.data?.message || "Erro ao verificar domínio."
+        err.response?.data?.message || "Erro ao verificar dominio.",
       );
     }
   }

@@ -14,12 +14,14 @@
         <div class="p-6">
             <div v-if="!auth.isPremium" class="text-center">
                 <p class="text-slate-400">Esta funcionalidade está disponível no plano Premium.</p>
-                <!-- Reutilize o componente de Upgrade -->
                 <UpgradeToPremium class="max-w-xs mx-auto mt-4" />
             </div>
 
+            <div v-else-if="!currentPage" class="text-center text-slate-400">
+                Selecione uma página para configurar um domínio customizado.
+            </div>
+
             <div v-else class="space-y-4">
-                <!-- Formulário para adicionar domínio -->
                 <form @submit.prevent="handleAddDomain" v-if="!customDomain" class="flex items-start gap-3">
                     <div class="flex-grow">
                         <input v-model="domainInput" type="text" placeholder="links.meusite.com"
@@ -33,7 +35,6 @@
                     </button>
                 </form>
 
-                <!-- Estado de verificação -->
                 <div v-else class="space-y-4">
                     <div class="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg gap-4">
                         <span class="font-mono text-lg text-white truncate">{{ customDomain.domain }}</span>
@@ -43,7 +44,6 @@
                                 class="px-3 py-1 text-xs font-bold rounded-full">
                                 {{ customDomain.verified ? 'Verificado' : 'Pendente' }}
                             </span>
-                            <!-- NOVO: Botão de Remover -->
                             <button @click="handleRemoveDomain" :disabled="isLoading" title="Remover Domínio"
                                 class="p-2 text-slate-400 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors">
                                 <TrashIcon class="w-5 h-5" />
@@ -78,8 +78,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/store/auth';
+import { usePageStore } from '@/store/page';
 import { useUserStore } from '@/store/user';
 import { GlobeAltIcon } from '@heroicons/vue/24/outline';
 import UpgradeToPremium from '../dashboard/UpgradeToPremium.vue';
@@ -87,29 +88,48 @@ import { TrashIcon } from 'vue-tabler-icons';
 import { toast } from 'vue-sonner';
 
 const auth = useAuthStore();
+const pageStore = usePageStore();
 const userStore = useUserStore();
 
 const domainInput = ref('');
 const isLoading = ref(false);
 const isVerifying = ref(false);
 const error = ref<string | null>(null);
+const customDomain = ref<{
+    id: string;
+    pageId: string;
+    domain: string;
+    verified: boolean;
+} | null>(null);
 
-const customDomain = computed(() => auth.user?.CustomDomain);
-const appDomain = import.meta.env.VITE_APP_DOMAIN; // Pega do seu .env.development
+const currentPage = computed(() => pageStore.currentPage);
+const appDomain = import.meta.env.VITE_APP_DOMAIN || window.location.host;
 
-onMounted(() => {
-
-    if (auth.isPremium) {
-        userStore.fetchCustomDomain();
+async function loadDomain() {
+    if (!auth.isPremium || !currentPage.value?.id) {
+        customDomain.value = null;
+        return;
     }
+
+    try {
+        customDomain.value = await userStore.fetchCustomDomain(currentPage.value.id);
+    } catch (e: any) {
+        error.value = e.message;
+    }
+}
+
+onMounted(loadDomain);
+watch(() => currentPage.value?.id, () => {
+    error.value = null;
+    void loadDomain();
 });
 
 async function handleAddDomain() {
-    if (!domainInput.value) return;
+    if (!domainInput.value || !currentPage.value?.id) return;
     isLoading.value = true;
     error.value = null;
     try {
-        await userStore.addCustomDomain(domainInput.value);
+        customDomain.value = await userStore.addCustomDomain(currentPage.value.id, domainInput.value);
         domainInput.value = '';
     } catch (e: any) {
         error.value = e.message;
@@ -119,13 +139,17 @@ async function handleAddDomain() {
 }
 
 async function handleRemoveDomain() {
+    if (!currentPage.value?.id) {
+        return;
+    }
     if (!window.confirm(`Tem certeza que deseja remover o domínio "${customDomain.value?.domain}"?`)) {
         return;
     }
     isLoading.value = true;
     error.value = null;
     try {
-        await userStore.removeCustomDomain();
+        await userStore.removeCustomDomain(currentPage.value.id);
+        customDomain.value = null;
     } catch (e: any) {
         error.value = e.message;
     } finally {
@@ -135,13 +159,16 @@ async function handleRemoveDomain() {
 
 
 async function handleVerifyDomain() {
+    if (!currentPage.value?.id) {
+        return;
+    }
     isVerifying.value = true;
     error.value = null;
     try {
-        const result = await userStore.verifyCustomDomain();
+        const result = await userStore.verifyCustomDomain(currentPage.value.id);
 
         toast.success(result.message);
-
+        customDomain.value = result.domain;
 
     } catch (e: any) {
         error.value = e.message;

@@ -172,8 +172,7 @@ async function createPage() {
 }
 
 async function editPage(page: any) {
-
-    router.push({ name: 'DashboardAppearance', query: { slug: page.slug } });
+    router.push({ name: 'appearance', query: { slug: page.slug } });
 }
 
 async function confirmDelete(page: any) {
