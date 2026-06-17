@@ -1,4 +1,6 @@
 import api from "@/services/api";
+import { withIdempotencyKey } from "@/services/idempotency";
+import { useUserStore } from "./user";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
@@ -17,12 +19,22 @@ interface PageUser {
   role: string;
 }
 
+interface PageCustomDomain {
+  id: string;
+  ownerId?: string;
+  pageId: string | null;
+  domain: string;
+  verified: boolean;
+}
+
 interface PageResponse {
   id: string;
   ownerId: string;
+  primaryPage: boolean;
   slug: string;
   title?: string | null;
   bio?: string | null;
+  location?: string | null;
   avatarUrl?: string | null;
   theme?: string | null;
   backgroundType?: string | null;
@@ -47,6 +59,19 @@ interface PageResponse {
   backgroundVideoUrl?: string | null;
   cursorUrl?: string | null;
   titleEffect?: string | null;
+  fontFamily?: string | null;
+  buttonStyle?: string | null;
+  buttonRoundness?: string | null;
+  buttonShadow?: boolean | null;
+  backgroundOverlay?: string | null;
+  backgroundBlur?: number | null;
+  isBodyGradient?: boolean | null;
+  shuffleAudios?: boolean | null;
+  showAudioPlayer?: boolean | null;
+  showEmbeds?: boolean | null;
+  profileRingType?: string | null;
+  profileRingColors?: string[] | null;
+  viewCount?: number | null;
   customCss?: string | null;
   published?: boolean;
   createdAt: string;
@@ -121,6 +146,7 @@ interface BackendAudio {
 export interface Page {
   id: string;
   ownerId?: string;
+  primaryPage: boolean;
   slug: string;
   title?: string;
   bio?: string;
@@ -135,6 +161,7 @@ export interface Page {
   location?: string | null;
   theme: string;
   viewCount: number;
+  customDomain?: PageCustomDomain | null;
   cursorUrl?: string | null;
   links: Link[];
   textColor?: string | null;
@@ -144,6 +171,7 @@ export interface Page {
   buttonStyle?: string;
   buttonColor?: string | null;
   buttonRoundness?: string;
+  isBodyGradient?: boolean;
   backgroundOverlay?: string;
   buttonShadow?: boolean;
   useStandardIconColors?: boolean;
@@ -207,19 +235,26 @@ function mapLinksFromBlocks(blocks: Block[]): Link[] {
           ? block.content.title
           : block.title || "Link",
       url:
-        typeof block.content?.url === "string" ? block.content.url : block.url || "",
+        typeof block.content?.url === "string"
+          ? block.content.url
+          : block.url || "",
       order: block.order,
       clickCount: 0,
     }));
 }
 
-function composePage(page: PageResponse, blocks: BackendBlock[], audios: BackendAudio[]): Page {
+function composePage(
+  page: PageResponse,
+  blocks: BackendBlock[],
+  audios: BackendAudio[],
+): Page {
   const mappedBlocks = blocks.map(mapBlock).sort((a, b) => a.order - b.order);
   const mappedAudios = audios.map(mapAudio).sort((a, b) => a.order - b.order);
 
   return {
     id: page.id,
     ownerId: page.ownerId,
+    primaryPage: page.primaryPage,
     slug: page.slug,
     title: page.title ?? "",
     bio: page.bio ?? "",
@@ -231,17 +266,24 @@ function composePage(page: PageResponse, blocks: BackendBlock[], audios: Backend
     backgroundColor: page.backgroundColor ?? null,
     backgroundUrl: page.backgroundUrl ?? null,
     backgroundVideoUrl: page.backgroundVideoUrl ?? null,
-    location: null,
+    location: page.location ?? null,
     theme: page.theme ?? "dark",
-    viewCount: 0,
+    viewCount: page.viewCount ?? 0,
+    customDomain: null,
     cursorUrl: page.cursorUrl ?? null,
     links: mapLinksFromBlocks(mappedBlocks),
     textColor: page.textColor ?? null,
     iconColor: page.iconColor ?? null,
     user: null,
+    fontFamily: page.fontFamily ?? "Inter",
+    buttonStyle: page.buttonStyle ?? "solid",
     buttonColor: page.buttonColor ?? null,
-    useStandardIconColors: page.useStandardIconColors ?? false,
+    buttonRoundness: page.buttonRoundness ?? "rounded-lg",
+    backgroundOverlay: page.backgroundOverlay ?? "none",
+    buttonShadow: page.buttonShadow ?? false,
+    useStandardIconColors: page.useStandardIconColors ?? true,
     glowEffect: page.glowEffect ?? undefined,
+    backgroundBlur: page.backgroundBlur ?? 0,
     titleEffect: page.titleEffect ?? undefined,
     showProfileCard: page.showProfileCard ?? true,
     profileCardColor: page.profileCardColor ?? null,
@@ -249,17 +291,37 @@ function composePage(page: PageResponse, blocks: BackendBlock[], audios: Backend
     showViewCount: page.showViewCount ?? false,
     linkStyle: page.linkStyle ?? undefined,
     layoutLinkStyle: page.layoutLinkStyle ?? undefined,
-    shuffleAudios: false,
-    showAudioPlayer: mappedAudios.length > 0,
-    showEmbeds: true,
+    shuffleAudios: page.shuffleAudios ?? false,
+    showAudioPlayer: page.showAudioPlayer ?? mappedAudios.length > 0,
+    showEmbeds: page.showEmbeds ?? true,
     audios: mappedAudios,
+    profileRingType: page.profileRingType ?? "none",
+    profileRingColors: page.profileRingColors ?? [],
     pageLayout: page.pageLayout ?? "standard",
     blocks: mappedBlocks,
+    isBodyGradient: page.isBodyGradient ?? true,
     customCss: page.customCss ?? null,
     published: page.published ?? true,
     createdAt: page.createdAt,
     updatedAt: page.updatedAt,
   };
+}
+
+function normalizePublicDomain(domain: string | null | undefined) {
+  if (!domain) {
+    return null;
+  }
+
+  const normalized = domain
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/\/.*$/, "")
+    .replace(/:\d+$/, "")
+    .replace(/\.$/, "");
+
+  return normalized || null;
 }
 
 export const usePageStore = defineStore("page", () => {
@@ -289,7 +351,9 @@ export const usePageStore = defineStore("page", () => {
       if (err.response?.status === 404) {
         currentPage.value = null;
       } else {
-        error.value = err.response?.data?.message || "Nao foi possivel carregar sua pagina.";
+        error.value =
+          err.response?.data?.message ||
+          "Nao foi possivel carregar sua pagina.";
         throw err;
       }
     } finally {
@@ -314,7 +378,24 @@ export const usePageStore = defineStore("page", () => {
         );
       });
 
-      userPages.value = filtered.map((page) => composePage(page, [], []));
+      const userStore = useUserStore();
+      const ownedDomains = await userStore.listOwnedDomains().catch((domainError) => {
+        console.error("Erro ao listar dominios do usuario:", domainError);
+        return [];
+      });
+      const domainsByPageId = new Map(
+        ownedDomains
+          .filter((domain) => domain.pageId)
+          .map((domain) => [domain.pageId as string, domain]),
+      );
+
+      userPages.value = await Promise.all(
+        filtered.map(async (page) => {
+          const mappedPage = composePage(page, [], []);
+          mappedPage.customDomain = domainsByPageId.get(page.id) ?? null;
+          return mappedPage;
+        }),
+      );
       totalPages.value = 1;
     } catch (err) {
       console.error("Erro ao listar paginas do usuario:", err);
@@ -324,16 +405,47 @@ export const usePageStore = defineStore("page", () => {
   }
 
   async function createNewPage(data: { title: string; slug: string }) {
-    const response = await api.post<PageResponse>("/pages", data);
+    const response = await api.post<PageResponse>(
+      "/pages",
+      data,
+      withIdempotencyKey("page-create"),
+    );
     await fetchUserPages();
     return response.data;
   }
 
   async function deleteUserPage(id: string) {
-    await api.delete(`/pages/${id}`);
-    await fetchUserPages();
-    if (currentPage.value?.id === id) {
-      currentPage.value = null;
+    try {
+      await api.delete(`/pages/${id}`);
+      await fetchUserPages();
+
+      if (currentPage.value?.id === id) {
+        currentPage.value = null;
+      }
+    } catch (err: any) {
+      console.error("Erro ao deletar pagina:", err);
+      throw new Error(
+        err.response?.data?.message || "Nao foi possivel excluir a pagina.",
+      );
+    }
+  }
+
+  async function setPrimaryPage(id: string) {
+    try {
+      await api.post<PageResponse>(`/pages/${id}/primary`);
+      await fetchUserPages();
+
+      if (currentPage.value?.id === id) {
+        currentPage.value.primaryPage = true;
+      } else if (currentPage.value?.primaryPage) {
+        currentPage.value.primaryPage = false;
+      }
+    } catch (err: any) {
+      console.error("Erro ao definir pagina principal:", err);
+      throw new Error(
+        err.response?.data?.message ||
+          "Nao foi possivel definir a pagina principal.",
+      );
     }
   }
 
@@ -352,13 +464,16 @@ export const usePageStore = defineStore("page", () => {
     error.value = null;
 
     try {
-      const endpoint = currentPage.value?.id ? `/pages/${currentPage.value.id}` : "/pages/me";
+      const endpoint = currentPage.value?.id
+        ? `/pages/${currentPage.value.id}`
+        : "/pages/me";
       const response = await api.put<PageResponse>(endpoint, pageData);
       currentPage.value = await enrichOwnedPage(response.data);
       return currentPage.value;
     } catch (err: any) {
       console.error("Erro ao atualizar a pagina:", err);
-      error.value = err.response?.data?.message || "Nao foi possivel salvar as alteracoes.";
+      error.value =
+        err.response?.data?.message || "Nao foi possivel salvar as alteracoes.";
       throw new Error(error.value || "erro");
     } finally {
       isLoading.value = false;
@@ -373,11 +488,13 @@ export const usePageStore = defineStore("page", () => {
     try {
       if (slug.startsWith("public:")) {
         const publicSlug = slug.replace(/^public:/, "");
-        const response = await api.get<PublicPageResponse>(`/public/pages/${publicSlug}`);
+        const response = await api.get<PublicPageResponse>(
+          `/public/pages/${publicSlug}`,
+        );
         currentPage.value = composePage(
           response.data.page,
           response.data.blocks,
-          response.data.audios
+          response.data.audios,
         );
         return;
       }
@@ -397,6 +514,33 @@ export const usePageStore = defineStore("page", () => {
     }
   }
 
+  async function fetchPublicPageByDomain(domain: string) {
+    isLoading.value = true;
+    error.value = null;
+    currentPage.value = null;
+
+    try {
+      const normalizedDomain = normalizePublicDomain(domain);
+      if (!normalizedDomain) {
+        throw new Error("Dominio nao encontrado.");
+      }
+
+      const response = await api.get<PublicPageResponse>(
+        `/public/domains/${encodeURIComponent(normalizedDomain)}`,
+      );
+      currentPage.value = composePage(
+        response.data.page,
+        response.data.blocks,
+        response.data.audios,
+      );
+    } catch (err: any) {
+      console.error(`Erro ao buscar a pagina do dominio ${domain}:`, err);
+      error.value = err.response?.data?.message || "Pagina nao encontrada.";
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   async function addAudio(audioData: {
     title: string;
     url: string;
@@ -410,16 +554,21 @@ export const usePageStore = defineStore("page", () => {
     try {
       const response = await api.post<BackendAudio>(
         `/pages/${currentPage.value.id}/audios`,
-        audioData
+        audioData,
       );
       currentPage.value.audios.push(mapAudio(response.data));
     } catch (err: any) {
       console.error("Erro ao adicionar audio:", err);
-      throw new Error(err.response?.data?.message || "Nao foi possivel adicionar o audio.");
+      throw new Error(
+        err.response?.data?.message || "Nao foi possivel adicionar o audio.",
+      );
     }
   }
 
-  async function updateAudio(audioId: string, audioData: Partial<Omit<Audio, "id">>) {
+  async function updateAudio(
+    audioId: string,
+    audioData: Partial<Omit<Audio, "id">>,
+  ) {
     if (!currentPage.value) {
       return;
     }
@@ -427,15 +576,19 @@ export const usePageStore = defineStore("page", () => {
     try {
       const response = await api.put<BackendAudio>(
         `/pages/${currentPage.value.id}/audios/${audioId}`,
-        audioData
+        audioData,
       );
-      const index = currentPage.value.audios.findIndex((audio) => audio.id === audioId);
+      const index = currentPage.value.audios.findIndex(
+        (audio) => audio.id === audioId,
+      );
       if (index !== -1) {
         currentPage.value.audios[index] = mapAudio(response.data);
       }
     } catch (err: any) {
       console.error("Erro ao atualizar audio:", err);
-      throw new Error(err.response?.data?.message || "Nao foi possivel salvar as alteracoes.");
+      throw new Error(
+        err.response?.data?.message || "Nao foi possivel salvar as alteracoes.",
+      );
     }
   }
 
@@ -446,10 +599,14 @@ export const usePageStore = defineStore("page", () => {
 
     try {
       await api.delete(`/pages/${currentPage.value.id}/audios/${audioId}`);
-      currentPage.value.audios = currentPage.value.audios.filter((audio) => audio.id !== audioId);
+      currentPage.value.audios = currentPage.value.audios.filter(
+        (audio) => audio.id !== audioId,
+      );
     } catch (err: any) {
       console.error("Erro ao deletar audio:", err);
-      throw new Error(err.response?.data?.message || "Nao foi possivel deletar o audio.");
+      throw new Error(
+        err.response?.data?.message || "Nao foi possivel deletar o audio.",
+      );
     }
   }
 
@@ -460,28 +617,36 @@ export const usePageStore = defineStore("page", () => {
 
     try {
       const response = await api.put<BackendAudio>(
-        `/pages/${currentPage.value.id}/audios/${audioId}/active`
+        `/pages/${currentPage.value.id}/audios/${audioId}/active`,
       );
       currentPage.value.audios.forEach((audio) => {
         audio.isActive = audio.id === response.data.id;
       });
     } catch (err: any) {
       console.error("Erro ao ativar audio:", err);
-      throw new Error(err.response?.data?.message || "Nao foi possivel ativar o audio.");
+      throw new Error(
+        err.response?.data?.message || "Nao foi possivel ativar o audio.",
+      );
     }
   }
 
-  async function createBlock(blockData: { type: BlockType; content?: Record<string, unknown> }) {
+  async function createBlock(blockData: {
+    type: BlockType;
+    content?: Record<string, unknown>;
+  }) {
     if (!currentPage.value) {
       return;
     }
 
     try {
-      const response = await api.post<BackendBlock>(`/pages/${currentPage.value.id}/blocks`, {
-        type: blockData.type,
-        content: blockData.content ?? {},
-        visible: true,
-      });
+      const response = await api.post<BackendBlock>(
+        `/pages/${currentPage.value.id}/blocks`,
+        {
+          type: blockData.type,
+          content: blockData.content ?? {},
+          visible: true,
+        },
+      );
 
       currentPage.value.blocks.push(mapBlock(response.data));
       currentPage.value.blocks.sort((a, b) => a.order - b.order);
@@ -507,10 +672,12 @@ export const usePageStore = defineStore("page", () => {
           url: data.url,
           content: data.content,
           visible: data.isVisible,
-        }
+        },
       );
 
-      const index = currentPage.value.blocks.findIndex((block) => block.id === blockId);
+      const index = currentPage.value.blocks.findIndex(
+        (block) => block.id === blockId,
+      );
       if (index !== -1) {
         currentPage.value.blocks[index] = mapBlock(response.data);
         currentPage.value.links = mapLinksFromBlocks(currentPage.value.blocks);
@@ -528,7 +695,9 @@ export const usePageStore = defineStore("page", () => {
 
     try {
       await api.delete(`/pages/${currentPage.value.id}/blocks/${blockId}`);
-      currentPage.value.blocks = currentPage.value.blocks.filter((block) => block.id !== blockId);
+      currentPage.value.blocks = currentPage.value.blocks.filter(
+        (block) => block.id !== blockId,
+      );
       currentPage.value.links = mapLinksFromBlocks(currentPage.value.blocks);
     } catch (err: any) {
       console.error("Erro ao deletar bloco:", err);
@@ -555,10 +724,12 @@ export const usePageStore = defineStore("page", () => {
 
       const response = await api.put<BackendBlock[]>(
         `/pages/${currentPage.value.id}/blocks/reorder`,
-        { blocks: payload }
+        { blocks: payload },
       );
 
-      currentPage.value.blocks = response.data.map(mapBlock).sort((a, b) => a.order - b.order);
+      currentPage.value.blocks = response.data
+        .map(mapBlock)
+        .sort((a, b) => a.order - b.order);
       currentPage.value.links = mapLinksFromBlocks(currentPage.value.blocks);
     } catch (err: any) {
       console.error("Erro ao reordenar blocos:", err);
@@ -577,9 +748,11 @@ export const usePageStore = defineStore("page", () => {
     fetchUserPages,
     createNewPage,
     deleteUserPage,
+    setPrimaryPage,
     selectPageToEdit,
     updateMyPage,
     fetchPageBySlug,
+    fetchPublicPageByDomain,
     addAudio,
     updateAudio,
     deleteAudio,

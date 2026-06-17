@@ -4,7 +4,7 @@
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
                 <SparklesIcon class="w-6 h-6 text-yellow-400" />
-                Profile Completion
+                {{ copy.title }}
             </h2>
             <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-bold">
                 {{ completion.percentage }}%
@@ -24,8 +24,8 @@
             class="mb-6 flex items-start gap-3 p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl transition-all duration-300 hover:border-amber-500/50">
             <ExclamationTriangleIcon class="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
             <div>
-                <h3 class="font-semibold text-amber-300 mb-1">Seu perfil ainda não está completo!</h3>
-                <p class="text-sm text-amber-400/90">Complete as etapas para torná-lo mais atraente.</p>
+                <h3 class="font-semibold text-amber-300 mb-1">{{ copy.incompleteTitle }}</h3>
+                <p class="text-sm text-amber-400/90">{{ copy.incompleteDescription }}</p>
             </div>
         </div>
 
@@ -37,8 +37,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { SparklesIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 import CompletionItem from '@/components/dashboard/CompletionItem.vue'; // Você já tinha este componente
+import { useAppLanguage } from '@/composables/useAppLanguage';
 
 defineProps<{
     completion: {
@@ -51,6 +53,31 @@ defineProps<{
         }>;
     };
 }>();
+
+const { locale } = useAppLanguage();
+
+const copy = computed(() => {
+    switch (locale.value) {
+        case 'en':
+            return {
+                title: 'Profile Completion',
+                incompleteTitle: 'Your profile is not complete yet!',
+                incompleteDescription: 'Complete the steps to make it more attractive.',
+            };
+        case 'es':
+            return {
+                title: 'Progreso del Perfil',
+                incompleteTitle: '¡Tu perfil aún no está completo!',
+                incompleteDescription: 'Completa los pasos para hacerlo más atractivo.',
+            };
+        default:
+            return {
+                title: 'Profile Completion',
+                incompleteTitle: 'Seu perfil ainda não está completo!',
+                incompleteDescription: 'Complete as etapas para torná-lo mais atraente.',
+            };
+    }
+});
 </script>
 
 <style scoped>

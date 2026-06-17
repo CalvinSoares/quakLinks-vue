@@ -1,18 +1,26 @@
 <template>
   <teleport to="body">
     <transition name="modal-fade">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60" @click.self="onClose">
-        <div class="bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
-          <div class="flex items-center justify-between p-4 border-b border-slate-700">
-            <h2 class="text-lg font-semibold text-white">{{ title }}</h2>
-            <button @click="onClose" class="text-slate-400 hover:text-white">&times;</button>
+      <div v-if="isOpen" class="ui-modal-shell">
+        <div class="ui-modal-backdrop" @click="onClose"></div>
+        <div class="ui-modal-panel max-h-[90vh] max-w-md" @click.stop>
+          <div class="ui-modal-header">
+            <div class="ui-modal-title-wrap">
+              <div class="ui-modal-accent">
+                <span class="h-2.5 w-2.5 rounded-full bg-current"></span>
+              </div>
+              <h2 class="ui-modal-title">{{ title }}</h2>
+            </div>
+            <button @click="onClose" type="button" class="ui-modal-close" :aria-label="closeLabel">
+              <XMarkIcon class="h-5 w-5" />
+            </button>
           </div>
 
-          <div>
+          <div class="overflow-y-auto max-h-[calc(90vh-10rem)]">
             <slot></slot>
           </div>
 
-          <div v-if="$slots.footer" class="p-4 border-t border-slate-700">
+          <div v-if="$slots.footer" class="ui-modal-footer">
             <slot name="footer"></slot>
           </div>
         </div>
@@ -22,6 +30,8 @@
 </template>
 
 <script setup lang="ts">
+import { XMarkIcon } from '@heroicons/vue/24/outline';
+
 const props = defineProps({
   isOpen: {
     type: Boolean,
@@ -38,6 +48,8 @@ const emit = defineEmits(['close']);
 const onClose = () => {
   emit('close');
 };
+
+const closeLabel = 'Fechar modal';
 </script>
 
 <style scoped>

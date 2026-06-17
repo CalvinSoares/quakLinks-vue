@@ -16,7 +16,7 @@
                             <div class="relative w-10 h-8 flex items-center justify-center">
                                 <div class="absolute inset-0 bg-amber-500 blur-lg opacity-20 animate-pulse-slow">
                                 </div>
-                                <img src="/ducklogonatal.png" alt="Logo"
+                                <img src="/duckbio.png" alt="Logo"
                                     class="w-8 h-auto relative z-10 transform group-hover/logo:rotate-12 transition-transform duration-300" />
                             </div>
                             <span class="font-bold text-lg tracking-tight hidden sm:block">
@@ -38,14 +38,16 @@
 
 
                         <div class="flex items-center gap-3">
+                            <LanguageMenuButton button-class="h-11 w-11 border-white/10 bg-slate-950/60"
+                                panel-class="right-0 top-[calc(100%+0.75rem)]" panel-width-class="w-72" />
                             <a href="/login"
                                 class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block">
-                                Entrar
+                                {{ copy.auth.login }}
                             </a>
                             <a href="/register"
                                 class="relative px-6 py-2.5 bg-amber-400 text-slate-900 text-sm font-bold rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-[0_0_20px_rgba(251,191,36,0.3)]">
                                 <span class="relative z-10 flex items-center gap-2">
-                                    Criar Bio
+                                    {{ copy.auth.createBio }}
                                     <ArrowRight :size="16" class="group-hover:translate-x-1 transition-transform" />
                                 </span>
                                 <div
@@ -80,38 +82,37 @@
                                 class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                         </span>
-                        <span class="text-xs font-semibold text-slate-300 tracking-wide uppercase">Nova geração de
-                            Biolinks</span>
+                        <span class="text-xs font-semibold text-slate-300 tracking-wide uppercase">{{ copy.hero.badge
+                        }}</span>
                     </div>
 
 
                     <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black mb-6 leading-[1.1] tracking-tight animate-fade-in-up"
                         style="animation-delay: 100ms">
-                        Seu perfil, <br />
+                        {{ copy.hero.titleStart }} <br />
                         <span
                             class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-500 to-orange-500">
-                            outra dimensão.
+                            {{ copy.hero.titleHighlight }}
                         </span>
                     </h1>
 
 
                     <p class="text-lg text-slate-400 mb-10 max-w-lg leading-relaxed animate-fade-in-up"
                         style="animation-delay: 200ms">
-                        A plataforma definitiva para centralizar sua identidade digital. Estética cyberpunk, analytics
-                        em tempo real e liberdade total.
+                        {{ copy.hero.description }}
                     </p>
 
 
                     <div class="flex flex-wrap items-center gap-4 animate-fade-in-up" style="animation-delay: 300ms">
                         <a href="/register"
                             class="px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-slate-200 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                            Começar Agora
+                            {{ copy.hero.primaryCta }}
                             <ArrowRight :size="18" />
                         </a>
                         <a href="#explore"
                             class="px-8 py-4 bg-transparent border border-white/20 text-white font-bold rounded-xl hover:bg-white/5 transition-all flex items-center gap-2">
                             <Play :size="18" />
-                            Ver Demo
+                            {{ copy.hero.secondaryCta }}
                         </a>
                     </div>
 
@@ -126,7 +127,8 @@
                             <img class="w-10 h-10 rounded-full border-2 border-[#0a0a0a]"
                                 src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bob" />
                         </div>
-                        <p>Junte-se a <span class="text-white font-bold">50k+</span> creators</p>
+                        <p>{{ copy.hero.joinPrefix }} <span class="text-white font-bold">50k+</span> {{
+                            copy.hero.joinSuffix }}</p>
                     </div>
                 </div>
 
@@ -160,7 +162,7 @@
 
                                 <div
                                     class="w-24 h-24 rounded-full border-2 border-amber-400 p-1 shadow-[0_0_20px_rgba(251,191,36,0.3)] mb-4">
-                                    <img src="/ducklogonatal.png"
+                                    <img src="/duckbio.png"
                                         class="w-full h-full rounded-full bg-slate-800 object-cover" />
                                 </div>
 
@@ -175,21 +177,21 @@
                                         <div
                                             class="w-8 h-8 rounded-lg bg-red-500 flex items-center justify-center text-xs font-bold">
                                             YT</div>
-                                        <span class="text-sm font-medium">Inscreva-se</span>
+                                        <span class="text-sm font-medium">{{ copy.mockups.subscribe }}</span>
                                     </div>
                                     <div
                                         class="w-full py-3 px-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer">
                                         <div class="w-8 h-8 rounded-lg bg-[#5865F2] flex items-center justify-center">
                                             <Gamepad2 size="16" />
                                         </div>
-                                        <span class="text-sm font-medium">Discord Server</span>
+                                        <span class="text-sm font-medium">{{ copy.mockups.discordServer }}</span>
                                     </div>
                                     <div
                                         class="w-full py-3 px-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer">
                                         <div class="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center">
                                             <Music size="16" />
                                         </div>
-                                        <span class="text-sm font-medium">Spotify Playlist</span>
+                                        <span class="text-sm font-medium">{{ copy.mockups.spotifyPlaylist }}</span>
                                     </div>
                                 </div>
 
@@ -244,11 +246,10 @@
 
                     <div v-observe class="scroll-hidden space-y-8 order-2 lg:order-1">
                         <div>
-                            <h3 class="text-4xl md:text-5xl font-black mb-6">Explore <span
-                                    class="text-amber-400">Possibilidades</span></h3>
+                            <h3 class="text-4xl md:text-5xl font-black mb-6">{{ copy.explore.titleStart }} <span
+                                    class="text-amber-400">{{ copy.explore.titleHighlight }}</span></h3>
                             <p class="text-lg text-slate-400 leading-relaxed">
-                                Nossa engine de renderização permite qualquer estilo. Do minimalismo corporativo ao caos
-                                do cybercore.
+                                {{ copy.explore.description }}
                             </p>
                         </div>
 
@@ -352,8 +353,9 @@
         <section id="features" class="py-24 px-4 bg-[#0a0a0a]">
             <div class="container mx-auto max-w-6xl">
                 <div v-observe class="scroll-hidden text-center mb-16">
-                    <h3 class="text-4xl font-bold mb-4">Features <span class="text-amber-400">Insanas</span></h3>
-                    <p class="text-slate-400">Tudo o que você precisa para dominar sua presença digital.</p>
+                    <h3 class="text-4xl font-bold mb-4">{{ copy.features.titleStart }} <span class="text-amber-400">{{
+                        copy.features.titleHighlight }}</span></h3>
+                    <p class="text-slate-400">{{ copy.features.description }}</p>
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-6">
@@ -382,8 +384,8 @@
         <section id="pricing" class="py-24 px-4 bg-slate-900/20 border-y border-white/5">
             <div class="container mx-auto max-w-6xl">
                 <div v-observe class="scroll-hidden text-center mb-16">
-                    <h3 class="text-4xl font-bold mb-4">Planos</h3>
-                    <p class="text-slate-400">Comece grátis. Evolua quando precisar.</p>
+                    <h3 class="text-4xl font-bold mb-4">{{ copy.pricing.title }}</h3>
+                    <p class="text-slate-400">{{ copy.pricing.description }}</p>
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-8">
@@ -394,13 +396,13 @@
 
                         <div v-if="plan.popular"
                             class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-amber-400 text-slate-900 text-xs font-bold rounded-full uppercase tracking-wider">
-                            Recomendado
+                            {{ copy.pricing.recommended }}
                         </div>
 
                         <h4 class="text-xl font-bold mb-2">{{ plan.name }}</h4>
                         <div class="flex items-baseline gap-1 mb-6">
                             <span class="text-4xl font-black">{{ plan.price }}</span>
-                            <span class="text-sm text-slate-500">/mês</span>
+                            <span class="text-sm text-slate-500">{{ copy.pricing.perMonth }}</span>
                         </div>
 
                         <ul class="space-y-4 mb-8">
@@ -428,13 +430,13 @@
                         class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent opacity-50">
                     </div>
 
-                    <h2 class="text-4xl md:text-6xl font-black mb-6">Pronto para o <span
-                            class="text-amber-400">show?</span></h2>
-                    <p class="text-xl text-slate-400 mb-10">Junte-se a 50,000+ creators que usam QuackLinks.</p>
+                    <h2 class="text-4xl md:text-6xl font-black mb-6">{{ copy.finalCta.titleStart }} <span
+                            class="text-amber-400">{{ copy.finalCta.titleHighlight }}</span></h2>
+                    <p class="text-xl text-slate-400 mb-10">{{ copy.finalCta.description }}</p>
 
                     <a href="/register"
                         class="inline-block px-10 py-5 bg-amber-400 text-slate-900 text-lg font-bold rounded-2xl hover:bg-amber-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(251,191,36,0.4)] transition-all duration-300">
-                        Criar Conta Grátis
+                        {{ copy.finalCta.button }}
                     </a>
                 </div>
             </div>
@@ -442,7 +444,7 @@
 
         <footer class="border-t border-slate-800/50 py-12 text-center text-slate-500 text-sm bg-[#0a0a0a]">
             <div class="flex items-center justify-center gap-2 mb-4 opacity-50 hover:opacity-100 transition-opacity">
-                <img src="/ducklogonatal.png" class="w-6 h-auto grayscale" />
+                <img src="/duckbio.png" class="w-6 h-auto grayscale" />
                 <span>QuackLinks &copy; 2025</span>
             </div>
         </footer>
@@ -452,11 +454,194 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import LanguageMenuButton from '@/components/LanguageMenuButton.vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
     Sparkles, ArrowRight, Play, Check,
     Link, Palette, BarChart3, Music,
     Zap, Shield, Crown, Terminal, Gamepad2, Brush
 } from 'lucide-vue-next'
+
+const { locale } = useAppLanguage()
+
+const translations = {
+    pt: {
+        auth: { login: 'Entrar', createBio: 'Criar Bio' },
+        hero: {
+            badge: 'Nova geração de biolinks',
+            titleStart: 'Seu perfil,',
+            titleHighlight: 'outra dimensão.',
+            description: 'A plataforma definitiva para centralizar sua identidade digital. Estética cyberpunk, analytics em tempo real e liberdade total.',
+            primaryCta: 'Começar agora',
+            secondaryCta: 'Ver demo',
+            joinPrefix: 'Junte-se a',
+            joinSuffix: 'creators',
+        },
+        mockups: {
+            subscribe: 'Inscreva-se',
+            discordServer: 'Servidor Discord',
+            spotifyPlaylist: 'Playlist Spotify',
+        },
+        explore: {
+            titleStart: 'Explore',
+            titleHighlight: 'possibilidades',
+            description: 'Nossa engine de renderização permite qualquer estilo. Do minimalismo corporativo ao caos do cybercore.',
+        },
+        features: {
+            titleStart: 'Features',
+            titleHighlight: 'insanas',
+            description: 'Tudo o que você precisa para dominar sua presença digital.',
+        },
+        pricing: {
+            title: 'Planos',
+            description: 'Comece grátis. Evolua quando precisar.',
+            recommended: 'Recomendado',
+            perMonth: '/mês',
+        },
+        finalCta: {
+            titleStart: 'Pronto para o',
+            titleHighlight: 'show?',
+            description: 'Junte-se a 50,000+ creators que usam QuackLinks.',
+            button: 'Criar conta grátis',
+        },
+        demoProfiles: {
+            gamer: { label: 'Pro Gamer', desc: 'Estilo agressivo, cores neon, efeitos glitch.', bio: 'FPS Pro Player | Live todos os dias às 18h' },
+            artist: { label: 'Artista Digital', desc: 'Glassmorphism, gradientes suaves, elegante.', bio: 'Visual Designer & 3D Artist. Commissions Open.' },
+            dev: { label: 'Developer', desc: 'Minimalista, fonte mono, foco em conteúdo.', bio: 'Fullstack Dev building cool stuff.' },
+        },
+        featuresList: [
+            { title: 'Instantâneo', description: 'Carregamento ultra-rápido para não perder nenhum clique.' },
+            { title: 'Customizável', description: 'Controle total sobre cores, fontes e animações.' },
+            { title: 'Analytics', description: 'Saiba exatamente quem está clicando e de onde vêm.' },
+            { title: 'Mídia Embed', description: 'Spotify, YouTube, Twitch direto na sua página.' },
+            { title: 'Seguro', description: 'Proteção DDoS e SSL gratuito para todos os links.' },
+            { title: 'Domínio Próprio', description: 'Use seu próprio domínio .com ou .br.' },
+        ],
+        plans: [
+            { name: 'Starter', price: 'R$ 0', features: ['1 Página', 'Links Ilimitados', 'Temas Básicos'], cta: 'Criar Grátis', popular: false },
+            { name: 'Pro', price: 'R$ 29', features: ['3 Páginas', 'Remover Marca', 'Analytics Pro', 'Temas Premium'], cta: 'Assinar Pro', popular: true },
+            { name: 'Agency', price: 'R$ 99', features: ['10 Páginas', 'API Access', 'Suporte Prioritário'], cta: 'Contatar', popular: false },
+        ],
+    },
+    en: {
+        auth: { login: 'Login', createBio: 'Create Bio' },
+        hero: {
+            badge: 'Next generation biolinks',
+            titleStart: 'Your profile,',
+            titleHighlight: 'another dimension.',
+            description: 'The definitive platform to centralize your digital identity. Cyberpunk aesthetics, real-time analytics, and total freedom.',
+            primaryCta: 'Start now',
+            secondaryCta: 'View demo',
+            joinPrefix: 'Join',
+            joinSuffix: 'creators',
+        },
+        mockups: {
+            subscribe: 'Subscribe',
+            discordServer: 'Discord Server',
+            spotifyPlaylist: 'Spotify Playlist',
+        },
+        explore: {
+            titleStart: 'Explore',
+            titleHighlight: 'possibilities',
+            description: 'Our rendering engine supports any style. From corporate minimalism to cybercore chaos.',
+        },
+        features: {
+            titleStart: 'Crazy',
+            titleHighlight: 'features',
+            description: 'Everything you need to dominate your digital presence.',
+        },
+        pricing: {
+            title: 'Pricing',
+            description: 'Start free. Upgrade when you need it.',
+            recommended: 'Recommended',
+            perMonth: '/month',
+        },
+        finalCta: {
+            titleStart: 'Ready for the',
+            titleHighlight: 'show?',
+            description: 'Join 50,000+ creators using QuackLinks.',
+            button: 'Create free account',
+        },
+        demoProfiles: {
+            gamer: { label: 'Pro Gamer', desc: 'Aggressive style, neon colors, glitch effects.', bio: 'FPS Pro Player | Live every day at 6 PM' },
+            artist: { label: 'Digital Artist', desc: 'Glassmorphism, soft gradients, elegant.', bio: 'Visual Designer & 3D Artist. Commissions Open.' },
+            dev: { label: 'Developer', desc: 'Minimalist, mono font, content first.', bio: 'Fullstack Dev building cool stuff.' },
+        },
+        featuresList: [
+            { title: 'Instant', description: 'Ultra-fast loading so you do not lose a single click.' },
+            { title: 'Customizable', description: 'Full control over colors, fonts, and animations.' },
+            { title: 'Analytics', description: 'See exactly who is clicking and where they come from.' },
+            { title: 'Media Embed', description: 'Spotify, YouTube, Twitch directly on your page.' },
+            { title: 'Secure', description: 'DDoS protection and free SSL for every link.' },
+            { title: 'Custom Domain', description: 'Use your own .com or local domain.' },
+        ],
+        plans: [
+            { name: 'Starter', price: '$0', features: ['1 Page', 'Unlimited Links', 'Basic Themes'], cta: 'Start Free', popular: false },
+            { name: 'Pro', price: '$29', features: ['3 Pages', 'Remove Branding', 'Pro Analytics', 'Premium Themes'], cta: 'Subscribe Pro', popular: true },
+            { name: 'Agency', price: '$99', features: ['10 Pages', 'API Access', 'Priority Support'], cta: 'Contact Sales', popular: false },
+        ],
+    },
+    es: {
+        auth: { login: 'Entrar', createBio: 'Crear Bio' },
+        hero: {
+            badge: 'Nueva generación de biolinks',
+            titleStart: 'Tu perfil,',
+            titleHighlight: 'otra dimensión.',
+            description: 'La plataforma definitiva para centralizar tu identidad digital. Estética cyberpunk, analytics en tiempo real y libertad total.',
+            primaryCta: 'Empezar ahora',
+            secondaryCta: 'Ver demo',
+            joinPrefix: 'Únete a',
+            joinSuffix: 'creators',
+        },
+        mockups: {
+            subscribe: 'Suscríbete',
+            discordServer: 'Servidor Discord',
+            spotifyPlaylist: 'Playlist Spotify',
+        },
+        explore: {
+            titleStart: 'Explora',
+            titleHighlight: 'posibilidades',
+            description: 'Nuestra engine de render permite cualquier estilo. Del minimalismo corporativo al caos cybercore.',
+        },
+        features: {
+            titleStart: 'Features',
+            titleHighlight: 'brutales',
+            description: 'Todo lo que necesitas para dominar tu presencia digital.',
+        },
+        pricing: {
+            title: 'Planes',
+            description: 'Empieza gratis. Evoluciona cuando lo necesites.',
+            recommended: 'Recomendado',
+            perMonth: '/mes',
+        },
+        finalCta: {
+            titleStart: '¿Listo para el',
+            titleHighlight: 'show?',
+            description: 'Únete a 50,000+ creators que usan QuackLinks.',
+            button: 'Crear cuenta gratis',
+        },
+        demoProfiles: {
+            gamer: { label: 'Pro Gamer', desc: 'Estilo agresivo, colores neon, efectos glitch.', bio: 'FPS Pro Player | Live todos los días a las 18h' },
+            artist: { label: 'Artista Digital', desc: 'Glassmorphism, gradientes suaves, elegante.', bio: 'Visual Designer & 3D Artist. Commissions Open.' },
+            dev: { label: 'Developer', desc: 'Minimalista, fuente mono, foco en contenido.', bio: 'Fullstack Dev building cool stuff.' },
+        },
+        featuresList: [
+            { title: 'Instantáneo', description: 'Carga ultrarrápida para no perder ni un clic.' },
+            { title: 'Personalizable', description: 'Control total sobre colores, fuentes y animaciones.' },
+            { title: 'Analytics', description: 'Sabe exactamente quién hace clic y de dónde viene.' },
+            { title: 'Media Embed', description: 'Spotify, YouTube y Twitch directo en tu página.' },
+            { title: 'Seguro', description: 'Protección DDoS y SSL gratis para todos los links.' },
+            { title: 'Dominio Propio', description: 'Usa tu propio dominio .com o local.' },
+        ],
+        plans: [
+            { name: 'Starter', price: 'R$ 0', features: ['1 Página', 'Links ilimitados', 'Temas básicos'], cta: 'Crear Gratis', popular: false },
+            { name: 'Pro', price: 'R$ 29', features: ['3 Páginas', 'Quitar marca', 'Analytics Pro', 'Temas premium'], cta: 'Suscribirse Pro', popular: true },
+            { name: 'Agency', price: 'R$ 99', features: ['10 Páginas', 'Acceso API', 'Soporte prioritario'], cta: 'Contactar', popular: false },
+        ],
+    },
+}
+
+const copy = computed(() => translations[locale.value])
 
 const vObserve = {
     mounted: (el) => {
@@ -475,13 +660,13 @@ const vObserve = {
 const activeProfileKey = ref('gamer')
 let intervalId = null
 
-const demoProfiles = {
+const demoProfiles = computed(() => ({
     gamer: {
-        label: 'Pro Gamer',
-        desc: 'Estilo agressivo, cores neon, efeitos glitch.',
+        label: copy.value.demoProfiles.gamer.label,
+        desc: copy.value.demoProfiles.gamer.desc,
         icon: Gamepad2,
         username: 'K3VIN_PLAYS',
-        bio: 'FPS Pro Player | Live todos os dias às 18h',
+        bio: copy.value.demoProfiles.gamer.bio,
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
         background: 'linear-gradient(to bottom, #2e0202, #0f0f0f)',
         overlay: 'scanlines',
@@ -496,11 +681,11 @@ const demoProfiles = {
         ]
     },
     artist: {
-        label: 'Artista Digital',
-        desc: 'Glassmorphism, gradientes suaves, elegante.',
+        label: copy.value.demoProfiles.artist.label,
+        desc: copy.value.demoProfiles.artist.desc,
         icon: Brush,
         username: 'Aria.Design',
-        bio: 'Visual Designer & 3D Artist. Commissions Open.',
+        bio: copy.value.demoProfiles.artist.bio,
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aria',
         background: 'linear-gradient(to bottom, #4c1d95, #1e1b4b)',
         overlay: 'noise',
@@ -515,11 +700,11 @@ const demoProfiles = {
         ]
     },
     dev: {
-        label: 'Developer',
-        desc: 'Minimalista, fonte mono, foco em conteúdo.',
+        label: copy.value.demoProfiles.dev.label,
+        desc: copy.value.demoProfiles.dev.desc,
         icon: Terminal,
         username: '<Dev.Source />',
-        bio: 'Fullstack Dev building cool stuff.',
+        bio: copy.value.demoProfiles.dev.bio,
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack',
         background: '#0a0a0a',
         overlay: 'none',
@@ -534,17 +719,17 @@ const demoProfiles = {
             { icon: Link, text: 'Contact Me' }
         ]
     }
-}
+}))
 
-const currentDemo = computed(() => demoProfiles[activeProfileKey.value])
+const currentDemo = computed(() => demoProfiles.value[activeProfileKey.value])
 
 const getBackgroundStyle = (profile) => ({
     background: profile.background,
 })
 
 const getRingStyle = (profile) => {
-    if (profile.label === 'Pro Gamer') return { border: '2px solid #ff0055', boxShadow: '0 0 15px #ff0055' }
-    if (profile.label === 'Artista Digital') return { background: 'linear-gradient(45deg, #a78bfa, #f472b6)' }
+    if (profile.buttonStyle === 'brutalist') return { border: '2px solid #ff0055', boxShadow: '0 0 15px #ff0055' }
+    if (profile.buttonStyle === 'glass') return { background: 'linear-gradient(45deg, #a78bfa, #f472b6)' }
     return { border: '2px dashed #333' }
 }
 
@@ -562,29 +747,25 @@ const getLinkClasses = (profile) => {
     return ''
 }
 
-const navItems = [
+const navItems = computed(() => [
     { name: 'Showcase', href: '#explore' },
-    { name: 'Features', href: '#features' },
-    { name: 'Planos', href: '#pricing' }
-]
+    { name: copy.value.features.titleStart, href: '#features' },
+    { name: copy.value.pricing.title, href: '#pricing' }
+])
 
-const features = [
-    { icon: Zap, title: 'Instantâneo', description: 'Carregamento ultra-rápido para não perder nenhum clique.' },
-    { icon: Palette, title: 'Customizável', description: 'Controle total sobre cores, fontes e animações.' },
-    { icon: BarChart3, title: 'Analytics', description: 'Saiba exatamente quem está clicando e de onde vêm.' },
-    { icon: Music, title: 'Mídia Embed', description: 'Spotify, YouTube, Twitch direto na sua página.' },
-    { icon: Shield, title: 'Seguro', description: 'Proteção DDoS e SSL gratuito para todos os links.' },
-    { icon: Crown, title: 'Domínio Próprio', description: 'Use seu próprio domínio .com ou .br.' },
-]
+const features = computed(() => [
+    { icon: Zap, ...copy.value.featuresList[0] },
+    { icon: Palette, ...copy.value.featuresList[1] },
+    { icon: BarChart3, ...copy.value.featuresList[2] },
+    { icon: Music, ...copy.value.featuresList[3] },
+    { icon: Shield, ...copy.value.featuresList[4] },
+    { icon: Crown, ...copy.value.featuresList[5] },
+])
 
-const plans = [
-    { name: 'Starter', price: 'R$ 0', features: ['1 Página', 'Links Ilimitados', 'Temas Básicos'], cta: 'Criar Grátis', popular: false },
-    { name: 'Pro', price: 'R$ 29', features: ['3 Páginas', 'Remover Marca', 'Analytics Pro', 'Temas Premium'], cta: 'Assinar Pro', popular: true },
-    { name: 'Agency', price: 'R$ 99', features: ['10 Páginas', 'API Access', 'Suporte Prioritário'], cta: 'Contatar', popular: false },
-]
+const plans = computed(() => copy.value.plans)
 
 onMounted(() => {
-    const keys = Object.keys(demoProfiles)
+    const keys = Object.keys(demoProfiles.value)
     let idx = 0
     intervalId = setInterval(() => {
         idx = (idx + 1) % keys.length

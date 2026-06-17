@@ -1,7 +1,12 @@
 <template>
     <div
         class="flex items-center gap-4 p-3 bg-slate-800/50 rounded-lg border border-transparent hover:border-slate-600 transition">
-        <img :src="audio.coverUrl || '/default-cover.png'" class="w-12 h-12 rounded-md object-cover">
+        <AudioCoverArt
+            :cover-url="audio.coverUrl"
+            size-class="w-12 h-12"
+            rounded-class="rounded-md"
+            icon-class="w-5 h-5"
+        />
         <div class="flex-1">
             <p class="font-semibold text-white">{{ audio.title }}</p>
             <p class="text-xs text-slate-400">0:20</p>
@@ -19,6 +24,7 @@
 
 <script setup lang="ts">
 import type { Audio } from '@/store/page';
+import AudioCoverArt from '@/components/appearance/AudioCoverArt.vue';
 
 defineProps<{ audio: Audio }>();
 defineEmits(['edit', 'delete', 'set-active']);

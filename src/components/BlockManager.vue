@@ -90,7 +90,7 @@
 
                     <div v-else-if="selectedType === 'HEADER' || selectedType === 'TEXT'" class="space-y-3">
                         <label class="input-label">Conteúdo</label>
-                        <textarea v-model="tempContent.text" class="input-modern resize-none" rows="3"
+                        <textarea v-model="headerOrTextContent" class="input-modern resize-none" rows="3"
                             placeholder="Digite aqui..."></textarea>
                     </div>
 
@@ -149,7 +149,7 @@
                             <label class="input-label flex justify-between">
                                 Descrição
                                 <span class="text-[10px] text-slate-500">{{ tempContent.description?.length || 0
-                                    }}/110</span>
+                                }}/110</span>
                             </label>
                             <textarea v-model="tempContent.description" class="input-modern resize-none" rows="2"
                                 maxlength="110" placeholder="Detalhes do evento..."></textarea>
@@ -205,6 +205,10 @@
             </div>
         </div>
 
+        <ConfirmationModal :is-open="isDeleteModalOpen" title="Excluir bloco"
+            description="Tem certeza que deseja excluir este bloco?" cancel-label="Cancelar"
+            confirm-label="Excluir bloco" loading-label="Excluindo..." :is-loading="isDeletingBlock"
+            @close="closeDeleteModal" @confirm="confirmDeleteBlock" />
     </div>
 </template>
 
@@ -220,13 +224,17 @@ import {
 import { toast } from 'vue-sonner';
 import SwitchToggle from './SwitchToggle.vue';
 import draggable from 'vuedraggable';
+import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
 
 const emit = defineEmits(['edit']);
 const pageStore = usePageStore();
 const activeCategory = ref('basic');
 
 const isModalOpen = ref(false);
+const isDeleteModalOpen = ref(false);
+const isDeletingBlock = ref(false);
 const selectedType = ref<string>('');
+const blockIdPendingDeletion = ref<string | null>(null);
 const tempContent = reactive<any>({});
 
 const localBlocks = computed({
@@ -280,7 +288,7 @@ function initiateAddBlock(type: string) {
     Object.keys(tempContent).forEach(key => delete tempContent[key]);
 
     if (type === 'LINK') { tempContent.title = ''; tempContent.url = ''; }
-    if (type === 'HEADER') tempContent.text = '';
+    if (type === 'HEADER') tempContent.title = '';
     if (type === 'TEXT') tempContent.text = '';
     if (type === 'YOUTUBE_SUBSCRIBE') tempContent.channelId = '';
     if (type === 'PINTEREST') tempContent.url = '';
@@ -334,12 +342,28 @@ function closeModal() {
     selectedType.value = '';
 }
 
-async function deleteBlock(id: string) {
-    if (!confirm('Tem certeza?')) return;
+function deleteBlock(id: string) {
+    blockIdPendingDeletion.value = id;
+    isDeleteModalOpen.value = true;
+}
+
+function closeDeleteModal() {
+    if (isDeletingBlock.value) return;
+    isDeleteModalOpen.value = false;
+    blockIdPendingDeletion.value = null;
+}
+
+async function confirmDeleteBlock() {
+    if (!blockIdPendingDeletion.value) return;
+
+    isDeletingBlock.value = true;
     try {
-        await pageStore.deleteBlock(id);
+        await pageStore.deleteBlock(blockIdPendingDeletion.value);
         toast.success('Bloco removido.');
+        isDeleteModalOpen.value = false;
+        blockIdPendingDeletion.value = null;
     } catch (e) { toast.error('Erro ao remover.'); }
+    finally { isDeletingBlock.value = false; }
 }
 
 function getIconForType(type: string) {
@@ -366,10 +390,28 @@ function getBlockLabel(block: any) {
 
 function getBlockSubtitle(block: any) {
     if (block.content.url) return block.content.url;
+    if (block.content.title) return block.content.title;
+    if (block.content.textContent) return block.content.textContent;
     if (block.content.text) return block.content.text;
     if (block.content.channelId) return `Canal: ${block.content.channelId}`;
     return '';
 }
+
+const headerOrTextContent = computed({
+    get: () => selectedType.value === 'HEADER'
+        ? (tempContent.title || '')
+        : (tempContent.text || ''),
+    set: (value: string) => {
+        if (selectedType.value === 'HEADER') {
+            tempContent.title = value;
+            delete tempContent.text;
+            delete tempContent.textContent;
+            return;
+        }
+
+        tempContent.text = value;
+    }
+});
 </script>
 
 <style scoped>

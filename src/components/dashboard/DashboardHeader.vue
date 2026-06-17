@@ -14,15 +14,21 @@
         </button>
 
         <div class="flex items-center gap-2">
-            <img src="/ducklogonatal.png" alt="QuackLinks Logo" class="w-7 h-5" />
+            <img src="/duckbio.png" alt="QuackLinks Logo" class="w-7 h-5" />
             <h1 class="text-xl font-bold tracking-wider text-white">Quack<span class="text-amber-400">Links</span></h1>
         </div>
 
-
+        <LanguageMenuButton
+            button-class="h-10 w-10 border-slate-700 bg-slate-800/80"
+            panel-class="right-0 top-[calc(100%+0.5rem)]"
+            panel-width-class="w-72"
+        />
     </header>
 </template>
 
 <script setup lang="ts">
+import LanguageMenuButton from "@/components/LanguageMenuButton.vue";
+
 defineProps<{
     isSidebarOpen: boolean;
 }>();

@@ -22,6 +22,11 @@ describe("AppearanceStyleTab.vue", () => {
         stubs: {
           ColorPicker: true,
           SwitchToggle: true,
+          CustomDropdown: {
+            props: ["modelValue", "options"],
+            template:
+              '<select class="custom-dropdown-stub" :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
+          },
         },
       },
     });
@@ -32,7 +37,7 @@ describe("AppearanceStyleTab.vue", () => {
     await wrapper.findAll("button").find((button) => button.text().includes("Minimal"))!.trigger("click");
     expect(form.linkStyle).toBe("minimal");
 
-    await wrapper.get('select').setValue("Cinzel");
+    await wrapper.get(".custom-dropdown-stub").setValue("Cinzel");
     expect(form.fontFamily).toBe("Cinzel");
   });
 

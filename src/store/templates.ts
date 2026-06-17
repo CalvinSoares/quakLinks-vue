@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, reactive } from "vue";
 import api from "@/services/api";
+import { withIdempotencyKey } from "@/services/idempotency";
 import { usePageStore } from "./page";
 import { uploadFileWithSignedUrl } from "@/services/uploadService";
 
@@ -11,6 +12,7 @@ export interface TemplateTag {
 export interface TemplateCreator {
   id: string;
   name: string;
+  displayHandle: string;
 }
 
 export interface Template {
@@ -26,6 +28,8 @@ export interface Template {
   };
   isNew?: boolean;
   isFavorited?: boolean;
+  blockCount: number;
+  applyCount: number;
   updatedAt?: string;
   pageSnapshot?: Record<string, unknown>;
   blockSnapshots?: Array<Record<string, unknown>>;
@@ -45,6 +49,9 @@ export interface TemplateListItem {
   };
   isNew?: boolean;
   isFavorited?: boolean;
+  blockCount: number;
+  applyCount: number;
+  updatedAt?: string;
 }
 
 export interface ListTemplatesQuery {
@@ -57,6 +64,7 @@ export interface ListTemplatesQuery {
 }
 
 export interface CreateTemplateInput {
+  pageId: string;
   name: string;
   previewImageFile: File;
   previewImageUrl?: string;
@@ -82,6 +90,7 @@ interface TemplateSummaryResponse {
   visibility: "PUBLIC" | "PRIVATE" | "UNLISTED";
   blockCount: number;
   favoriteCount: number;
+  applyCount?: number;
   favorited: boolean;
   createdAt: string;
   updatedAt: string;
@@ -105,8 +114,27 @@ interface PopularTemplateTagResponse {
   usageCount: number;
 }
 
+function normalizeTagName(tag: string) {
+  return tag.trim().toLowerCase();
+}
+
 function mapTags(tags: string[]): TemplateTag[] {
   return tags.map((name) => ({ name }));
+}
+
+function deriveCreatorHandle(name: string): string {
+  const slug = name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[^a-z0-9_]/g, "");
+  return slug || "creator";
+}
+
+function isTemplateNew(createdAt: string): boolean {
+  const created = new Date(createdAt).getTime();
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  return created >= weekAgo;
 }
 
 function mapSummary(template: TemplateSummaryResponse): TemplateListItem {
@@ -116,25 +144,36 @@ function mapSummary(template: TemplateSummaryResponse): TemplateListItem {
     previewImageUrl: template.previewImageUrl,
     visibility: template.visibility,
     createdAt: template.createdAt,
+    updatedAt: template.updatedAt,
     creator: {
       id: template.creatorId,
       name: template.creatorName,
+      displayHandle: deriveCreatorHandle(template.creatorName),
     },
     tags: mapTags(template.tags),
+    blockCount: template.blockCount ?? 0,
+    applyCount: template.applyCount ?? 0,
     _count: {
       favoritedBy: template.favoriteCount,
     },
     isFavorited: template.favorited,
+    isNew: isTemplateNew(template.createdAt),
   };
 }
 
 function mapTemplate(template: TemplateResponse): Template {
+  const blockCount =
+    template.blockCount ??
+    template.blockSnapshots?.length ??
+    0;
+
   return {
-    ...mapSummary(template),
+    ...mapSummary({ ...template, blockCount }),
     updatedAt: template.updatedAt,
     pageSnapshot: template.pageSnapshot,
-    blockSnapshots: template.blockSnapshots,
-    audioSnapshots: template.audioSnapshots,
+    blockSnapshots: template.blockSnapshots ?? [],
+    audioSnapshots: template.audioSnapshots ?? [],
+    blockCount,
   };
 }
 
@@ -147,6 +186,7 @@ export const useTemplatesStore = defineStore("templates", () => {
   const popularTags = ref<{ name: string }[]>([]);
   const selectedTags = ref<string[]>([]);
   const isLoading = ref(false);
+  const isDetailLoading = ref(false);
   const error = ref<string | null>(null);
 
   const pagination = reactive({
@@ -176,8 +216,12 @@ export const useTemplatesStore = defineStore("templates", () => {
       await pageStore.fetchUserPages();
     }
 
-    if (pageStore.userPages[0]?.id) {
+    if (pageStore.userPages.length === 1 && pageStore.userPages[0]?.id) {
       return pageStore.userPages[0].id;
+    }
+
+    if (pageStore.userPages.length > 1) {
+      throw new Error(`Selecione a pagina que deseja usar antes de ${action}.`);
     }
 
     await pageStore.fetchMyPage();
@@ -270,16 +314,18 @@ export const useTemplatesStore = defineStore("templates", () => {
   }
 
   async function fetchTemplateById(id: string) {
-    isLoading.value = true;
+    isDetailLoading.value = true;
     try {
       const response = await api.get<TemplateResponse>(
         `/public/templates/${id}`,
       );
       selectedTemplate.value = mapTemplate(response.data);
+      return selectedTemplate.value;
     } catch (err: any) {
       error.value = `Could not fetch template ${id}.`;
+      return null;
     } finally {
-      isLoading.value = false;
+      isDetailLoading.value = false;
     }
   }
 
@@ -288,7 +334,16 @@ export const useTemplatesStore = defineStore("templates", () => {
       const response = await api.get<PopularTemplateTagResponse[]>(
         "/public/templates/tags/popular",
       );
-      popularTags.value = response.data.map((tag) => ({ name: tag.name }));
+      popularTags.value = response.data.map((tag) => ({
+        name: normalizeTagName(tag.name),
+      }));
+      const availableTagNames = new Set(
+        popularTags.value.map((tag) => tag.name),
+      );
+      selectedTags.value = selectedTags.value.filter((tag) =>
+        availableTagNames.has(tag),
+      );
+      filters.tags = selectedTags.value.join(",") || undefined;
     } catch (err) {
       console.error("Failed to fetch popular tags:", err);
     }
@@ -301,11 +356,16 @@ export const useTemplatesStore = defineStore("templates", () => {
   }
 
   function toggleTagFilter(tagName: string) {
-    const index = selectedTags.value.indexOf(tagName);
+    const normalizedTag = normalizeTagName(tagName);
+    if (!popularTags.value.some((tag) => tag.name === normalizedTag)) {
+      return;
+    }
+
+    const index = selectedTags.value.indexOf(normalizedTag);
     if (index > -1) {
       selectedTags.value.splice(index, 1);
     } else {
-      selectedTags.value.push(tagName);
+      selectedTags.value.push(normalizedTag);
     }
     filters.tags = selectedTags.value.join(",") || undefined;
     fetchTemplates();
@@ -315,52 +375,188 @@ export const useTemplatesStore = defineStore("templates", () => {
     try {
       const pageId = await ensureSelectedPageId("aplicar um template");
 
-      await api.post(`/templates/${templateId}/apply`, { pageId });
+      await api.post(
+        `/templates/${templateId}/apply`,
+        { pageId },
+        withIdempotencyKey("template-apply"),
+      );
       const pageStore = usePageStore();
       await pageStore.fetchMyPage();
+      syncTemplateAcrossLists(templateId, (item) => ({
+        ...item,
+        applyCount: item.applyCount + 1,
+      }));
+      if (selectedTemplate.value?.id === templateId) {
+        selectedTemplate.value = {
+          ...selectedTemplate.value,
+          applyCount: selectedTemplate.value.applyCount + 1,
+        };
+      }
       return true;
     } catch (err: any) {
       console.error("Failed to apply template:", err);
-      return false;
+      throw new Error(
+        err.response?.data?.message ||
+          err.message ||
+          "Nao foi possivel aplicar o template.",
+      );
     }
   }
 
-  async function toggleFavorite(template: TemplateListItem) {
-    const originalState = template.isFavorited;
+  function syncTemplateAcrossLists(
+    templateId: string,
+    updater: (template: TemplateListItem) => TemplateListItem | null,
+  ) {
+    const applyUpdate = (list: TemplateListItem[]) =>
+      list
+        .map((template) =>
+          template.id === templateId ? updater(template) : template,
+        )
+        .filter((template): template is TemplateListItem => template !== null);
 
-    template.isFavorited = !template.isFavorited;
-    template._count.favoritedBy += template.isFavorited ? 1 : -1;
+    templates.value = applyUpdate(templates.value);
+    myTemplates.value = applyUpdate(myTemplates.value);
+    favoriteTemplates.value = applyUpdate(favoriteTemplates.value);
+    recentTemplates.value = applyUpdate(recentTemplates.value);
+  }
+
+  function buildOptimisticFavoriteTemplate(
+    template: TemplateListItem,
+    isFavorited: boolean,
+  ): TemplateListItem {
+    return {
+      ...template,
+      isFavorited,
+      _count: {
+        ...template._count,
+        favoritedBy: Math.max(
+          0,
+          template._count.favoritedBy + (isFavorited ? 1 : -1),
+        ),
+      },
+    };
+  }
+
+  async function toggleFavorite(template: TemplateListItem) {
+    const templateId = template.id;
+    const originalState = Boolean(template.isFavorited);
+    const nextState = !originalState;
+    const wasInFavorites = favoriteTemplates.value.some(
+      (item) => item.id === templateId,
+    );
+    const optimisticTemplate = buildOptimisticFavoriteTemplate(
+      template,
+      nextState,
+    );
+
+    syncTemplateAcrossLists(templateId, (item) => ({
+      ...item,
+      isFavorited: nextState,
+      _count: {
+        ...item._count,
+        favoritedBy: Math.max(
+          0,
+          item._count.favoritedBy + (nextState ? 1 : -1),
+        ),
+      },
+    }));
+
+    if (selectedTemplate.value?.id === templateId) {
+      selectedTemplate.value = {
+        ...selectedTemplate.value,
+        isFavorited: nextState,
+        _count: {
+          ...selectedTemplate.value._count,
+          favoritedBy: Math.max(
+            0,
+            selectedTemplate.value._count.favoritedBy + (nextState ? 1 : -1),
+          ),
+        },
+      };
+    }
+
+    if (
+      nextState &&
+      !favoriteTemplates.value.some((item) => item.id === templateId)
+    ) {
+      favoriteTemplates.value = [
+        optimisticTemplate,
+        ...favoriteTemplates.value,
+      ];
+    }
 
     try {
-      if (template.isFavorited) {
-        await api.post(`/templates/${template.id}/favorite`);
+      if (nextState) {
+        await api.post(`/templates/${templateId}/favorite`);
       } else {
-        await api.delete(`/templates/${template.id}/favorite`);
+        await api.delete(`/templates/${templateId}/favorite`);
+        favoriteTemplates.value = favoriteTemplates.value.filter(
+          (item) => item.id !== templateId,
+        );
       }
     } catch (err) {
       console.error("Falha ao favoritar o template:", err);
-      template.isFavorited = originalState;
-      template._count.favoritedBy += originalState ? 1 : -1;
+      syncTemplateAcrossLists(templateId, (item) => ({
+        ...item,
+        isFavorited: originalState,
+        _count: {
+          ...item._count,
+          favoritedBy: Math.max(
+            0,
+            item._count.favoritedBy + (originalState ? 1 : -1),
+          ),
+        },
+      }));
+
+      if (selectedTemplate.value?.id === templateId) {
+        selectedTemplate.value = {
+          ...selectedTemplate.value,
+          isFavorited: originalState,
+          _count: {
+            ...selectedTemplate.value._count,
+            favoritedBy: Math.max(
+              0,
+              selectedTemplate.value._count.favoritedBy +
+                (originalState ? 1 : -1),
+            ),
+          },
+        };
+      }
+
+      if (!originalState && !wasInFavorites) {
+        favoriteTemplates.value = favoriteTemplates.value.filter(
+          (item) => item.id !== templateId,
+        );
+      }
     }
   }
 
   async function createTemplate(data: CreateTemplateInput) {
     try {
-      const pageId = await ensureSelectedPageId("criar um template");
+      if (!data.pageId) {
+        throw new Error(
+          "Selecione a pagina que deseja usar para criar o template.",
+        );
+      }
+
       const uploadedImageUrl = await uploadFileWithSignedUrl(
         data.previewImageFile,
         "template_preview",
       );
 
       const payload = {
-        pageId,
+        pageId: data.pageId,
         name: data.name,
         previewImageUrl: uploadedImageUrl,
         tags: data.tags,
         visibility: data.visibility,
       };
 
-      const response = await api.post<TemplateResponse>("/templates", payload);
+      const response = await api.post<TemplateResponse>(
+        "/templates",
+        payload,
+        withIdempotencyKey("template-create"),
+      );
       const createdTemplate = mapTemplate(response.data);
 
       if (Array.isArray(myTemplates.value)) {
@@ -434,6 +630,7 @@ export const useTemplatesStore = defineStore("templates", () => {
     recentTemplates,
     selectedTemplate,
     isLoading,
+    isDetailLoading,
     error,
     pagination,
     filters,

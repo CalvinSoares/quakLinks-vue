@@ -1,9 +1,16 @@
 <template>
-    <div class="min-h-[80vh] w-full relative overflow-y-auto text-white transition-all duration-500"
+    <div
+        class="w-full relative overflow-y-auto overflow-x-hidden text-white transition-all duration-500"
+        :class="fillViewport ? 'min-h-screen h-full' : 'min-h-[80vh]'"
         :style="pageContainerStyle">
 
-        <div class="absolute left-0 top-0 w-full transition-all duration-500 ease-in-out overflow-hidden z-0"
-            :class="getBackgroundDimensions">
+        <div class="left-0 top-0 w-full transition-all duration-500 ease-in-out overflow-hidden z-0"
+            :class="[
+                fillViewport && (page.pageLayout || 'standard') === 'standard'
+                    ? 'fixed inset-0'
+                    : 'absolute',
+                getBackgroundDimensions,
+            ]">
             <video v-if="page.backgroundType === 'video' && page.backgroundVideoUrl" :key="page.backgroundVideoUrl"
                 class="w-full h-full object-cover" :style="{ filter: `blur(${page.backgroundBlur || 0}px)` }"
                 :poster="page.backgroundUrl || ''" autoplay loop muted playsinline>
@@ -21,8 +28,11 @@
         </div>
 
 
-        <div class="relative z-10 flex flex-col items-center min-h-full px-4 transition-all duration-500"
-            :class="getContentAlignment">
+        <div class="relative z-10 flex flex-col items-center px-4 transition-all duration-500"
+            :class="[
+                getContentAlignment,
+                fillViewport ? 'min-h-screen' : 'min-h-full',
+            ]">
 
             <div class="relative w-full max-w-md mx-auto transition-all duration-300 rounded-2xl p-6 sm:p-8"
                 :class="{ 'mt-0': page.pageLayout === 'standard' }" :style="profileCardStyle">
@@ -73,6 +83,7 @@ import UniversalBlock from './UniversalBlock.vue';
 
 const props = defineProps<{
     page: any;
+    fillViewport?: boolean;
 }>();
 
 

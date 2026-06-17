@@ -1,62 +1,44 @@
 <template>
   <div class="space-y-6">
     <section class="group-section">
-      <h3 class="section-title">Identidade</h3>
+      <h3 class="section-title">{{ copy.identity }}</h3>
       <div class="space-y-4">
         <div class="rounded-xl border border-slate-800/50 bg-slate-900/50 p-4 text-sm text-slate-400">
-          A API atual nao expõe fotos sociais do Google ou Discord. Use um avatar local para a página.
+          {{ copy.identityHint }}
         </div>
 
-        <AssetUploader
-          title="Upload Avatar Personalizado"
-          :current-url="form.avatarUrl"
-          upload-type="avatar"
-          accepted-files="image/*"
-          @upload="$emit('upload', $event)"
-          @remove="$emit('remove', 'avatarUrl')"
-        />
+        <AssetUploader :title="copy.avatarUpload" :current-url="form.avatarUrl" upload-type="avatar"
+          accepted-files="image/*" @upload="$emit('upload', $event)" @remove="$emit('remove', 'avatarUrl')" />
       </div>
     </section>
 
     <section class="group-section">
-      <h3 class="section-title">Informações</h3>
+      <h3 class="section-title">{{ copy.information }}</h3>
       <div class="space-y-4">
         <div>
-          <label class="input-label">Nome de Exibição</label>
+          <label class="input-label">{{ copy.displayName }}</label>
           <div class="relative">
-            <input v-model="form.title" type="text" class="input-modern" placeholder="Ex: @seunome" />
-            <button
-              @click="$emit('open-effects')"
+            <input v-model="form.title" type="text" class="input-modern" :placeholder="copy.displayNamePlaceholder" />
+            <button @click="$emit('open-effects')"
               class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-yellow-400 transition-colors"
-              title="Efeitos do Texto"
-            >
+              :title="copy.textEffects">
               <SparklesIcon class="w-4 h-4" />
             </button>
           </div>
         </div>
 
         <div>
-          <label class="input-label">Bio</label>
-          <textarea
-            v-model="form.bio"
-            rows="3"
-            class="input-modern resize-none"
-            placeholder="Conte um pouco sobre você..."
-            maxlength="200"
-          ></textarea>
+          <label class="input-label">{{ copy.bio }}</label>
+          <textarea v-model="form.bio" rows="3" class="input-modern resize-none" :placeholder="copy.bioPlaceholder"
+            maxlength="200"></textarea>
           <div class="text-right mt-1 text-[10px] text-slate-500 font-mono">{{ form.bio.length }}/200</div>
         </div>
 
         <div>
-          <label class="input-label">Localização</label>
+          <label class="input-label">{{ copy.location }}</label>
           <div class="relative">
-            <input
-              v-model="form.location"
-              type="text"
-              class="input-modern pl-9"
-              placeholder="Cidade, País"
-              maxlength="10"
-            />
+            <input v-model="form.location" type="text" class="input-modern pl-9" :placeholder="copy.locationPlaceholder"
+              maxlength="10" />
             <div class="text-right mt-1 text-[10px] text-slate-500 font-mono">{{ form.location.length }}/10</div>
           </div>
         </div>
@@ -66,14 +48,65 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import AssetUploader from "@/components/assetUploader.vue";
 import { SparklesIcon } from "@heroicons/vue/24/outline";
+import { useAppLanguage } from "@/composables/useAppLanguage";
 
 defineProps<{
   form: any;
 }>();
 
 defineEmits(["upload", "remove", "open-effects"]);
+
+const { locale } = useAppLanguage();
+
+const copy = computed(() => {
+  switch (locale.value) {
+    case "en":
+      return {
+        identity: "Identity",
+        identityHint: "The current API does not expose Google or Discord social photos. Use a local avatar for the page.",
+        avatarUpload: "Upload Custom Avatar",
+        information: "Information",
+        displayName: "Display Name",
+        displayNamePlaceholder: "Ex: @yourname",
+        textEffects: "Text Effects",
+        bio: "Bio",
+        bioPlaceholder: "Tell a bit about yourself...",
+        location: "Location",
+        locationPlaceholder: "City, Country",
+      };
+    case "es":
+      return {
+        identity: "Identidad",
+        identityHint: "La API actual no expone fotos sociales de Google o Discord. Usa un avatar local para la página.",
+        avatarUpload: "Subir Avatar Personalizado",
+        information: "Información",
+        displayName: "Nombre de Visualización",
+        displayNamePlaceholder: "Ej: @tunombre",
+        textEffects: "Efectos del Texto",
+        bio: "Bio",
+        bioPlaceholder: "Cuenta un poco sobre ti...",
+        location: "Ubicación",
+        locationPlaceholder: "Ciudad, País",
+      };
+    default:
+      return {
+        identity: "Identidade",
+        identityHint: "A API atual nao expõe fotos sociais do Google ou Discord. Use um avatar local para a página.",
+        avatarUpload: "Upload Avatar Personalizado",
+        information: "Informações",
+        displayName: "Nome de Exibição",
+        displayNamePlaceholder: "Ex: @seunome",
+        textEffects: "Efeitos do Texto",
+        bio: "Bio",
+        bioPlaceholder: "Conte um pouco sobre você...",
+        location: "Localização",
+        locationPlaceholder: "Cidade, País",
+      };
+  }
+});
 </script>
 
 <style scoped>

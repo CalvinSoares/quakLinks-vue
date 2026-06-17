@@ -7,13 +7,48 @@ const UserPageView = () => import("@/views/UserPageView.vue");
 const AppearanceView = () => import("@/views/AppearanceView.vue");
 const AccountOverview = () => import("../views/AccountOverview.vue");
 const VerifyEmailView = () => import("@/views/VerifyEmailView.vue");
+const ForgotPasswordView = () => import("@/views/ForgotPasswordView.vue");
+const ResetPasswordView = () => import("@/views/ResetPasswordView.vue");
 const AccountSettingsView = () => import("@/views/AccountSettingsView.vue");
 const TemplatesView = () => import("@/views/TemplatesView.vue");
+const PlansView = () => import("@/views/PlansView.vue");
 const AuthCallback = () => import("@/views/AuthCallback.vue");
 const AnalyticsView = () => import("@/views/AnalyticsView.vue");
 const LandingPage = () => import("@/views/Landing-Page.vue");
 const PagesManager = () => import("@/views/PagesManager.vue");
 const SpotifyCallback = () => import("@/views/SpotifyCallback.vue");
+
+function normalizeHost(host?: string | null) {
+  if (!host) {
+    return null;
+  }
+
+  const normalized = host
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/\/.*$/, "")
+    .replace(/:\d+$/, "")
+    .replace(/\.$/, "");
+
+  return normalized || null;
+}
+
+function isPrimaryAppHost(host?: string | null) {
+  const normalizedHost = normalizeHost(host);
+  const configuredAppHost = normalizeHost(import.meta.env.VITE_APP_DOMAIN);
+
+  if (!normalizedHost) {
+    return true;
+  }
+
+  if (!configuredAppHost) {
+    return true;
+  }
+
+  return normalizedHost === configuredAppHost;
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +64,11 @@ const router = createRouter({
       component: LandingPage,
     },
     {
+      path: "/_public",
+      name: "public-domain-page",
+      component: UserPageView,
+    },
+    {
       path: "/register",
       name: "register",
       component: RegisterView,
@@ -37,6 +77,16 @@ const router = createRouter({
       path: "/verify-email",
       name: "verify-email",
       component: VerifyEmailView,
+    },
+    {
+      path: "/esqueci-senha",
+      name: "forgot-password",
+      component: ForgotPasswordView,
+    },
+    {
+      path: "/reset-password",
+      name: "reset-password",
+      component: ResetPasswordView,
     },
     {
       path: "/dashboard",
@@ -75,6 +125,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/dashboard/plans",
+      name: "plans",
+      component: PlansView,
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/dashboard/overview",
       name: "dashboard-overview",
       component: AccountOverview,
@@ -103,6 +159,8 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     next({ name: "login" });
+  } else if (to.name === "home" && !isPrimaryAppHost(window.location.host)) {
+    next({ name: "public-domain-page" });
   } else if (
     (to.name === "login" || to.name === "register") &&
     auth.isAuthenticated

@@ -11,12 +11,14 @@
 
         <AppearanceBackgroundTab v-else-if="activeTab === 'background'" key="background" :form="form"
           :is-body-gradient="isBodyGradient" :available-background-tabs="availableBackgroundTabs"
-          @change-layout="changeLayout" @update:isBodyGradient="isBodyGradient = $event" @upload="handleAssetChange"
-          @remove="removeAsset" />
+          :is-premium-user="authStore.isPremium" @change-layout="changeLayout"
+          @update:isBodyGradient="isBodyGradient = $event" @upload="handleAssetChange" @remove="removeAsset"
+          @open-plans="openPlans" />
 
         <AppearanceExtrasTab v-else-if="activeTab === 'extras'" key="extras" :form="form"
-          :audio-count="pageStore.currentPage?.audios?.length || 0" @upload="handleAssetChange" @remove="removeAsset"
-          @open-audio-manager="isAudioManagerOpen = true" />
+          :audio-count="pageStore.currentPage?.audios?.length || 0" :is-premium-user="authStore.isPremium"
+          @upload="handleAssetChange" @remove="removeAsset" @open-audio-manager="openAudioManager"
+          @open-plans="openPlans" />
 
         <div v-else-if="activeTab === 'blocks'" key="blocks">
           <BlockManager @edit="openBlockEditor" />
@@ -44,6 +46,10 @@
     @close="isAudioManagerOpen = false" @add="handleAddAudio" @update="handleUpdateAudio" @delete="handleDeleteAudio"
     @set-active="handleSetActiveAudio" @update:shuffle="v => form.shuffleAudios = v"
     @update:showPlayer="v => form.showAudioPlayer = v" @update:showEmbeds="v => form.showEmbeds = v" />
+  <ConfirmationModal :is-open="isDeleteAudioModalOpen" :title="copy.deleteAudioTitle"
+    :description="copy.deleteAudioConfirm" :cancel-label="copy.cancel" :confirm-label="copy.confirmDeleteAudio"
+    :loading-label="copy.deletingAudio" :is-loading="isDeletingAudio" @close="closeDeleteAudioModal"
+    @confirm="confirmDeleteAudio" />
 </template>
 
 <script setup lang="ts">
@@ -67,6 +73,8 @@ import BlockManager from '@/components/BlockManager.vue'
 import { useAuthStore } from '@/store/auth'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import isEqual from 'lodash/isEqual'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
 
 const activeTab = ref('profile')
 type UploadableField = 'avatarUrl' | 'backgroundUrl' | 'cursorUrl' | 'backgroundVideoUrl'
@@ -79,6 +87,9 @@ const pageStore = usePageStore()
 const isSaving = ref(false)
 const isAudioManagerOpen = ref(false);
 const isEffectsModalOpen = ref(false);
+const isDeleteAudioModalOpen = ref(false);
+const isDeletingAudio = ref(false);
+const audioIdPendingDeletion = ref<string | null>(null);
 const isBodyGradient = ref(false);
 const editingBlock = ref<any>(null);
 const editingBlockContent = ref<any>({});
@@ -129,8 +140,10 @@ const form = reactive({
 
 const authStore = useAuthStore();
 const router = useRouter();
+const { locale } = useAppLanguage();
 const pendingFiles = reactive<Partial<Record<UploadableField, File>>>({})
 const previewMode = ref('mobile');
+const LOCAL_PREVIEW_PREFIX = "data:";
 const previewData = computed(() => ({
   ...form,
   viewCount: pageStore.currentPage?.viewCount || 0,
@@ -139,6 +152,65 @@ const previewData = computed(() => ({
 }))
 
 const originalForm = ref({});
+
+const copy = computed(() => {
+  switch (locale.value) {
+    case 'en':
+      return {
+        deleteAudioConfirm: 'Delete audio?',
+        deleteAudioTitle: 'Delete audio',
+        confirmDeleteAudio: 'Delete audio',
+        deletingAudio: 'Deleting...',
+        cancel: 'Cancel',
+        premium: {
+          video: 'Background video is available on the PREMIUM plan.',
+          cursor: 'Custom cursor is available on the PREMIUM plan.',
+          audio: 'Audio uploads are available on the PREMIUM plan.',
+          generic: 'This upload is available on the PREMIUM plan.',
+          audioManager: 'Audio uploads and players are available on the PREMIUM plan.',
+          seePlansSuffix: 'See the plans to unlock this feature.',
+        },
+        saveSuccess: 'Changes saved!',
+        saveError: 'Error while saving.',
+      }
+    case 'es':
+      return {
+        deleteAudioConfirm: '¿Eliminar audio?',
+        deleteAudioTitle: 'Eliminar audio',
+        confirmDeleteAudio: 'Eliminar audio',
+        deletingAudio: 'Eliminando...',
+        cancel: 'Cancelar',
+        premium: {
+          video: 'El video de fondo está disponible en el plan PREMIUM.',
+          cursor: 'El cursor personalizado está disponible en el plan PREMIUM.',
+          audio: 'Las subidas de audio están disponibles en el plan PREMIUM.',
+          generic: 'Esta subida está disponible en el plan PREMIUM.',
+          audioManager: 'Las subidas de audio y reproductores están disponibles en el plan PREMIUM.',
+          seePlansSuffix: 'Ve los planes para desbloquear este recurso.',
+        },
+        saveSuccess: '¡Cambios guardados!',
+        saveError: 'Error al guardar.',
+      }
+    default:
+      return {
+        deleteAudioConfirm: 'Excluir áudio?',
+        deleteAudioTitle: 'Excluir áudio',
+        confirmDeleteAudio: 'Excluir áudio',
+        deletingAudio: 'Excluindo...',
+        cancel: 'Cancelar',
+        premium: {
+          video: 'Vídeo de fundo está disponível no plano PREMIUM.',
+          cursor: 'Cursor personalizado está disponível no plano PREMIUM.',
+          audio: 'Uploads de áudio estão disponíveis no plano PREMIUM.',
+          generic: 'Este upload está disponível no plano PREMIUM.',
+          audioManager: 'Uploads de áudio e players estão disponíveis no plano PREMIUM.',
+          seePlansSuffix: 'Veja os planos para liberar esse recurso.',
+        },
+        saveSuccess: 'Alterações salvas!',
+        saveError: 'Erro ao salvar.',
+      }
+  }
+})
 
 const isDirty = computed(() => {
   return !isEqual(form, originalForm.value);
@@ -270,6 +342,10 @@ async function confirmExit(save: boolean) {
 
 
 function handleAssetChange({ file, field }: AssetChangeEvent) {
+  if (!canUseUploadType(field === "backgroundVideoUrl" ? "video" : field.replace("Url", "") as UploadType)) {
+    void openPlans(getPremiumMessage(field === "backgroundVideoUrl" ? "video" : field.replace("Url", "") as UploadType));
+    return;
+  }
   pendingFiles[field] = file
   const reader = new FileReader()
   reader.onload = (e) => { form[field] = e.target?.result as string }
@@ -281,9 +357,37 @@ function removeAsset(field: UploadableField) {
   delete pendingFiles[field]
 }
 
+function isLocalPreview(value: unknown) {
+  return typeof value === "string" && value.startsWith(LOCAL_PREVIEW_PREFIX);
+}
+
+function clearPendingField(field: UploadableField) {
+  delete pendingFiles[field];
+  if (isLocalPreview(form[field])) {
+    form[field] = null;
+  }
+}
+
+function syncPendingFilesWithCurrentSelections() {
+  if (form.backgroundType !== "image") {
+    clearPendingField("backgroundUrl");
+  }
+
+  if (form.backgroundType !== "video") {
+    clearPendingField("backgroundVideoUrl");
+  }
+}
+
 function openBlockEditor(block: any) {
   editingBlock.value = block;
   editingBlockContent.value = { ...block.content };
+
+  if (block.type === "HEADER") {
+    editingBlockContent.value.title =
+      editingBlockContent.value.title || editingBlockContent.value.text || "";
+    delete editingBlockContent.value.text;
+    delete editingBlockContent.value.textContent;
+  }
 }
 
 async function saveBlockEdit() {
@@ -298,13 +402,81 @@ async function saveBlockEdit() {
 
 const handleAddAudio = (data: any) => pageStore.addAudio(data).catch(err => toast.error(err.message));
 const handleUpdateAudio = (data: any) => pageStore.updateAudio(data.id, data).catch(err => toast.error(err.message));
-const handleDeleteAudio = (id: string) => { if (confirm('Excluir áudio?')) pageStore.deleteAudio(id).catch(err => toast.error(err.message)); };
+const handleDeleteAudio = (id: string) => {
+  audioIdPendingDeletion.value = id;
+  isDeleteAudioModalOpen.value = true;
+};
 const handleSetActiveAudio = (id: string) => pageStore.setActiveAudio(id).catch(err => toast.error(err.message));
+
+function closeDeleteAudioModal() {
+  if (isDeletingAudio.value) {
+    return;
+  }
+
+  isDeleteAudioModalOpen.value = false;
+  audioIdPendingDeletion.value = null;
+}
+
+async function confirmDeleteAudio() {
+  if (!audioIdPendingDeletion.value) {
+    return;
+  }
+
+  isDeletingAudio.value = true;
+  try {
+    await pageStore.deleteAudio(audioIdPendingDeletion.value);
+    isDeleteAudioModalOpen.value = false;
+    audioIdPendingDeletion.value = null;
+  } catch (err: any) {
+    toast.error(err.message);
+  } finally {
+    isDeletingAudio.value = false;
+  }
+}
+
+function canUseUploadType(uploadType: UploadType) {
+  if (authStore.isPremium) {
+    return true;
+  }
+
+  return uploadType === "avatar" || uploadType === "background";
+}
+
+function getPremiumMessage(uploadType: UploadType) {
+  switch (uploadType) {
+    case "video":
+      return copy.value.premium.video;
+    case "cursor":
+      return copy.value.premium.cursor;
+    case "audio":
+      return copy.value.premium.audio;
+    default:
+      return copy.value.premium.generic;
+  }
+}
+
+function openAudioManager() {
+  if (!authStore.isPremium) {
+    void openPlans(copy.value.premium.audioManager);
+    return;
+  }
+  isAudioManagerOpen.value = true;
+}
+
+function openPlans(message?: string) {
+  if (message) {
+    toast.info(`${message} ${copy.value.premium.seePlansSuffix}`);
+  }
+
+  return router.push("/dashboard/plans");
+}
 
 
 async function saveChanges() {
   isSaving.value = true;
   try {
+    syncPendingFilesWithCurrentSelections();
+
     const pagePayload: Partial<Page> = {};
     const originalPage = pageStore.currentPage;
 
@@ -334,11 +506,11 @@ async function saveChanges() {
 
     if (Object.keys(pagePayload).length > 0) await pageStore.updateMyPage(pagePayload);
     Object.keys(pendingFiles).forEach(key => delete pendingFiles[key as UploadableField]);
-    toast.success('Alterações salvas!');
+    toast.success(copy.value.saveSuccess);
 
   } catch (error) {
     console.error("Erro ao salvar:", error);
-    toast.error('Erro ao salvar.');
+    toast.error(error instanceof Error ? error.message : copy.value.saveError);
   } finally {
     isSaving.value = false;
   }
@@ -353,6 +525,8 @@ function changeLayout(newLayout: string) {
       form.backgroundType = 'image';
     }
   }
+
+  syncPendingFilesWithCurrentSelections();
 }
 
 
@@ -363,6 +537,10 @@ const availableBackgroundTabs = computed(() => {
 
     return ['image', 'video'];
   }
+});
+
+watch(() => form.backgroundType, () => {
+  syncPendingFilesWithCurrentSelections();
 });
 
 </script>

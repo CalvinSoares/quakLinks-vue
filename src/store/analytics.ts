@@ -20,12 +20,12 @@ export const useAnalyticsStore = defineStore("analytics", () => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
-  async function fetchAnalytics(period: TimePeriod = "30d") {
+  async function fetchAnalytics(period: TimePeriod = "30d", pageId?: string) {
     isLoading.value = true;
     error.value = null;
     try {
       const response = await api.get<AnalyticsData>("/analytics/me", {
-        params: { period },
+        params: { period, pageId },
       });
       analytics.value = response.data;
     } catch (err: any) {

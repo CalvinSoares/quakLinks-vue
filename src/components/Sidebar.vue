@@ -1,20 +1,19 @@
 <template>
   <div>
     <div :class="isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'" @click="close"
-      class="fixed inset-0 z-40 transition-opacity duration-300 bg-black/80 backdrop-blur-sm lg:hidden"></div>
+      class="fixed inset-0 z-[70] transition-opacity duration-300 bg-black/80 backdrop-blur-sm lg:hidden"></div>
 
     <aside :class="[
       isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
       isCollapsed ? 'lg:w-24' : 'lg:w-72'
-    ]" class="fixed z-50 flex flex-col transition-all duration-300 ease-in-out
+    ]" class="fixed z-[80] flex flex-col transition-all duration-300 ease-in-out
              h-[100dvh] top-0 left-0 w-64 bg-slate-900 border-r border-slate-800
              lg:h-[calc(100vh-2rem)] lg:top-4 lg:left-4 lg:rounded-3xl lg:border lg:shadow-2xl lg:shadow-black/50">
 
       <div class="flex items-center h-20 px-4 flex-shrink-0"
         :class="isCollapsed ? 'justify-center' : 'justify-between'">
         <div class="flex items-center gap-3 overflow-hidden">
-          <img src="/ducklogonatal.png" alt="Logo"
-            class="w-8 h-8 object-contain transition-transform hover:scale-110" />
+          <img src="/duckbio.png" alt="Logo" class="w-8 h-8 object-contain transition-transform hover:scale-110" />
           <h1 v-if="!isCollapsed"
             class="text-xl font-bold tracking-wide text-white whitespace-nowrap transition-opacity duration-300">
             Quack<span class="text-amber-400">Links</span>
@@ -91,14 +90,14 @@
 
 
           <div v-if="showUserMenu" ref="userMenuRef"
-            class="absolute bottom-full left-0 w-full mb-2 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden z-50 p-1 animate-fade-in-up"
+            class="absolute bottom-full left-0 w-full mb-2 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-visible z-50 p-1 animate-fade-in-up"
             :class="isCollapsed ? 'left-12 w-56' : 'w-full'">
 
-            <a v-if="pageStore.currentPage" :href="`/${pageStore.currentPage.slug}`" target="_blank"
+            <a v-if="pageStore.currentPage" :href="userPageUrl" target="_blank"
               class="flex items-center w-full px-3 py-2.5 text-sm text-slate-300 rounded-lg hover:bg-slate-700 hover:text-white group"
               :class="!isCollapsed ? '' : 'justify-center'">
               <SparklesIcon v-if="!isCollapsed" class="w-4 h-4 mr-3 text-amber-400 group-hover:animate-pulse" />
-              <span v-if="!isCollapsed">Ver Página Atual</span>
+              <span v-if="!isCollapsed">{{ copy.userMenu.viewCurrentPage }}</span>
               <span class="ml-auto text-[10px] bg-slate-900 px-1.5 py-0.5 rounded text-slate-500">LIVE</span>
             </a>
 
@@ -106,15 +105,26 @@
               class="flex items-center  w-full px-3 py-2.5 text-sm text-slate-300 rounded-lg hover:bg-slate-700 hover:text-white"
               :class="!isCollapsed ? '' : 'justify-center'">
               <DocumentDuplicateIcon class="w-4 h-4  text-indigo-400" :class="!isCollapsed ? 'mr-3' : ''" />
-              <span v-if="!isCollapsed">Gerenciar Páginas</span>
+              <span v-if="!isCollapsed">{{ copy.userMenu.managePages }}</span>
             </router-link>
 
             <router-link to="/settings"
               class="flex items-center w-full px-3 py-2.5 text-sm text-slate-300 rounded-lg hover:bg-slate-700 hover:text-white"
               :class="!isCollapsed ? '' : 'justify-center'">
               <Cog6ToothIcon class="w-4 h-4  text-slate-400" :class="!isCollapsed ? 'mr-3' : ''" />
-              <span v-if="!isCollapsed">Configurações</span>
+              <span v-if="!isCollapsed">{{ copy.userMenu.settings }}</span>
             </router-link>
+
+            <div class="px-3 py-2.5" :class="!isCollapsed ? '' : 'flex justify-center'">
+              <button ref="languageButtonRef" type="button" @click.stop="toggleLanguageMenu"
+                class="flex items-center w-full px-3 py-2.5 text-sm text-slate-300 rounded-lg hover:bg-slate-700 hover:text-white transition-colors"
+                :class="!isCollapsed ? '' : 'justify-center'">
+                <LanguageIcon class="w-4 h-4 text-sky-400" :class="!isCollapsed ? 'mr-3' : ''" />
+                <span v-if="!isCollapsed">{{ copy.userMenu.language }}</span>
+                <ChevronDownIcon v-if="!isCollapsed" class="w-4 h-4 ml-auto text-slate-500"
+                  :class="{ 'rotate-180': showLanguageMenu }" />
+              </button>
+            </div>
 
             <div class="h-px bg-slate-700 my-1 mx-2"></div>
 
@@ -122,8 +132,24 @@
               class="flex items-center w-full px-3 py-2.5 text-sm text-red-400 rounded-lg hover:bg-red-500/10 transition-colors"
               :class="!isCollapsed ? '' : 'justify-center'">
               <ArrowLeftEndOnRectangleIcon class="w-4 h-4 " :class="!isCollapsed ? 'mr-3' : ''" /> <span
-                v-if="!isCollapsed">Sair</span>
+                v-if="!isCollapsed">{{ copy.userMenu.logout }}</span>
             </button>
+          </div>
+
+          <div v-if="showUserMenu && showLanguageMenu" ref="languageMenuRef"
+            class="absolute rounded-2xl border border-slate-700 bg-slate-900/95 p-3 shadow-2xl shadow-black/40 z-[70] animate-fade-in-up"
+            :class="isCollapsed ? 'bottom-full left-[calc(100%+0.75rem)] w-72' : 'bottom-0 left-[calc(100%+0.75rem)] w-72'">
+            <div class="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-white">{{ copy.userMenu.language }}</p>
+                <p class="text-xs text-slate-400">{{ copy.userMenu.languageHint }}</p>
+              </div>
+              <button type="button" @click.stop="showLanguageMenu = false"
+                class="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+                <XMarkIcon class="w-4 h-4" />
+              </button>
+            </div>
+            <LanguageSwitcher @changed="handleLanguageChanged" />
           </div>
         </div>
       </div>
@@ -136,11 +162,15 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { usePageStore } from '@/store/page';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import { RouterLink } from 'vue-router';
+import { useAppLanguage } from '@/composables/useAppLanguage';
+import { resolveAvatarUrl } from '@/utils/avatar';
 import {
   UserCircleIcon, SwatchIcon, RectangleStackIcon,
   ChevronDownIcon, ChevronLeftIcon, Bars3Icon,
-  SparklesIcon, ArrowLeftEndOnRectangleIcon, Cog6ToothIcon
+  SparklesIcon, ArrowLeftEndOnRectangleIcon, Cog6ToothIcon, CreditCardIcon,
+  LanguageIcon, XMarkIcon
 } from '@heroicons/vue/24/outline';
 import { DocumentDuplicateIcon } from '@heroicons/vue/24/solid';
 
@@ -153,13 +183,17 @@ const emit = defineEmits<{
 const route = useRoute();
 const auth = useAuthStore();
 const pageStore = usePageStore();
+const { locale } = useAppLanguage();
 
 const openMenu = ref('account');
 const showUserMenu = ref(false);
+const showLanguageMenu = ref(false);
 
 
 const userMenuRef = ref<HTMLElement | null>(null);
 const userButtonRef = ref<HTMLElement | null>(null);
+const languageMenuRef = ref<HTMLElement | null>(null);
+const languageButtonRef = ref<HTMLElement | null>(null);
 
 function close() {
   emit('closeSidebar');
@@ -178,19 +212,39 @@ function closeMobile() {
 
 function toggleUserMenu() {
   showUserMenu.value = !showUserMenu.value;
+  if (!showUserMenu.value) {
+    showLanguageMenu.value = false;
+  }
+}
+
+function toggleLanguageMenu() {
+  showLanguageMenu.value = !showLanguageMenu.value;
+}
+
+function handleLanguageChanged() {
+  showLanguageMenu.value = false;
 }
 
 
 const handleClickOutside = (event: MouseEvent) => {
-  if (showUserMenu.value) {
-    const target = event.target as HTMLElement;
+  const target = event.target as HTMLElement;
 
-    if (
-      userMenuRef.value && !userMenuRef.value.contains(target) &&
-      userButtonRef.value && !userButtonRef.value.contains(target)
-    ) {
-      showUserMenu.value = false;
-    }
+  if (
+    showLanguageMenu.value &&
+    languageMenuRef.value && !languageMenuRef.value.contains(target) &&
+    languageButtonRef.value && !languageButtonRef.value.contains(target)
+  ) {
+    showLanguageMenu.value = false;
+  }
+
+  if (
+    showUserMenu.value &&
+    userMenuRef.value && !userMenuRef.value.contains(target) &&
+    !(languageMenuRef.value && languageMenuRef.value.contains(target)) &&
+    userButtonRef.value && !userButtonRef.value.contains(target)
+  ) {
+    showUserMenu.value = false;
+    showLanguageMenu.value = false;
   }
 };
 
@@ -202,35 +256,95 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-
 const sidebarAvatarUrl = computed(() => {
-  if (auth.user?.image) {
-    return auth.user.image;
-  }
-  if (pageStore.currentPage?.avatarUrl) {
-    return pageStore.currentPage.avatarUrl;
-  }
-  if (auth.user?.name) {
-    return `https://ui-avatars.com/api/?name=${auth.user.name}&background=fbbd24&color=1e293b&bold=true`;
-  }
-  return 'https://via.placeholder.com/40';
+  return resolveAvatarUrl({
+    name: auth.user?.name,
+    userImage: auth.user?.image,
+    pageAvatarUrl: pageStore.currentPage?.avatarUrl,
+  });
 });
 
-const navItems = ref([
+const translations = {
+  pt: {
+    nav: {
+      account: 'Conta',
+      overview: 'Visão geral',
+      analytics: 'Analytics',
+      settings: 'Configurações',
+      pages: 'Minhas páginas',
+      appearance: 'Aparência',
+      templates: 'Templates',
+      plans: 'Planos',
+    },
+    userMenu: {
+      viewCurrentPage: 'Ver página atual',
+      managePages: 'Gerenciar páginas',
+      settings: 'Configurações',
+      language: 'Idioma',
+      languageHint: 'Escolha como o painel deve aparecer.',
+      logout: 'Sair',
+    },
+  },
+  en: {
+    nav: {
+      account: 'Account',
+      overview: 'Overview',
+      analytics: 'Analytics',
+      settings: 'Settings',
+      pages: 'My Pages',
+      appearance: 'Appearance',
+      templates: 'Templates',
+      plans: 'Plans',
+    },
+    userMenu: {
+      viewCurrentPage: 'View current page',
+      managePages: 'Manage pages',
+      settings: 'Settings',
+      language: 'Language',
+      languageHint: 'Choose how the dashboard should appear.',
+      logout: 'Logout',
+    },
+  },
+  es: {
+    nav: {
+      account: 'Cuenta',
+      overview: 'Resumen',
+      analytics: 'Analytics',
+      settings: 'Configuración',
+      pages: 'Mis páginas',
+      appearance: 'Apariencia',
+      templates: 'Templates',
+      plans: 'Planes',
+    },
+    userMenu: {
+      viewCurrentPage: 'Ver página actual',
+      managePages: 'Administrar páginas',
+      settings: 'Configuración',
+      language: 'Idioma',
+      languageHint: 'Elige cómo debe mostrarse el panel.',
+      logout: 'Salir',
+    },
+  },
+} as const;
+
+const copy = computed(() => translations[locale.value]);
+
+const navItems = computed(() => [
   {
-    label: 'Account',
+    label: copy.value.nav.account,
     name: 'account',
     icon: UserCircleIcon,
     basePath: '/dashboard',
     children: [
-      { label: 'Overview', href: '/dashboard/overview' },
-      { label: 'Analytics', href: '/analytics' },
-      { label: 'Settings', href: '/settings' },
+      { label: copy.value.nav.overview, href: '/dashboard/overview' },
+      { label: copy.value.nav.analytics, href: '/analytics' },
+      { label: copy.value.nav.settings, href: '/settings' },
     ],
   },
-  { label: 'My Pages', href: '/dashboard/pages', name: 'pages', icon: DocumentDuplicateIcon },
-  { label: 'Appearance', href: '/dashboard/appearance', name: 'appearance', icon: SwatchIcon },
-  { label: 'Templates', href: '/dashboard/templates', name: 'templates', icon: RectangleStackIcon },
+  { label: copy.value.nav.pages, href: '/dashboard/pages', name: 'pages', icon: DocumentDuplicateIcon },
+  { label: copy.value.nav.appearance, href: '/dashboard/appearance', name: 'appearance', icon: SwatchIcon },
+  { label: copy.value.nav.templates, href: '/dashboard/templates', name: 'templates', icon: RectangleStackIcon },
+  { label: copy.value.nav.plans, href: '/dashboard/plans', name: 'plans', icon: CreditCardIcon },
 ]);
 
 function handleNavClick(item: any) {
@@ -252,7 +366,7 @@ const isActiveRoute = (item: any) => {
     return item.children.some((child: any) => route.path === child.href);
   }
   return false;
-}
+};
 
 const userPageUrl = computed(() => {
   const slug = pageStore.currentPage?.slug;

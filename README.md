@@ -42,6 +42,119 @@ npm test
 npm run test:e2e
 ```
 
+## Padronizacao UI
+
+### Direcao Visual
+
+- priorizar `amber/yellow` como cor principal de CTA
+- manter base `slate` para fundos, superficies e estados neutros
+- evitar novos botoes `purple` em modais e fluxos de confirmacao
+- reservar `red` para acoes destrutivas e `emerald` para estados de sucesso
+
+### Classes Compartilhadas
+
+As classes globais ficam em `src/assets/main.css` e devem ser a primeira escolha para novos modais e botoes:
+
+- `ui-modal-shell`
+- `ui-modal-backdrop`
+- `ui-modal-panel`
+- `ui-modal-header`
+- `ui-modal-title`
+- `ui-modal-copy`
+- `ui-modal-footer`
+- `ui-modal-close`
+- `ui-btn-primary`
+- `ui-btn-secondary`
+- `ui-btn-ghost`
+- `ui-btn-danger`
+- `ui-btn-success`
+- `ui-btn-icon`
+- `ui-label`
+- `ui-input`
+- `ui-input-shell`
+- `ui-radio`
+- `ui-dropdown-trigger`
+- `ui-dropdown-menu`
+- `ui-dropdown-item`
+
+### Botoes
+
+- `ui-btn-primary`: CTA principal do modal ou da secao; usar amarelo da marca
+- `ui-btn-secondary`: acao secundaria, navegacao auxiliar ou cancelar
+- `ui-btn-ghost`: acao de baixa enfase, geralmente em headers ou toolbars
+- `ui-btn-danger`: exclusao, logout ou acoes irreversiveis
+- `ui-btn-success`: confirmacoes positivas muito especificas
+- evitar criar novos aliases locais como `btn-primary` em componentes; preferir as classes globais
+
+### Modais
+
+- todo modal novo deve usar `src/components/dashboard/Modal.vue` ou `src/components/modals/BaseModal.vue`
+- header sempre com titulo claro, botao de fechar consistente e separacao visual do corpo
+- footer sempre alinhado com `ui-modal-footer`
+- CTA principal do modal fica no footer e usa `ui-btn-primary`
+- formulario dentro de modal deve usar `ui-label` + `ui-input`
+
+### Inputs
+
+- `ui-input` cobre `input`, `textarea` e `select` na maioria dos casos
+- `ui-input-shell` serve para wrappers customizados, como campo de tags com multiplos chips
+- manter foco em amarelo para consistencia do sistema
+
+### Dropdown (Select)
+
+- usar `src/components/ui/CustomDropdown.vue` para selects customizados em vez de `<select>` nativo
+- usar `src/components/ui/CustomMultiDropdown.vue` para filtros com multi-seleção (ex: categorias)
+- baseado em `@headlessui/vue` (`Listbox`) para acessibilidade WAI-ARIA
+- classes globais: `ui-dropdown-trigger`, `ui-dropdown-menu`, `ui-dropdown-item`
+- opcoes tipadas com `{ label, value, icon? }` via `DropdownOption` em `src/types/dropdown.ts`
+- exemplo completo em `src/components/ui/CustomDropdown.example.vue`
+
+```vue
+<CustomDropdown
+  id="sort"
+  v-model="sortBy"
+  :options="[
+    { label: 'Em alta', value: 'popular', icon: FireIcon },
+    { label: 'Mais recentes', value: 'newest', icon: ClockIcon },
+  ]"
+  placeholder="Escolha uma ordenação"
+/>
+```
+
+### Templates (Biblioteca)
+
+- cards em `TemplateCard.vue`: preview, criador (@handle), stats (usos, favoritos, blocos), tags e ações fixas (usar, copiar link, preview)
+- `QuickViewModal.vue`: preview ao vivo via `PageRenderer` + snapshots; copy link com deep link `?preview={id}`
+- `TemplatePreviewGate.vue`: overlay com opacidade → preview full-screen (`PageRenderer`) → botão "Ver template" abre o modal
+- helpers: `src/utils/templateShare.ts`, `src/utils/templatePreview.ts`
+
+### Estado Atual
+
+Esta rodada alinhou principalmente:
+
+- `dashboard/Modal.vue`
+- `modals/BaseModal.vue`
+- modais de `templates`
+- modais de `audio`
+- modais de `account settings/overview`
+- alguns modais de `appearance`
+
+Ainda existem componentes legacy com estilo proprio, especialmente fluxos muito customizados como `LinkBatchModal.vue`. Ao tocar neles, migrar para a base `ui-*` em vez de adicionar nova variacao local.
+
+### Storybook
+
+Storybook pode ajudar, mas eu recomendo introduzir so depois de estabilizar essa camada base. A ordem sugerida e:
+
+1. consolidar `ui-*` no app real
+2. extrair exemplos minimos de `Button`, `Modal` e `Field`
+3. adicionar Storybook apenas para documentacao visual e regressao
+
+Se for seguir por esse caminho depois, o ideal e criar historias para:
+
+- botoes por variante e estado (`default`, `hover`, `disabled`, `loading`)
+- modal simples, modal com formulario e modal destrutivo
+- inputs com erro, help text e estado desabilitado
+
 ## Fluxos Alinhados
 
 ### Auth

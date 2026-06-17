@@ -1,11 +1,11 @@
 <template>
-    <Modal :is-open="true" :title="isEditing ? 'Editar Mídia' : 'Adicionar Nova Mídia'" @close="$emit('close')">
+    <Modal :is-open="true" :title="isEditing ? copy.editMedia : copy.addNewMedia" @close="$emit('close')">
         <div class="space-y-6 p-6">
 
             <div>
-                <label class="label-text">Fonte da Mídia</label>
+                <label class="ui-label">{{ copy.mediaSource }}</label>
                 <div class="grid grid-cols-2 gap-2 p-1 bg-slate-800 rounded-lg w-full mt-1">
-                    <button @click="form.type = 'DIRECT'" :class="getTypeButtonClass('DIRECT')">Upload</button>
+                    <button @click="form.type = 'DIRECT'" :class="getTypeButtonClass('DIRECT')">{{ copy.upload }}</button>
                     <button @click="form.type = 'SOUNDCLOUD'"
                         :class="getTypeButtonClass('SOUNDCLOUD')">SoundCloud</button>
                 </div>
@@ -13,10 +13,10 @@
 
             <transition name="fade" mode="out-in">
                 <div v-if="form.type === 'DIRECT'" key="direct" class="space-y-4">
-                    <AssetUploader title="Arquivo de Áudio (.mp3, .wav)" :current-url="form.url" upload-type="audio"
+                    <AssetUploader :title="copy.audioFile" :current-url="form.url" upload-type="audio"
                         accepted-files="audio/*" @upload="(payload) => handleFileSelect('audio', payload.file)"
                         @remove="() => handleFileRemove('audio')" />
-                    <AssetUploader title="Capa da Música (Opcional)" :current-url="form.coverUrl"
+                    <AssetUploader :title="copy.coverImage" :current-url="form.coverUrl"
                         upload-type="background" accepted-files="image/*"
                         @upload="(payload) => handleFileSelect('audio_cover', payload.file)"
                         @remove="() => handleFileRemove('audio_cover')" />
@@ -24,29 +24,29 @@
 
                 <div v-else key="embed" class="space-y-4">
                     <div>
-                        <label for="audio-url" class="label-text">URL da Música ou Playlist</label>
-                        <input id="audio-url" type="text" v-model="form.url" class="input-dark"
-                            :placeholder="`Cole o link do ${form.type.charAt(0) + form.type.slice(1).toLowerCase()} aqui`">
+                        <label for="audio-url" class="ui-label">{{ copy.audioUrl }}</label>
+                        <input id="audio-url" type="text" v-model="form.url" class="ui-input"
+                            :placeholder="copy.pasteLink(form.type)">
                     </div>
                 </div>
             </transition>
 
             <div>
-                <label for="audio-title" class="label-text">Título</label>
-                <input id="audio-title" type="text" v-model="form.title" class="input-dark"
-                    placeholder="Nome da música, artista, etc.">
+                <label for="audio-title" class="ui-label">{{ copy.title }}</label>
+                <input id="audio-title" type="text" v-model="form.title" class="ui-input"
+                    :placeholder="copy.titlePlaceholder">
             </div>
         </div>
 
         <template #footer>
             <div class="w-full flex items-center justify-between">
-                <button @click="$emit('close')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition">
-                    Cancelar
+                <button @click="$emit('close')" class="ui-btn-secondary">
+                    {{ copy.cancel }}
                 </button>
                 <button @click="save" :disabled="isSaving"
-                    class="px-4 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg text-white font-semibold disabled:opacity-50 flex items-center justify-center">
+                    class="ui-btn-primary min-w-[170px]">
                     <span v-if="isSaving" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>
-                    {{ isSaving ? 'Salvando...' : (isEditing ? 'Salvar Alterações' : 'Adicionar Mídia') }}
+                    {{ isSaving ? copy.saving : (isEditing ? copy.saveChanges : copy.addMedia) }}
                 </button>
             </div>
 
@@ -61,12 +61,75 @@ import { uploadFileWithSignedUrl } from '@/services/uploadService';
 import AssetUploader from '../assetUploader.vue';
 import Modal from '../dashboard/Modal.vue';
 import { toast } from 'vue-sonner';
+import { useAppLanguage } from '@/composables/useAppLanguage';
 
 const props = defineProps<{ editingAudio?: Audio | null }>();
 const emit = defineEmits(['close', 'save']);
+const { locale } = useAppLanguage();
 
 const isEditing = computed(() => !!props.editingAudio);
 const isSaving = ref(false);
+const copy = computed(() => {
+    switch (locale.value) {
+        case 'en':
+            return {
+                editMedia: 'Edit Media',
+                addNewMedia: 'Add New Media',
+                mediaSource: 'Media Source',
+                upload: 'Upload',
+                audioFile: 'Audio File (.mp3, .wav)',
+                coverImage: 'Song Cover (Optional)',
+                audioUrl: 'Song or Playlist URL',
+                pasteLink: (type: string) => `Paste the ${type.charAt(0) + type.slice(1).toLowerCase()} link here`,
+                title: 'Title',
+                titlePlaceholder: 'Song name, artist, etc.',
+                cancel: 'Cancel',
+                saving: 'Saving...',
+                saveChanges: 'Save Changes',
+                addMedia: 'Add Media',
+                requiredFields: 'Title and URL/File are required.',
+                genericError: 'An error occurred. Please try again.',
+            };
+        case 'es':
+            return {
+                editMedia: 'Editar Media',
+                addNewMedia: 'Agregar Nueva Media',
+                mediaSource: 'Fuente de la Media',
+                upload: 'Subir',
+                audioFile: 'Archivo de Audio (.mp3, .wav)',
+                coverImage: 'Portada de la Canción (Opcional)',
+                audioUrl: 'URL de la Canción o Playlist',
+                pasteLink: (type: string) => `Pega aquí el link de ${type.charAt(0) + type.slice(1).toLowerCase()}`,
+                title: 'Título',
+                titlePlaceholder: 'Nombre de la canción, artista, etc.',
+                cancel: 'Cancelar',
+                saving: 'Guardando...',
+                saveChanges: 'Guardar Cambios',
+                addMedia: 'Agregar Media',
+                requiredFields: 'Título y URL/Archivo son obligatorios.',
+                genericError: 'Ocurrió un error. Intenta nuevamente.',
+            };
+        default:
+            return {
+                editMedia: 'Editar Mídia',
+                addNewMedia: 'Adicionar Nova Mídia',
+                mediaSource: 'Fonte da Mídia',
+                upload: 'Upload',
+                audioFile: 'Arquivo de Áudio (.mp3, .wav)',
+                coverImage: 'Capa da Música (Opcional)',
+                audioUrl: 'URL da Música ou Playlist',
+                pasteLink: (type: string) => `Cole o link do ${type.charAt(0) + type.slice(1).toLowerCase()} aqui`,
+                title: 'Título',
+                titlePlaceholder: 'Nome da música, artista, etc.',
+                cancel: 'Cancelar',
+                saving: 'Salvando...',
+                saveChanges: 'Salvar Alterações',
+                addMedia: 'Adicionar Mídia',
+                requiredFields: 'Título e URL/Arquivo são obrigatórios.',
+                genericError: 'Ocorreu um erro. Tente novamente.',
+            };
+    }
+});
 
 const form = reactive({
     title: '',
@@ -115,7 +178,7 @@ const handleFileRemove = (type: 'audio' | 'audio_cover') => {
 
 const save = async () => {
     if (!form.title || !form.url) {
-        toast.warning('Título e URL/Arquivo são obrigatórios.');
+        toast.warning(copy.value.requiredFields);
         return;
     }
 
@@ -142,7 +205,7 @@ const save = async () => {
 
     } catch (error) {
         console.error("Erro no upload ou salvamento:", error);
-        toast.error("Ocorreu um erro. Tente novamente.");
+        toast.error(copy.value.genericError);
     } finally {
         isSaving.value = false;
     }
@@ -150,23 +213,15 @@ const save = async () => {
 
 const getTypeButtonClass = (value: string) => {
     return [
-        'flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center justify-center gap-1.5',
+        'flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 border',
         form.type === value
-            ? 'bg-yellow-500 text-slate-900 shadow-md'
-            : 'text-slate-300 hover:bg-slate-700'
+            ? 'border-amber-300/40 bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
+            : 'border-slate-700 text-slate-300 hover:bg-slate-700'
     ];
 };
 </script>
 
 <style scoped>
-.label-text {
-    @apply block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide;
-}
-
-.input-dark {
-    @apply w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none transition-colors placeholder-slate-600 text-sm;
-}
-
 .fade-enter-active,
 .fade-leave-active {
     transition: all 0.2s ease-out;

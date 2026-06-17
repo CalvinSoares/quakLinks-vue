@@ -1,146 +1,352 @@
 <template>
-  <BaseModal :is-open="isOpen" @close="$emit('close')" max-width="md">
-    <template #title>Editar Template</template>
-
-    <form v-if="template" @submit.prevent="handleSubmit" class="mt-6 space-y-4">
-      <div>
-        <label for="edit-name" class="form-label">Nome do Template</label>
-        <input v-model="form.name" id="edit-name" type="text" required class="form-input" />
+  <BaseModal :is-open="isOpen" @close="resetAndClose" max-width="lg">
+    <template #title>
+      <div class="space-y-1">
+        <h2 class="ui-modal-title">{{ copy.modalTitle }}</h2>
+        <p class="ui-modal-copy">{{ copy.modalDescription }}</p>
       </div>
-      <div>
-        <label class="form-label">Imagem de Preview</label>
-        <div
-          class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-slate-700 border-dashed rounded-md">
-          <div v-if="!preview && form.previewImageUrl" class="relative w-full aspect-video">
-            <img :src="form.previewImageUrl" class="w-full h-full object-contain rounded-md" />
-            <label for="edit-file-upload"
-              class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer text-white font-semibold">
-              Trocar Imagem
-              <input id="edit-file-upload" type="file" class="sr-only" @change="handleFileChange"
-                accept="image/png, image/jpeg, image/gif">
-            </label>
+    </template>
+
+    <form v-if="template" @submit.prevent="handleSubmit" class="space-y-5">
+      <section class="section-card">
+        <div class="space-y-1">
+          <h3 class="section-title">{{ copy.basicSection }}</h3>
+          <p class="section-copy">{{ copy.basicSectionHint }}</p>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <div class="md:col-span-2">
+            <label for="edit-name" class="ui-label">{{ copy.templateName }}</label>
+            <input id="edit-name" v-model="form.name" type="text" required class="ui-input"
+              :placeholder="copy.templateNamePlaceholder" />
           </div>
-          <div v-else-if="preview" class="relative w-full aspect-video">
-            <img :src="preview" class="w-full h-full object-contain rounded-md" />
-            <button @click="removeFile" type="button"
-              class="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-          </div>
-          <div v-else class="space-y-1 text-center">
-            <svg class="mx-auto h-12 w-12 text-slate-500" stroke="currentColor" fill="none" viewBox="0 0 48 48"
-              aria-hidden="true">
-              <path
-                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8"
-                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-            <div class="flex text-sm text-slate-400">
-              <label for="edit-file-upload-empty"
-                class="relative cursor-pointer rounded-md font-medium text-amber-400 hover:text-amber-300">
-                <span>Selecione um arquivo</span>
-                <input id="edit-file-upload-empty" type="file" class="sr-only" @change="handleFileChange"
-                  accept="image/png, image/jpeg, image/gif">
+
+          <div class="md:col-span-2">
+            <label class="ui-label">{{ copy.visibility }}</label>
+            <div class="grid gap-3 md:grid-cols-2">
+              <label v-for="option in visibilityOptions" :key="option.value"
+                class="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-slate-300 transition hover:border-slate-700"
+                :class="form.visibility === option.value ? 'border-amber-400/40 bg-amber-400/10 text-white' : ''">
+                <input v-model="form.visibility" type="radio" :value="option.value" name="visibility"
+                  class="mt-1 ui-radio" />
+                <span class="space-y-1">
+                  <span class="block text-sm font-semibold">{{ option.label }}</span>
+                  <span class="block text-xs text-slate-400">{{ option.description }}</span>
+                </span>
               </label>
             </div>
-            <p class="text-xs text-slate-500">PNG, JPG, GIF até 10MB</p>
           </div>
         </div>
-      </div>
-      <div>
-        <label for="edit-tags" class="form-label">Tags (separadas por vírgula)</label>
-        <input v-model="tagsInput" id="edit-tags" type="text" required class="form-input" />
-      </div>
-      <div>
-        <label class="form-label">Visibilidade</label>
-        <div class="flex gap-4 mt-2">
-          <label v-for="option in visibilityOptions" :key="option.value"
-            class="flex items-center gap-2 text-slate-300 cursor-pointer">
-            <input type="radio" v-model="form.visibility" :value="option.value" name="visibility" class="form-radio" />
-            {{ option.label }}
-          </label>
+      </section>
+
+      <section class="section-card">
+        <div class="space-y-1">
+          <h3 class="section-title">{{ copy.previewSection }}</h3>
+          <p class="section-copy">{{ copy.previewSectionHint }}</p>
         </div>
-      </div>
+
+        <div class="rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-4">
+          <div v-if="previewSource" class="space-y-3">
+            <div class="relative aspect-video overflow-hidden rounded-2xl bg-slate-900">
+              <img :src="previewSource" class="h-full w-full object-cover" />
+              <button v-if="selectedFile" type="button"
+                class="absolute right-3 top-3 rounded-full bg-slate-950/80 p-2 text-slate-200 transition hover:bg-red-500 hover:text-white"
+                @click="removeFile">
+                <TrashIcon class="h-4 w-4" />
+              </button>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <p class="truncate text-sm text-slate-300">
+                {{ selectedFile?.name || copy.currentPreview }}
+              </p>
+              <label :for="fileInputId"
+                class="cursor-pointer rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-600 hover:text-white">
+                {{ copy.changeImage }}
+              </label>
+            </div>
+          </div>
+
+          <label v-else :for="fileInputId"
+            class="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl px-6 py-10 text-center transition hover:bg-slate-900/70">
+            <PhotoIcon class="h-12 w-12 text-slate-500" />
+            <div class="space-y-1">
+              <p class="text-sm font-medium text-slate-200">{{ copy.selectFile }}</p>
+              <p class="text-xs text-slate-500">{{ copy.fileHint }}</p>
+            </div>
+          </label>
+
+          <input :id="fileInputId" :key="fileInputKey" type="file" class="sr-only"
+            accept="image/png, image/jpeg, image/gif" @change="handleFileChange" />
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="space-y-1">
+          <h3 class="section-title">{{ copy.tagsSection }}</h3>
+          <p class="section-copy">{{ copy.tagsSectionHint }}</p>
+        </div>
+
+        <TemplateTagsInput v-model="form.tags" :label="copy.tags" :placeholder="copy.addTag" :hint="copy.tagHint"
+          :suggestions="store.popularTags" :suggestions-label="copy.suggestedTags" :empty-state-label="copy.noTagResults" />
+      </section>
     </form>
 
     <template #footer>
-      <button type="button" @click="$emit('close')" class="btn-secondary">Cancelar</button>
-      <button type="button" @click="handleSubmit" :disabled="isLoading" class="btn-primary">
-        {{ isLoading ? 'Salvando...' : 'Salvar Alterações' }}
+      <button type="button" @click="resetAndClose" class="ui-btn-secondary">{{ copy.cancel }}</button>
+      <button type="button" @click="handleSubmit" :disabled="isLoading" class="ui-btn-primary">
+        {{ isLoading ? copy.saving : copy.saveChanges }}
       </button>
     </template>
   </BaseModal>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
+import { PhotoIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { toast } from 'vue-sonner';
+import { useAppLanguage } from '@/composables/useAppLanguage';
 import { useTemplatesStore, type Template, type UpdateTemplateInput } from '@/store/templates';
 import BaseModal from '../modals/BaseModal.vue';
-import { toast } from 'vue-sonner';
+import TemplateTagsInput from './TemplateTagsInput.vue';
 
-const props = defineProps<{ isOpen: boolean, template: Template | null }>();
+const props = defineProps<{ isOpen: boolean; template: Template | null }>();
 const emit = defineEmits(['close']);
 const store = useTemplatesStore();
+const { locale } = useAppLanguage();
 
 const isLoading = ref(false);
-const tagsInput = ref('');
 const preview = ref<string | null>(null);
 const selectedFile = ref<File | null>(null);
-type EditTemplateForm = Partial<Omit<UpdateTemplateInput, 'tags'>>;
+const fileInputKey = ref(0);
+const fileInputId = 'template-preview-edit-upload';
 
-const form = reactive<EditTemplateForm>({});
+const form = reactive<{
+  name: string;
+  previewImageUrl?: string;
+  visibility: 'PUBLIC' | 'PRIVATE' | 'UNLISTED';
+  tags: string[];
+}>({
+  name: '',
+  previewImageUrl: '',
+  visibility: 'PUBLIC',
+  tags: [],
+});
 
-const visibilityOptions = [
-  { label: 'Público', value: 'PUBLIC' },
-  { label: 'Privado', value: 'PRIVATE' },
-];
-
-watch(() => props.template, (newTemplate) => {
-  if (newTemplate) {
-    form.name = newTemplate.name;
-    form.previewImageUrl = newTemplate.previewImageUrl;
-    form.visibility = newTemplate.visibility;
-    tagsInput.value = newTemplate.tags.map(t => t.name).join(', ');
+const copy = computed(() => {
+  switch (locale.value) {
+    case 'en':
+      return {
+        modalTitle: 'Edit Template',
+        modalDescription: 'Update the metadata and presentation of your template without changing the original page snapshot.',
+        basicSection: 'Template Details',
+        basicSectionHint: 'Keep the title and visibility aligned with how you want the template to appear in your library.',
+        templateName: 'Template Name',
+        templateNamePlaceholder: 'Ex: Dark portfolio',
+        previewSection: 'Preview Image',
+        previewSectionHint: 'You can replace the cover image at any time to improve presentation.',
+        previewImage: 'Preview Image',
+        currentPreview: 'Current preview image',
+        changeImage: 'Change image',
+        selectFile: 'Choose an image',
+        fileHint: 'PNG, JPG, GIF up to 10MB',
+        tagsSection: 'Categories',
+        tagsSectionHint: 'Keep the template inside the predefined category catalog used by search filters.',
+        tags: 'Categories',
+        addTag: 'Search categories',
+        tagHint: 'Only predefined categories can be saved on templates.',
+        suggestedTags: 'Available categories',
+        noTagResults: 'No categories match this search.',
+        visibility: 'Visibility',
+        cancel: 'Cancel',
+        saving: 'Saving...',
+        saveChanges: 'Save Changes',
+        public: 'Public',
+        publicDescription: 'Visible in explore and can be discovered by other users.',
+        private: 'Private',
+        privateDescription: 'Visible only in your own template list.',
+        updated: 'Template updated successfully!',
+        atLeastOneTag: 'Add at least one tag.',
+        errorPrefix: 'Error',
+      };
+    case 'es':
+      return {
+        modalTitle: 'Editar Template',
+        modalDescription: 'Actualiza los metadatos y la presentación del template sin cambiar el snapshot original de la página.',
+        basicSection: 'Detalles del Template',
+        basicSectionHint: 'Mantén el título y la visibilidad alineados con cómo quieres mostrar el template en tu biblioteca.',
+        templateName: 'Nombre del Template',
+        templateNamePlaceholder: 'Ej: Portfolio oscuro',
+        previewSection: 'Imagen de Preview',
+        previewSectionHint: 'Puedes cambiar la portada en cualquier momento para mejorar la presentación.',
+        previewImage: 'Imagen de Preview',
+        currentPreview: 'Imagen de preview actual',
+        changeImage: 'Cambiar imagen',
+        selectFile: 'Elegir imagen',
+        fileHint: 'PNG, JPG, GIF hasta 10MB',
+        tagsSection: 'Categorías',
+        tagsSectionHint: 'Mantén el template dentro del catálogo predefinido de categorías usado por los filtros.',
+        tags: 'Categorías',
+        addTag: 'Buscar categorías',
+        tagHint: 'Solo las categorías predefinidas se pueden guardar en templates.',
+        suggestedTags: 'Categorías disponibles',
+        noTagResults: 'Ninguna categoría coincide con esta búsqueda.',
+        visibility: 'Visibilidad',
+        cancel: 'Cancelar',
+        saving: 'Guardando...',
+        saveChanges: 'Guardar Cambios',
+        public: 'Público',
+        publicDescription: 'Visible en explorar y descubrible por otros usuarios.',
+        private: 'Privado',
+        privateDescription: 'Visible solo en tu propia lista de templates.',
+        updated: 'Template actualizado con éxito!',
+        atLeastOneTag: 'Agrega al menos una tag.',
+        errorPrefix: 'Error',
+      };
+    default:
+      return {
+        modalTitle: 'Editar Template',
+        modalDescription: 'Atualize os metadados e a apresentação do template sem alterar o snapshot original da página.',
+        basicSection: 'Detalhes do Template',
+        basicSectionHint: 'Mantenha o título e a visibilidade alinhados com a forma como o template deve aparecer na sua biblioteca.',
+        templateName: 'Nome do Template',
+        templateNamePlaceholder: 'Ex: Portfolio escuro',
+        previewSection: 'Imagem de Preview',
+        previewSectionHint: 'Você pode trocar a capa a qualquer momento para melhorar a apresentação.',
+        previewImage: 'Imagem de Preview',
+        currentPreview: 'Imagem de preview atual',
+        changeImage: 'Trocar imagem',
+        selectFile: 'Escolher imagem',
+        fileHint: 'PNG, JPG, GIF até 10MB',
+        tagsSection: 'Categorias',
+        tagsSectionHint: 'Mantenha o template dentro do catálogo predefinido de categorias usado nos filtros.',
+        tags: 'Categorias',
+        addTag: 'Buscar categorias',
+        tagHint: 'Apenas categorias predefinidas podem ser salvas em templates.',
+        suggestedTags: 'Categorias disponíveis',
+        noTagResults: 'Nenhuma categoria corresponde a esta busca.',
+        visibility: 'Visibilidade',
+        cancel: 'Cancelar',
+        saving: 'Salvando...',
+        saveChanges: 'Salvar Alterações',
+        public: 'Público',
+        publicDescription: 'Visível na exploração e pode ser descoberto por outros usuários.',
+        private: 'Privado',
+        privateDescription: 'Visível apenas na sua lista de templates.',
+        updated: 'Template atualizado com sucesso!',
+        atLeastOneTag: 'Adicione pelo menos uma tag.',
+        errorPrefix: 'Erro',
+      };
   }
-}, { immediate: true });
+});
+
+const previewSource = computed(() => preview.value || form.previewImageUrl || '');
+
+const visibilityOptions = computed(() => [
+  {
+    label: copy.value.public,
+    description: copy.value.publicDescription,
+    value: 'PUBLIC',
+  },
+  {
+    label: copy.value.private,
+    description: copy.value.privateDescription,
+    value: 'PRIVATE',
+  },
+]);
+
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    if (isOpen && store.popularTags.length === 0) {
+      await store.fetchPopularTags();
+    }
+
+    if (isOpen && props.template) {
+      populateForm(props.template);
+    }
+
+    if (!isOpen) {
+      resetForm();
+    }
+  },
+  { immediate: true },
+);
+
+watch(
+  () => props.template,
+  (newTemplate) => {
+    if (!newTemplate) {
+      return;
+    }
+
+    populateForm(newTemplate);
+  },
+  { immediate: true },
+);
 
 function handleFileChange(event: Event) {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
-  if (file) {
-    selectedFile.value = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      preview.value = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+
+  if (!file) {
+    return;
   }
+
+  selectedFile.value = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    preview.value = e.target?.result as string;
+  };
+  reader.readAsDataURL(file);
 }
 
 function removeFile() {
   selectedFile.value = null;
   preview.value = null;
+  fileInputKey.value += 1;
+}
 
-  const input = document.getElementById('edit-file-upload') as HTMLInputElement;
-  if (input) input.value = '';
+function populateForm(template: Template) {
+  const allowedTags = new Set(store.popularTags.map((tag) => tag.name));
+  form.name = template.name;
+  form.previewImageUrl = template.previewImageUrl;
+  form.visibility = template.visibility;
+  form.tags = template.tags
+    .map((tag) => tag.name)
+    .filter((tag) => allowedTags.size === 0 || allowedTags.has(tag));
+  preview.value = null;
+  selectedFile.value = null;
+  fileInputKey.value += 1;
+}
+
+function resetForm() {
+  preview.value = null;
+  selectedFile.value = null;
+  fileInputKey.value += 1;
 }
 
 function resetAndClose() {
-  removeFile();
+  resetForm();
   emit('close');
 }
 
 async function handleSubmit() {
-  if (!props.template) return;
+  if (!props.template) {
+    return;
+  }
+
+  if (form.tags.length === 0) {
+    toast.error(copy.value.atLeastOneTag);
+    return;
+  }
+
   isLoading.value = true;
 
-
   const payload: UpdateTemplateInput = {
-    name: form.name || '',
+    name: form.name,
     previewImageUrl: form.previewImageUrl,
-    visibility: form.visibility || 'PUBLIC',
-    tags: tagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean),
+    visibility: form.visibility,
+    tags: form.tags,
   };
 
   if (selectedFile.value) {
@@ -149,10 +355,10 @@ async function handleSubmit() {
 
   try {
     await store.updateTemplate(props.template.id, payload);
-    toast.success('Template atualizado com sucesso!');
+    toast.success(copy.value.updated);
     resetAndClose();
   } catch (error: any) {
-    toast.error(`Erro: ${error.message}`);
+    toast.error(`${copy.value.errorPrefix}: ${error.message}`);
   } finally {
     isLoading.value = false;
   }
@@ -160,23 +366,15 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.form-label {
-  @apply block text-sm font-medium text-slate-300 mb-1;
+.section-card {
+  @apply space-y-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-4;
 }
 
-.form-input {
-  @apply w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500;
+.section-title {
+  @apply text-sm font-semibold uppercase tracking-[0.18em] text-slate-300;
 }
 
-.form-radio {
-  @apply h-4 w-4 text-amber-500 bg-slate-700 border-slate-600 focus:ring-amber-500;
-}
-
-.btn-primary {
-  @apply px-6 py-2 text-sm font-medium text-slate-900 bg-amber-400 rounded-md hover:bg-amber-300 disabled:bg-slate-600 transition-colors;
-}
-
-.btn-secondary {
-  @apply px-4 py-2 text-sm font-medium text-slate-300 rounded-md hover:bg-slate-800 transition-colors;
+.section-copy {
+  @apply text-sm text-slate-500;
 }
 </style>

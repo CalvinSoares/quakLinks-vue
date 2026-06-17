@@ -82,12 +82,30 @@ interface AuthSessionsResponse {
   sessions: AuthSession[];
 }
 
+function extractAuthErrorMessage(error: any, fallback: string) {
+  const data = error?.response?.data;
+
+  if (typeof data === "string" && data.trim()) {
+    return data;
+  }
+
+  if (typeof data?.message === "string" && data.message.trim()) {
+    return data.message;
+  }
+
+  return fallback;
+}
+
 interface CurrentUserResponse {
   id: string;
   name: string;
   email: string;
   roles: string[];
   createdAt: string;
+  image?: string | null;
+  imageProvider?: string | null;
+  googleImage?: string | null;
+  discordImage?: string | null;
   accounts?: Account[];
   spotifyConnection?: User["spotifyConnection"];
 }
@@ -102,10 +120,10 @@ function mapCurrentUser(response: CurrentUserResponse): User {
     email: response.email,
     role: isPremiumUser ? "PREMIUM" : "FREE",
     roles,
-    image: null,
-    imageProvider: "LOCAL",
-    googleImage: null,
-    discordImage: null,
+    image: response.image ?? null,
+    imageProvider: response.imageProvider ?? "LOCAL",
+    googleImage: response.googleImage ?? null,
+    discordImage: response.discordImage ?? null,
     accounts: response.accounts ?? [],
     CustomDomain: null,
     spotifyConnection: response.spotifyConnection ?? null,
@@ -156,7 +174,11 @@ export const useAuthStore = defineStore("auth", () => {
     delete api.defaults.headers.common["Authorization"];
   }
 
-  async function login(credentials: { email: string; password: string }) {
+  async function login(credentials: {
+    email: string;
+    password: string;
+    turnstileToken?: string | null;
+  }) {
     const response = await api.post<AuthTokenResponse>(
       "/auth/login",
       credentials,
@@ -169,17 +191,37 @@ export const useAuthStore = defineStore("auth", () => {
     name: string;
     email: string;
     password: string;
+    turnstileToken?: string | null;
   }) {
-    const response = await api.post<AuthTokenResponse>(
-      "/auth/register",
-      details,
-    );
-    setTokens(response.data);
-    await fetchUser();
+    await api.post("/auth/register", details);
+    return true;
   }
 
-  async function verifyEmail(_: { email: string; token: string }) {
-    throw new Error("Verificacao de email nao esta disponivel na API atual.");
+  async function verifyEmail(payload: { email: string; token: string }) {
+    await api.post("/auth/verify-email", payload);
+    return true;
+  }
+
+  async function resendVerificationEmail(
+    email: string,
+    turnstileToken?: string | null,
+  ) {
+    await api.post("/auth/resend-verification", { email, turnstileToken });
+    return true;
+  }
+
+  async function requestPasswordReset(email: string) {
+    await api.post("/auth/forgot-password", { email });
+    return true;
+  }
+
+  async function resetPassword(payload: {
+    email: string;
+    token: string;
+    newPassword: string;
+  }) {
+    await api.post("/auth/reset-password", payload);
+    return true;
   }
 
   async function fetchUser() {
@@ -266,11 +308,41 @@ export const useAuthStore = defineStore("auth", () => {
       return response.data.sessions;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message ||
+        extractAuthErrorMessage(
+          error,
           "Nao foi possivel carregar as sessoes da conta.",
+        ),
       );
     } finally {
       isLoadingSessions.value = false;
+    }
+  }
+
+  async function revokeSession(sessionId: string) {
+    try {
+      await api.delete(`/auth/sessions/${sessionId}`);
+      sessions.value = sessions.value.map((session) =>
+        session.id === sessionId
+          ? { ...session, revoked: true, active: false }
+          : session,
+      );
+    } catch (error: any) {
+      throw new Error(
+        extractAuthErrorMessage(error, "Nao foi possivel encerrar a sessao."),
+      );
+    }
+  }
+
+  async function deleteSession(sessionId: string) {
+    try {
+      await api.delete(`/auth/sessions/${sessionId}/delete`);
+      sessions.value = sessions.value.filter(
+        (session) => session.id !== sessionId,
+      );
+    } catch (error: any) {
+      throw new Error(
+        extractAuthErrorMessage(error, "Nao foi possivel excluir a sessao."),
+      );
     }
   }
 
@@ -279,8 +351,10 @@ export const useAuthStore = defineStore("auth", () => {
       await api.post("/auth/logout-all");
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message ||
+        extractAuthErrorMessage(
+          error,
           "Nao foi possivel encerrar todas as sessoes.",
+        ),
       );
     }
 
@@ -321,10 +395,15 @@ export const useAuthStore = defineStore("auth", () => {
     register,
     logout,
     fetchSessions,
+    revokeSession,
+    deleteSession,
     logoutAllSessions,
     fetchUser,
     setUser,
     verifyEmail,
+    resendVerificationEmail,
+    requestPasswordReset,
+    resetPassword,
     setTokens,
     startSocialLogin,
     completeSocialLogin,

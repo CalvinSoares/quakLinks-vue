@@ -54,12 +54,14 @@
 
         <div v-if="sortedBlocks.length > 0" :class="containerClasses">
           <UniversalBlock v-for="block in sortedBlocks" :key="block.id" :block="block" :page="page"
+            :track-public-clicks="true"
             :class="{ 'col-span-2 w-full': page.layoutLinkStyle === 'grid' && block.type !== 'LINK' }" />
         </div>
 
         <div v-else-if="page.links && page.links.length > 0" class="w-full flex flex-col gap-3">
           <UniversalBlock v-for="link in page.links" :key="link.id"
-            :block="{ type: 'LINK', content: { title: link.title, url: link.url } }" :page="page" />
+            :block="{ id: link.id, type: 'LINK', content: { title: link.title, url: link.url } }" :page="page"
+            :track-public-clicks="true" />
         </div>
 
       </div>
@@ -108,8 +110,9 @@ const uiStore = useUiStore();
 const pageStore = usePageStore();
 
 const page = computed(() => pageStore.currentPage);
-const slug = computed(() => route.params.slug as string);
+const slug = computed(() => route.params.slug as string | undefined);
 
+/*
 interface Snowflake {
   id: number;
   style: {
@@ -150,7 +153,7 @@ const generateSnow = () => {
   }
   snowflakes.value = newFlakes;
 };
-
+*/
 
 const sortedBlocks = computed(() => {
   if (page.value?.blocks) {
@@ -279,13 +282,18 @@ function getSoundCloudEmbedUrl(url: string): string {
 }
 
 
-const loadPage = (slugToFetch: string) => {
-  if (slugToFetch) pageStore.fetchPageBySlug(`public:${slugToFetch}`);
+const loadPage = (slugToFetch?: string) => {
+  if (slugToFetch) {
+    pageStore.fetchPageBySlug(`public:${slugToFetch}`);
+    return;
+  }
+
+  pageStore.fetchPublicPageByDomain(window.location.host);
 };
 
 onMounted(() => {
   loadPage(slug.value);
-  generateSnow();
+  // generateSnow();
 });
 
 watch(slug, (newSlug) => {
@@ -306,6 +314,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/*
 @keyframes snowfall {
   0% {
     transform: translateY(-10px) translateX(0);
@@ -332,6 +341,7 @@ onUnmounted(() => {
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
+*/
 
 .bg-radial-vignette {
   background: radial-gradient(circle, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.8) 100%);

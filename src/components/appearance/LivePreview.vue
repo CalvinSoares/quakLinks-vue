@@ -8,7 +8,7 @@
 
   </div>
   <div v-else class="flex items-center justify-center h-full text-slate-500">
-    Carregando preview...
+    {{ copy.loadingPreview }}
   </div>
 </template>
 
@@ -17,6 +17,7 @@ import { computed } from 'vue';
 import PageRenderer from './PageRenderer.vue';
 import AudioPlayer from './AudioPlayer.vue';
 import { usePageStore, type Page } from '@/store/page';
+import { useAppLanguage } from '@/composables/useAppLanguage';
 
 
 const props = defineProps<{
@@ -25,6 +26,17 @@ const props = defineProps<{
 
 
 const pageStore = usePageStore();
+const { locale } = useAppLanguage();
+const copy = computed(() => {
+  switch (locale.value) {
+    case 'en':
+      return { loadingPreview: 'Loading preview...' };
+    case 'es':
+      return { loadingPreview: 'Cargando preview...' };
+    default:
+      return { loadingPreview: 'Carregando preview...' };
+  }
+});
 
 const pageWithLinks = computed(() => {
   return {

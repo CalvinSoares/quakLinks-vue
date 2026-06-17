@@ -1,6 +1,9 @@
 <template>
   <div
     class="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden px-4 font-sans">
+    <div class="absolute right-4 top-4 z-20">
+      <LanguageMenuButton />
+    </div>
     <div class="absolute inset-0 overflow-hidden">
       <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
       <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse"
@@ -18,11 +21,11 @@
 
           <div class="flex flex-col items-center gap-2">
             <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-800 ring-1 ring-slate-700">
-              <img src="/ducklogonatal.png" alt="QuackLinks Logo" class="w-9 h-7" />
+              <img src="/duckbio.png" alt="QuackLinks Logo" class="w-9 h-7" />
 
             </div>
-            <h1 class="text-2xl font-bold text-white">Bem-vindo(a)</h1>
-            <p class="text-sm text-slate-400">Faça login para continuar.</p>
+            <h1 class="text-2xl font-bold text-white">{{ copy.welcomeTitle }}</h1>
+            <p class="text-sm text-slate-400">{{ copy.welcomeSubtitle }}</p>
           </div>
 
           <div class="w-full space-y-3">
@@ -42,7 +45,7 @@
                   d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.012,36.494,44,30.638,44,24C44,22.659,43.862,21.35,43.611,20.083z">
                 </path>
               </svg>
-              Continuar com Google
+              {{ copy.googleButton }}
             </button>
             <button type="button" @click="handleSocialLogin('discord')"
               class="flex items-center justify-center gap-3 w-full py-3 text-sm font-semibold text-white bg-[#24292F] rounded-lg hover:bg-[#30363d] transition-colors">
@@ -50,7 +53,7 @@
                 <path
                   d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.034c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
               </svg>
-              <span class="ml-2">Entrar com Discord</span>
+              <span class="ml-2">{{ copy.discordButton }}</span>
             </button>
           </div>
 
@@ -58,7 +61,8 @@
             <div class="absolute inset-0 flex items-center">
               <div class="w-full border-t border-slate-700/50"></div>
             </div>
-            <div class="relative flex justify-center text-xs"><span class="px-2 bg-slate-900 text-slate-500">ou</span>
+            <div class="relative flex justify-center text-xs"><span class="px-2 bg-slate-900 text-slate-500">{{
+              copy.orLabel }}</span>
             </div>
           </div>
 
@@ -66,16 +70,18 @@
             <div class="relative">
               <input v-model="email" id="email" type="email" required :disabled="isLoading"
                 class="peer w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
-                placeholder="E-mail" />
+                :placeholder="copy.emailLabel" />
               <label for="email"
-                class="absolute left-4 -top-2.5 text-slate-400 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-500 peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-purple-400 peer-focus:text-sm pointer-events-none bg-slate-900 px-1">E-mail</label>
+                class="absolute left-4 -top-2.5 text-slate-400 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-500 peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-purple-400 peer-focus:text-sm pointer-events-none bg-slate-900 px-1">{{
+                  copy.emailLabel }}</label>
             </div>
             <div class="relative">
               <input v-model="password" id="password" :type="passwordFieldType" required :disabled="isLoading"
                 class="peer w-full pl-4 pr-10 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
-                placeholder="Senha" />
+                :placeholder="copy.passwordLabel" />
               <label for="password"
-                class="absolute left-4 -top-2.5 text-slate-400 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-500 peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-purple-400 peer-focus:text-sm pointer-events-none bg-slate-900 px-1">Senha</label>
+                class="absolute left-4 -top-2.5 text-slate-400 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-500 peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-purple-400 peer-focus:text-sm pointer-events-none bg-slate-900 px-1">{{
+                  copy.passwordLabel }}</label>
               <button type="button" @click="togglePasswordVisibility"
                 class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-purple-400">
                 <svg v-if="!isPasswordVisible" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -102,22 +108,30 @@
               </div>
             </Transition>
 
+            <div v-if="hasTurnstile && loginRequiresTurnstile" class="space-y-2">
+              <p class="text-center text-xs text-amber-300">
+                {{ copy.turnstilePrompt }}
+              </p>
+              <TurnstileWidget v-model="turnstileToken" :reset-key="turnstileResetKey" />
+            </div>
+
             <button type="submit" :disabled="isLoading"
-              class="w-full flex items-center justify-center py-3 font-semibold text-white bg-gradient-to-r from-purple-500 to-cyan-500 rounded-lg hover:shadow-lg hover:shadow-purple-500/40 transition-all duration-300 disabled:opacity-60">
+              class="ui-btn-primary w-full py-3">
               <svg v-if="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                 </path>
               </svg>
-              <span>{{ isLoading ? 'Entrando...' : 'Entrar com E-mail' }}</span>
+              <span>{{ isLoading ? copy.loggingIn : copy.emailButton }}</span>
             </button>
           </form>
 
           <div class="text-sm text-slate-400 flex items-center justify-between w-full">
-            <router-link to="/register" class="hover:text-purple-400 transition-colors">Criar conta</router-link>
-            <router-link to="/esqueci-senha" class="hover:text-purple-400 transition-colors">Esqueci a
-              senha</router-link>
+            <router-link to="/register" class="hover:text-purple-400 transition-colors">{{ copy.createAccount
+            }}</router-link>
+            <router-link to="/esqueci-senha" class="hover:text-purple-400 transition-colors">{{ copy.forgotPassword
+            }}</router-link>
           </div>
         </div>
       </div>
@@ -129,14 +143,77 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/auth";
+import LanguageMenuButton from "@/components/LanguageMenuButton.vue";
+import TurnstileWidget from "@/components/auth/TurnstileWidget.vue";
+import { useAppLanguage } from "@/composables/useAppLanguage";
 
 const authStore = useAuthStore();
 const router = useRouter();
+const { locale } = useAppLanguage();
 const email = ref('');
 const password = ref('');
 const error = ref<string | null>(null);
 const isLoading = ref(false);
 const isMounted = ref(false);
+const turnstileToken = ref<string | null>(null);
+const turnstileResetKey = ref(0);
+const loginRequiresTurnstile = ref(false);
+const hasTurnstile = computed(
+  () => Boolean((import.meta.env.VITE_TURNSTILE_SITE_KEY || "").trim()),
+);
+
+const translations = {
+  pt: {
+    welcomeTitle: "Bem-vindo(a)",
+    welcomeSubtitle: "Faça login para continuar.",
+    googleButton: "Continuar com Google",
+    discordButton: "Entrar com Discord",
+    orLabel: "ou",
+    emailLabel: "E-mail",
+    passwordLabel: "Senha",
+    loggingIn: "Entrando...",
+    emailButton: "Entrar com E-mail",
+    createAccount: "Criar conta",
+    forgotPassword: "Esqueci a senha",
+    invalidCredentials: "Email ou senha inválidos.",
+    socialLoginError: "Nao foi possivel iniciar o login social.",
+    turnstilePrompt: "Confirme o desafio anti-bot para continuar.",
+  },
+  en: {
+    welcomeTitle: "Welcome",
+    welcomeSubtitle: "Sign in to continue.",
+    googleButton: "Continue with Google",
+    discordButton: "Sign in with Discord",
+    orLabel: "or",
+    emailLabel: "Email",
+    passwordLabel: "Password",
+    loggingIn: "Signing in...",
+    emailButton: "Sign in with Email",
+    createAccount: "Create account",
+    forgotPassword: "Forgot password",
+    invalidCredentials: "Invalid email or password.",
+    socialLoginError: "Could not start social login.",
+    turnstilePrompt: "Complete the anti-bot challenge to continue.",
+  },
+  es: {
+    welcomeTitle: "Bienvenido(a)",
+    welcomeSubtitle: "Inicia sesión para continuar.",
+    googleButton: "Continuar con Google",
+    discordButton: "Entrar con Discord",
+    orLabel: "o",
+    emailLabel: "Email",
+    passwordLabel: "Contraseña",
+    loggingIn: "Entrando...",
+    emailButton: "Entrar con Email",
+    createAccount: "Crear cuenta",
+    forgotPassword: "Olvidé mi contraseña",
+    invalidCredentials: "Email o contraseña inválidos.",
+    socialLoginError: "No se pudo iniciar el login social.",
+    turnstilePrompt: "Completa el desafio anti-bot para continuar.",
+  },
+} as const;
+
+const copy = computed(() => translations[locale.value]);
 const isPasswordVisible = ref(false);
 
 onMounted(() => {
@@ -149,6 +226,13 @@ const togglePasswordVisibility = () => {
   isPasswordVisible.value = !isPasswordVisible.value;
 };
 
+const resolveErrorMessage = (err: any, fallback: string) => {
+  if (typeof err?.response?.data === "string" && err.response.data.trim()) {
+    return err.response.data;
+  }
+  return err?.response?.data?.message || err?.message || fallback;
+};
+
 const handleLogin = async () => {
   error.value = null;
   isLoading.value = true;
@@ -156,10 +240,23 @@ const handleLogin = async () => {
     await authStore.login({
       email: email.value,
       password: password.value,
+      turnstileToken: turnstileToken.value,
     });
+    loginRequiresTurnstile.value = false;
+    turnstileToken.value = null;
     await router.push("/dashboard/overview");
   } catch (err: any) {
-    error.value = err.response?.data?.message || "Email ou senha inválidos.";
+    const antiBotCode = err?.response?.data?.code;
+    if (
+      antiBotCode === "TURNSTILE_REQUIRED" ||
+      antiBotCode === "TURNSTILE_INVALID" ||
+      antiBotCode === "TURNSTILE_UNAVAILABLE"
+    ) {
+      loginRequiresTurnstile.value = true;
+      turnstileToken.value = null;
+      turnstileResetKey.value += 1;
+    }
+    error.value = resolveErrorMessage(err, copy.value.invalidCredentials);
   } finally {
     isLoading.value = false;
   }
@@ -171,10 +268,10 @@ const handleSocialLogin = async (provider: "google" | "discord") => {
   try {
     await authStore.startSocialLogin(provider);
   } catch (err: any) {
-    error.value =
-      err.response?.data?.message ||
-      err.message ||
-      "Nao foi possivel iniciar o login social.";
+    error.value = resolveErrorMessage(
+      err,
+      copy.value.socialLoginError,
+    );
   }
 };
 </script>

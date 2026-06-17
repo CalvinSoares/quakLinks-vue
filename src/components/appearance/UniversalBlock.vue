@@ -1,7 +1,7 @@
 <template>
     <div class="transition-all duration-300 h-full" :class="rootWidthClass">
 
-        <a v-if="block.type === 'LINK'" :href="block.content.url" target="_blank" rel="noopener noreferrer"
+        <a v-if="block.type === 'LINK'" :href="publicLinkHref" target="_blank" rel="noopener noreferrer"
             class="group relative transition-all duration-300 transform link-item overflow-hidden"
             :class="linkComputedClasses" :style="linkDynamicStyles"> <!-- Style binding dinâmico -->
 
@@ -34,14 +34,14 @@
 
         <div v-else-if="block.type === 'HEADER'" class="text-center w-full px-2 py-2 ">
             <h2 class="text-xl font-bold  break-words" :style="{ color: page.textColor || '#FFFFFF' }">
-                {{ block.content.text }}
+                {{ block.content.title || block.content.text }}
             </h2>
         </div>
 
         <div v-else-if="block.type === 'TEXT'" class="text-center w-full px-2">
             <p class="text-sm opacity-90 whitespace-pre-wrap leading-relaxed break-words"
                 :style="{ color: page.textColor || '#FFFFFF' }">
-                {{ block.content.text }}
+                {{ block.content.text || block.content.textContent }}
             </p>
         </div>
 
@@ -65,7 +65,7 @@
                     :src="`https://www.youtube.com/subscribe_embed?channelid=${block.content.channelId}&layout=full&theme=dark`"
                     width="200" height="50" frameborder="0" scrolling="no" style="border:none; overflow:hidden;">
                 </iframe>
-                <div v-else class="text-xs text-red-400">ID do canal ausente</div>
+                <div v-else class="text-xs text-red-400">{{ copy.missingChannelId }}</div>
             </div>
         </div>
 
@@ -74,7 +74,7 @@
                 :src="`https://assets.pinterest.com/ext/embed.html?id=${getPinterestId(block.content.url)}`"
                 height="400" width="236" frameborder="0" scrolling="no"
                 class="rounded-xl shadow-lg border border-white/10"></iframe>
-            <div v-else class="text-xs text-red-400 py-2">URL inválida</div>
+            <div v-else class="text-xs text-red-400 py-2">{{ copy.invalidUrl }}</div>
         </div>
 
         <div v-else-if="block.type === 'COUNTDOWN'" class="w-full">
@@ -88,8 +88,8 @@
                 <h3 class="text-lg font-bold text-white mb-4 tracking-tight break-words">{{ block.content.title }}</h3>
 
                 <div v-if="isExpired && block.content.endBehavior === 'message'" class="py-6 animate-fade-in">
-                    <p class="text-xl font-bold text-red-400 break-words">{{ block.content.endMessage || 'Evento' +
-                        'Encerrado' }}</p>
+                    <p class="text-xl font-bold text-red-400 break-words">{{ block.content.endMessage || copy.eventEnded
+                    }}</p>
                 </div>
 
                 <div v-else class="grid grid-cols-4 gap-2 mb-5">
@@ -123,7 +123,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
-                        Lembrar-me
+                        {{ copy.remindMe }}
                     </a>
                 </div>
 
@@ -134,22 +134,68 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { API_BASE_URL } from '@/services/api';
 import {
     BrandGithubIcon, BrandTwitterIcon, BrandInstagramIcon, BrandLinkedinIcon,
     BrandYoutubeIcon, LinkIcon, BrandDiscordIcon, BrandTwitchIcon, BrandSpotifyIcon,
     BrandSoundcloudIcon, BrandPinterestIcon
 } from 'vue-tabler-icons';
+import { useAppLanguage } from '@/composables/useAppLanguage';
 
 const props = defineProps<{
     block: any;
     page: any;
+    trackPublicClicks?: boolean;
 }>();
+const { locale } = useAppLanguage();
 
 const layout = computed(() => props.page.layoutLinkStyle || 'list');
 const isGrid = computed(() => layout.value === 'grid');
 const isStacked = computed(() => layout.value === 'stacked');
 const isIconsOnly = computed(() => layout.value === 'icons_only');
-const timeLeft = ref({ Dias: 0, Hrs: 0, Min: 0, Seg: 0 });
+const publicLinkHref = computed(() => {
+    const fallbackUrl = props.block.content.url;
+
+    if (!props.trackPublicClicks || !props.block?.id) {
+        return fallbackUrl;
+    }
+
+    return `${API_BASE_URL}/public/r/${props.block.id}`;
+});
+
+const copy = computed(() => {
+    switch (locale.value) {
+        case 'en':
+            return {
+                missingChannelId: 'Missing channel ID',
+                invalidUrl: 'Invalid URL',
+                remindMe: 'Remind me',
+                eventFallback: 'Event',
+                eventEnded: 'Event Ended',
+                timerLabels: { days: 'Days', hrs: 'Hrs', min: 'Min', sec: 'Sec' },
+            };
+        case 'es':
+            return {
+                missingChannelId: 'Falta el ID del canal',
+                invalidUrl: 'URL inválida',
+                remindMe: 'Recordarme',
+                eventFallback: 'Evento',
+                eventEnded: 'Evento Finalizado',
+                timerLabels: { days: 'Días', hrs: 'Hrs', min: 'Min', sec: 'Seg' },
+            };
+        default:
+            return {
+                missingChannelId: 'ID do canal ausente',
+                invalidUrl: 'URL inválida',
+                remindMe: 'Lembrar-me',
+                eventFallback: 'Evento',
+                eventEnded: 'Evento Encerrado',
+                timerLabels: { days: 'Dias', hrs: 'Hrs', min: 'Min', sec: 'Seg' },
+            };
+    }
+});
+
+const timeLeft = ref<Record<string, number>>({ Dias: 0, Hrs: 0, Min: 0, Seg: 0 });
 const isExpired = ref(false);
 let timerInterval: any = null;
 
@@ -166,17 +212,22 @@ function updateTimer() {
 
     if (distance < 0) {
         isExpired.value = true;
-        timeLeft.value = { Dias: 0, Hrs: 0, Min: 0, Seg: 0 };
+        timeLeft.value = {
+            [copy.value.timerLabels.days]: 0,
+            [copy.value.timerLabels.hrs]: 0,
+            [copy.value.timerLabels.min]: 0,
+            [copy.value.timerLabels.sec]: 0
+        };
         clearInterval(timerInterval);
         return;
     }
 
     isExpired.value = false;
     timeLeft.value = {
-        Dias: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        Hrs: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        Min: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        Seg: Math.floor((distance % (1000 * 60)) / 1000)
+        [copy.value.timerLabels.days]: Math.floor(distance / (1000 * 60 * 60 * 24)),
+        [copy.value.timerLabels.hrs]: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        [copy.value.timerLabels.min]: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+        [copy.value.timerLabels.sec]: Math.floor((distance % (1000 * 60)) / 1000)
     };
 }
 
@@ -187,7 +238,7 @@ const googleCalendarLink = computed(() => {
     const end = new Date(new Date(c.date).getTime() + 60 * 60 * 1000).toISOString().replace(/-|:|\.\d\d\d/g, "");
 
     const details = encodeURIComponent(c.description || '');
-    const title = encodeURIComponent(c.title || 'Evento');
+    const title = encodeURIComponent(c.title || copy.value.eventFallback);
 
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&sf=true&output=xml`;
 });

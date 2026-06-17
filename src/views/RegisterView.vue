@@ -1,107 +1,121 @@
 <template>
   <div
-    class="relative flex items-center justify-center h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden px-4">
+    class="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden px-4 font-sans">
+    <div class="absolute right-4 top-4 z-20">
+      <LanguageMenuButton />
+    </div>
     <div class="absolute inset-0 overflow-hidden">
       <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
       <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse"
         style="animation-delay: 1s"></div>
-      <div
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl">
-      </div>
-    </div>
-    <div
-      class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:50px_50px]">
     </div>
 
-    <div class="relative w-full max-w-sm">
-      <div
-        class="relative backdrop-blur-xl bg-slate-900/50 border border-slate-800/50 rounded-2xl shadow-2xl p-6 space-y-4">
+    <div class="relative w-full max-w-sm transition-all duration-500 ease-in-out"
+      :class="isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'">
+      <div class="relative backdrop-blur-xl bg-slate-900/60 border border-slate-800/50 rounded-2xl shadow-2xl p-8">
         <div
           class="absolute -top-px left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent">
         </div>
 
-        <div class="text-center">
-          <h2 class="flex items-center justify-center gap-3 text-2xl font-bold text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-            Criar Conta
-          </h2>
-          <p class="text-slate-400 text-xs mt-1">Rápido e fácil para começar.</p>
+        <div class="flex flex-col items-center text-center gap-6">
+          <div class="flex flex-col items-center gap-2">
+            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-800 ring-1 ring-slate-700">
+              <img src="/duckbio.png" alt="QuackLinks Logo" class="w-9 h-7" />
+            </div>
+            <h1 class="text-2xl font-bold text-white">{{ copy.title }}</h1>
+            <p class="text-sm text-slate-400">{{ copy.subtitle }}</p>
+          </div>
+
+          <form @submit.prevent="handleRegister" class="w-full space-y-4">
+            <div class="relative">
+              <input v-model="name" id="name" type="text" required :disabled="isLoading"
+                class="peer w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 disabled:opacity-50"
+                :placeholder="copy.nameLabel" />
+              <label for="name"
+                class="absolute left-4 -top-2.5 text-slate-400 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-500 peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-purple-400 peer-focus:text-sm pointer-events-none bg-slate-900 px-1">
+                {{ copy.nameLabel }}
+              </label>
+            </div>
+
+            <div class="relative">
+              <input v-model="email" id="email" type="email" required :disabled="isLoading"
+                class="peer w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 disabled:opacity-50"
+                :placeholder="copy.emailLabel" />
+              <label for="email"
+                class="absolute left-4 -top-2.5 text-slate-400 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-500 peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-purple-400 peer-focus:text-sm pointer-events-none bg-slate-900 px-1">
+                {{ copy.emailLabel }}
+              </label>
+            </div>
+
+            <div class="relative">
+              <input v-model="password" id="password" :type="passwordFieldType" required :disabled="isLoading"
+                class="peer w-full pl-4 pr-10 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 disabled:opacity-50"
+                :placeholder="copy.passwordLabel" />
+              <label for="password"
+                class="absolute left-4 -top-2.5 text-slate-400 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-500 peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-purple-400 peer-focus:text-sm pointer-events-none bg-slate-900 px-1">
+                {{ copy.passwordLabel }}
+              </label>
+              <button type="button" @click="togglePasswordVisibility"
+                class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-purple-400">
+                <svg v-if="!isPasswordVisible" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  stroke-width="2">
+                  <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                </svg>
+              </button>
+            </div>
+
+            <Transition name="fade">
+              <div v-if="error"
+                class="flex items-center gap-2 text-sm text-center p-2 rounded-md bg-red-500/10 text-red-400">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" />
+                </svg>
+                <span>{{ error }}</span>
+              </div>
+            </Transition>
+
+            <Transition name="fade">
+              <div v-if="success"
+                class="flex items-center gap-2 text-sm text-center p-2 rounded-md bg-green-500/10 text-green-400">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.172 7.707 8.879a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd" />
+                </svg>
+                <span>{{ success }}</span>
+              </div>
+            </Transition>
+
+            <div v-if="hasTurnstile" class="space-y-2">
+              <p class="text-center text-xs text-amber-300">{{ copy.turnstilePrompt }}</p>
+              <TurnstileWidget v-model="turnstileToken" :reset-key="turnstileResetKey" />
+            </div>
+
+            <button type="submit" :disabled="isLoading || !!success" class="ui-btn-primary w-full py-3">
+              <svg v-if="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              <span>{{ isLoading ? copy.creating : copy.submit }}</span>
+            </button>
+          </form>
+
+          <p class="text-sm text-slate-400">
+            {{ copy.hasAccount }}
+            <router-link to="/login" class="hover:text-purple-400 transition-colors">
+              {{ copy.loginLink }}
+            </router-link>
+          </p>
         </div>
-
-        <form @submit.prevent="handleRegister" class="space-y-4">
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <input v-model="name" type="text" placeholder="Nome completo" required :disabled="isLoading"
-              class="w-full pl-11 pr-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all disabled:opacity-50" />
-          </div>
-
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-              </svg>
-            </div>
-            <input v-model="email" type="email" placeholder="Email" required :disabled="isLoading"
-              class="w-full pl-11 pr-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all disabled:opacity-50" />
-          </div>
-
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <input v-model="password" type="password" placeholder="Senha" required :disabled="isLoading"
-              class="w-full pl-11 pr-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all disabled:opacity-50" />
-          </div>
-
-          <div v-if="error" class="flex items-center gap-2 p-2.5 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-400 flex-shrink-0" fill="none"
-              viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p class="text-sm text-red-400">{{ error }}</p>
-          </div>
-
-          <div v-if="success"
-            class="flex items-center gap-2 p-2.5 bg-green-500/10 border border-green-500/20 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-400 flex-shrink-0" fill="none"
-              viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p class="text-sm text-green-400">{{ success }}</p>
-          </div>
-
-          <button type="submit" :disabled="isLoading || !!success"
-            class="relative w-full px-4 py-2.5 font-semibold text-white bg-gradient-to-r from-purple-500 to-cyan-500 rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] overflow-hidden group disabled:opacity-75 disabled:cursor-not-allowed disabled:scale-100">
-            <span class="relative z-10">{{ isLoading ? 'Criando...' : 'Criar Conta' }}</span>
-            <div
-              class="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity">
-            </div>
-          </button>
-        </form>
-
-        <p class="text-xs text-center text-slate-400">
-          Já tem uma conta?
-          <router-link to="/login" class="text-purple-400 hover:text-purple-300 font-medium transition-colors">
-            Faça login
-          </router-link>
-        </p>
       </div>
       <div
         class="absolute -z-10 -inset-4 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-3xl blur-2xl opacity-50">
@@ -111,9 +125,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
+import LanguageMenuButton from '@/components/LanguageMenuButton.vue';
+import TurnstileWidget from '@/components/auth/TurnstileWidget.vue';
+import { useAppLanguage } from '@/composables/useAppLanguage';
 
 const name = ref('');
 const email = ref('');
@@ -121,9 +138,84 @@ const password = ref('');
 const error = ref<string | null>(null);
 const success = ref<string | null>(null);
 const isLoading = ref(false);
+const isMounted = ref(false);
+const turnstileToken = ref<string | null>(null);
+const turnstileResetKey = ref(0);
+const hasTurnstile = computed(
+  () => Boolean((import.meta.env.VITE_TURNSTILE_SITE_KEY || '').trim()),
+);
 
 const router = useRouter();
 const authStore = useAuthStore();
+const { locale } = useAppLanguage();
+
+const translations = {
+  pt: {
+    title: 'Criar Conta',
+    subtitle: 'Crie sua conta para continuar.',
+    nameLabel: 'Nome completo',
+    emailLabel: 'E-mail',
+    passwordLabel: 'Senha',
+    creating: 'Criando...',
+    submit: 'Criar Conta',
+    hasAccount: 'Já tem uma conta?',
+    loginLink: 'Faça login',
+    successMessage: 'Conta criada com sucesso! Redirecionando para verificacao...',
+    emailInUse: 'Este email já está em uso. Tente outro.',
+    genericError: 'Ocorreu um erro ao criar a conta.',
+    turnstilePrompt: 'Confirme o desafio anti-bot para criar sua conta.',
+  },
+  en: {
+    title: 'Create Account',
+    subtitle: 'Create your account to continue.',
+    nameLabel: 'Full name',
+    emailLabel: 'Email',
+    passwordLabel: 'Password',
+    creating: 'Creating...',
+    submit: 'Create Account',
+    hasAccount: 'Already have an account?',
+    loginLink: 'Sign in',
+    successMessage: 'Account created successfully! Redirecting to verification...',
+    emailInUse: 'This email is already in use. Try another one.',
+    genericError: 'An error occurred while creating the account.',
+    turnstilePrompt: 'Complete the anti-bot challenge to create your account.',
+  },
+  es: {
+    title: 'Crear Cuenta',
+    subtitle: 'Crea tu cuenta para continuar.',
+    nameLabel: 'Nombre completo',
+    emailLabel: 'Email',
+    passwordLabel: 'Contraseña',
+    creating: 'Creando...',
+    submit: 'Crear Cuenta',
+    hasAccount: '¿Ya tienes una cuenta?',
+    loginLink: 'Inicia sesión',
+    successMessage: '¡Cuenta creada con éxito! Redirigiendo a verificación...',
+    emailInUse: 'Este email ya está en uso. Prueba otro.',
+    genericError: 'Ocurrió un error al crear la cuenta.',
+    turnstilePrompt: 'Completa el desafio anti-bot para crear tu cuenta.',
+  },
+} as const;
+
+const copy = computed(() => translations[locale.value]);
+const isPasswordVisible = ref(false);
+
+onMounted(() => {
+  setTimeout(() => isMounted.value = true, 100);
+});
+
+const passwordFieldType = computed(() => isPasswordVisible.value ? 'text' : 'password');
+
+const togglePasswordVisibility = () => {
+  isPasswordVisible.value = !isPasswordVisible.value;
+};
+
+const resolveErrorMessage = (err: any, fallback: string) => {
+  if (typeof err?.response?.data === 'string' && err.response.data.trim()) {
+    return err.response.data;
+  }
+  return err?.response?.data?.message || err?.message || fallback;
+};
 
 const handleRegister = async () => {
   error.value = null;
@@ -133,18 +225,32 @@ const handleRegister = async () => {
     await authStore.register({
       name: name.value,
       email: email.value,
-      password: password.value
+      password: password.value,
+      turnstileToken: turnstileToken.value,
     });
-    success.value = 'Conta criada com sucesso! Redirecionando...';
+    success.value = copy.value.successMessage;
     setTimeout(() => {
-      router.push('/dashboard/overview');
+      router.push({
+        path: '/verify-email',
+        query: {
+          email: email.value,
+        },
+      });
     }, 2000);
 
   } catch (err: any) {
+    if (
+      err?.response?.data?.code === 'TURNSTILE_REQUIRED' ||
+      err?.response?.data?.code === 'TURNSTILE_INVALID' ||
+      err?.response?.data?.code === 'TURNSTILE_UNAVAILABLE'
+    ) {
+      turnstileToken.value = null;
+      turnstileResetKey.value += 1;
+    }
     if (err.response && err.response.status === 409) {
-      error.value = 'Este email já está em uso. Tente outro.';
+      error.value = copy.value.emailInUse;
     } else {
-      error.value = err.response?.data?.message || 'Ocorreu um erro ao criar a conta.';
+      error.value = resolveErrorMessage(err, copy.value.genericError);
     }
   } finally {
     isLoading.value = false;
@@ -153,19 +259,13 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 0.2;
-  }
-
-  50% {
-    opacity: 0.3;
-  }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.animate-pulse {
-  animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

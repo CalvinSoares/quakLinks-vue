@@ -2,6 +2,151 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .ui-modal-shell {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  }
+
+  .ui-modal-backdrop {
+    @apply absolute inset-0 bg-slate-950/80 backdrop-blur-sm;
+  }
+
+  .ui-modal-panel {
+    @apply relative w-full overflow-hidden rounded-2xl border border-amber-500/15 bg-slate-900 text-left shadow-2xl shadow-black/40;
+  }
+
+  .ui-modal-header {
+    @apply flex items-start justify-between gap-4 border-b border-slate-800 bg-slate-900/95 px-6 py-5;
+  }
+
+  .ui-modal-title-wrap {
+    @apply flex min-w-0 flex-1 items-center gap-3;
+  }
+
+  .ui-modal-accent {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-300 ring-1 ring-amber-400/20;
+  }
+
+  .ui-modal-title {
+    @apply text-lg font-bold text-white sm:text-xl;
+  }
+
+  .ui-modal-copy {
+    @apply text-sm text-slate-400;
+  }
+
+  .ui-modal-close {
+    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-transparent text-slate-400 transition hover:border-slate-700 hover:bg-slate-800 hover:text-white;
+  }
+
+  .ui-modal-body {
+    @apply px-6 py-6;
+  }
+
+  .ui-modal-footer {
+    @apply flex items-center justify-end gap-3 border-t border-slate-800 bg-slate-950/30 px-6 py-4;
+  }
+
+  .ui-btn,
+  .ui-btn-primary,
+  .ui-btn-secondary,
+  .ui-btn-ghost,
+  .ui-btn-danger,
+  .ui-btn-success,
+  .ui-btn-icon {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-transparent px-4 py-2.5 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.99];
+  }
+
+  .ui-btn-primary {
+    @apply bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 hover:bg-amber-300;
+  }
+
+  .ui-btn-secondary {
+    @apply border border-slate-700 bg-slate-800 text-slate-100 hover:border-slate-600 hover:bg-slate-700;
+  }
+
+  .ui-btn-ghost {
+    @apply text-slate-300 hover:bg-slate-800 hover:text-white;
+  }
+
+  .ui-btn-danger {
+    @apply border border-red-500/20 bg-red-500/10 text-red-300 hover:bg-red-500/20;
+  }
+
+  .ui-btn-success {
+    @apply border border-emerald-500/20 bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 hover:bg-emerald-400;
+  }
+
+  .ui-btn-icon {
+    @apply h-10 w-10 border-slate-700 bg-slate-800 px-0 text-slate-300 hover:bg-slate-700 hover:text-white;
+  }
+
+  .ui-label {
+    @apply mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400;
+  }
+
+  .ui-input {
+    @apply w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20;
+  }
+
+  .ui-input-shell {
+    @apply rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white;
+  }
+
+  .ui-radio {
+    @apply h-4 w-4 border-slate-600 bg-slate-800 text-amber-500 focus:ring-amber-500;
+  }
+
+  .ui-dropdown-trigger {
+    @apply flex w-full items-center justify-between gap-x-2 rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-left text-sm text-white outline-none transition placeholder:text-slate-500 hover:border-slate-600 hover:bg-slate-900 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .ui-dropdown-menu {
+    @apply absolute z-50 mt-2 w-full max-h-60 overflow-y-auto rounded-xl border border-slate-700/80 bg-slate-950 p-1 shadow-xl shadow-black/40 origin-top focus:outline-none;
+  }
+
+  .ui-dropdown-item {
+    @apply flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-slate-200 transition-colors select-none;
+  }
+
+  .ui-dropdown-item-active {
+    @apply bg-amber-500/10 text-white;
+  }
+
+  .ui-dropdown-item-selected {
+    @apply text-amber-300;
+  }
+
+  .ui-dropdown-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .ui-dropdown-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ui-dropdown-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #475569;
+    border-radius: 9999px;
+  }
+
+  .ui-dropdown-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #fbbf24;
+  }
+
+  .ui-template-card {
+    @apply rounded-2xl border border-slate-800 bg-slate-900/80 shadow-lg shadow-black/20 transition hover:border-slate-700;
+  }
+
+  .ui-template-tag {
+    @apply rounded-full bg-slate-800 px-2.5 py-1 text-[11px] font-medium text-slate-300;
+  }
+
+  .ui-template-stat {
+    @apply text-slate-400;
+  }
+}
+
 * {
   cursor: none !important;
 }

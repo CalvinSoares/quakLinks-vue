@@ -1,10 +1,11 @@
 <template>
   <div class="flex min-h-screen bg-slate-950 text-white selection:bg-amber-500/30 relative overflow-hidden">
-
+    <!--
     <div class="fixed inset-0 z-10 pointer-events-none overflow-hidden" aria-hidden="true">
       <div v-for="flake in snowflakes" :key="flake.id" class="absolute bg-white rounded-full opacity-80"
         :style="flake.style"></div>
     </div>
+    -->
 
     <Sidebar :is-open="isMobileOpen" :is-collapsed="isDesktopCollapsed" @close-sidebar="isMobileOpen = false"
       @toggle-collapse="isDesktopCollapsed = !isDesktopCollapsed" />
@@ -14,7 +15,7 @@
       <DashboardHeader class="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-md border-b border-slate-800"
         :is-sidebar-open="isMobileOpen" @toggle-sidebar="isMobileOpen = !isMobileOpen" />
 
-      <main class="flex-1 p-4 lg:p-8 overflow-x-hidden relative z-50">
+      <main class="relative z-0 flex-1 overflow-x-hidden p-4 lg:p-8">
         <div class="max-w-7xl mx-auto animate-fade-in">
           <slot />
         </div>
@@ -36,7 +37,7 @@ const isDesktopCollapsed = ref(false);
 const authStore = useAuthStore();
 const pageStore = usePageStore();
 
-
+/*
 interface Snowflake {
   id: number;
   style: {
@@ -77,19 +78,21 @@ const generateSnow = () => {
   }
   snowflakes.value = newFlakes;
 };
+*/
 
 onMounted(async () => {
-
-  generateSnow();
-
+  // generateSnow();
   if (authStore.isAuthenticated) {
     await authStore.fetchUser();
-    await pageStore.fetchMyPage();
+    if (!pageStore.currentPage) {
+      await pageStore.fetchMyPage();
+    }
   }
 });
 </script>
 
 <style>
+/*
 @keyframes snowfall {
   0% {
     transform: translateY(-10px) translateX(0);
@@ -97,12 +100,10 @@ onMounted(async () => {
 
   25% {
     transform: translateY(25vh) translateX(15px);
-    /* Balanço para direita */
   }
 
   50% {
     transform: translateY(50vh) translateX(-15px);
-    /* Balanço para esquerda */
   }
 
   75% {
@@ -118,6 +119,7 @@ onMounted(async () => {
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
+*/
 
 @keyframes fadeIn {
   from {

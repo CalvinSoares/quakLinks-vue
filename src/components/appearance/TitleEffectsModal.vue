@@ -1,11 +1,15 @@
 <template>
-    <div @click.self="$emit('close')"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl shadow-2xl animate-fade-in">
-            <div class="flex items-center justify-between p-4 border-b border-slate-800">
-                <h2 class="text-lg font-bold text-white">Efeitos do nome de usuário</h2>
-                <button @click="$emit('close')"
-                    class="text-slate-400 hover:text-white transition-colors rounded-full p-1">
+    <div @click.self="$emit('close')" class="ui-modal-shell">
+        <div class="ui-modal-backdrop"></div>
+        <div class="ui-modal-panel animate-fade-in max-w-4xl" @click.stop>
+            <div class="ui-modal-header">
+                <div class="ui-modal-title-wrap">
+                    <div class="ui-modal-accent">
+                        <span class="h-2.5 w-2.5 rounded-full bg-current"></span>
+                    </div>
+                    <h2 class="ui-modal-title">{{ copy.title }}</h2>
+                </div>
+                <button @click="$emit('close')" class="ui-modal-close" type="button">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -15,19 +19,18 @@
 
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="grid grid-cols-3 gap-3 self-start">
-                    <button v-for="effect in titleEffects" :key="effect.id" @click="localSelectedEffect = effect.id"
+                    <button v-for="effect in titleEffects" :key="effect.id" @click="selectEffect(effect)"
+                        :disabled="isLockedEffect(effect)"
                         class="relative aspect-square flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all text-center"
-                        :class="localSelectedEffect === effect.id ? 'border-purple-500 bg-purple-500/10' : 'border-slate-700 bg-slate-800 hover:border-slate-500'">
+                        :class="isLockedEffect(effect)
+                            ? 'cursor-not-allowed border-amber-500/40 bg-slate-800/80 opacity-80'
+                            : localSelectedEffect === effect.id
+                                ? 'border-amber-400 bg-amber-500/10'
+                                : 'border-slate-700 bg-slate-800 hover:border-slate-500'">
 
-                        <div v-if="effect.premium" class="absolute top-1 right-1 bg-slate-900/50 rounded-full p-0.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-yellow-400" viewBox="0 0 24 24"
-                                stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path
-                                    d="M8 11m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z" />
-                                <path d="M10 11v-2a2 2 0 1 1 4 0v2" />
-                            </svg>
+                        <div v-if="effect.premium && !authStore.isPremium"
+                            class="absolute right-1 top-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-300">
+                            PREMIUM
                         </div>
 
                         <span class="font-bold text-xl" :class="`effect-${effect.id}`"
@@ -35,6 +38,9 @@
                             Aa
                         </span>
                         <span class="text-xs text-slate-300 mt-1">{{ effect.name }}</span>
+                        <span v-if="isLockedEffect(effect)" class="mt-1 text-[10px] text-amber-200">
+                            {{ copy.premiumOnly }}
+                        </span>
                     </button>
                 </div>
 
@@ -54,15 +60,23 @@
                 </div>
             </div>
 
-            <div
-                class="flex items-center justify-end gap-3 p-4 bg-slate-950/50 border-t border-slate-800 rounded-b-2xl">
-                <button @click="$emit('close')"
-                    class="px-4 py-2 text-sm font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors">
-                    Cancelar
+            <div v-if="!authStore.isPremium" class="px-6 pb-2">
+                <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                    {{ copy.premiumMessage }}
+                    <button type="button"
+                        class="mt-3 block rounded-full border border-amber-400/40 bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-200 transition hover:bg-amber-500/20"
+                        @click="handlePlansClick">
+                        {{ copy.seePlans }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="ui-modal-footer">
+                <button @click="$emit('close')" class="ui-btn-secondary" type="button">
+                    {{ copy.cancel }}
                 </button>
-                <button @click="saveAndClose"
-                    class="px-5 py-2 text-sm font-bold text-white bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors">
-                    Salvar
+                <button @click="saveAndClose" class="ui-btn-primary" type="button">
+                    {{ copy.save }}
                 </button>
             </div>
         </div>
@@ -71,6 +85,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useAuthStore } from '@/store/auth';
+import { usePlansNavigation } from '@/composables/usePlansNavigation';
+import { useAppLanguage } from '@/composables/useAppLanguage';
 
 const props = defineProps<{
     modelValue: string;
@@ -78,31 +95,107 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['update:modelValue', 'close']);
+const authStore = useAuthStore();
+const { openPlans } = usePlansNavigation();
+const { locale } = useAppLanguage();
 
 const localSelectedEffect = ref(props.modelValue);
 
-const titleEffects = [
-    { id: 'none', name: 'Nenhum', premium: false },
-    { id: 'typewriter', name: 'Máquina de Escrever', premium: true },
-    { id: 'rainbow', name: 'Arco-íris', premium: false },
-    { id: 'neon', name: 'Neon', premium: false },
-    { id: 'outline', name: 'Contorno', premium: false },
-    { id: 'glitch', name: 'Glitch', premium: false },
+const copy = computed(() => {
+    switch (locale.value) {
+        case 'en':
+            return {
+                title: 'Username effects',
+                premiumOnly: 'Available on the PREMIUM plan',
+                premiumMessage: 'Some name effects are exclusive to the PREMIUM plan.',
+                seePlans: 'See plans',
+                cancel: 'Cancel',
+                save: 'Save',
+                defaultName: 'Your Name',
+                effects: {
+                    none: 'None',
+                    typewriter: 'Typewriter',
+                    rainbow: 'Rainbow',
+                    neon: 'Neon',
+                    outline: 'Outline',
+                    glitch: 'Glitch',
+                },
+            };
+        case 'es':
+            return {
+                title: 'Efectos del nombre de usuario',
+                premiumOnly: 'Disponible en el plan PREMIUM',
+                premiumMessage: 'Algunos efectos del nombre son exclusivos del plan PREMIUM.',
+                seePlans: 'Ver planes',
+                cancel: 'Cancelar',
+                save: 'Guardar',
+                defaultName: 'Tu Nombre',
+                effects: {
+                    none: 'Ninguno',
+                    typewriter: 'Máquina de Escribir',
+                    rainbow: 'Arcoíris',
+                    neon: 'Neon',
+                    outline: 'Contorno',
+                    glitch: 'Glitch',
+                },
+            };
+        default:
+            return {
+                title: 'Efeitos do nome de usuário',
+                premiumOnly: 'Disponível no plano PREMIUM',
+                premiumMessage: 'Alguns efeitos do nome são exclusivos do plano PREMIUM.',
+                seePlans: 'Ver planos',
+                cancel: 'Cancelar',
+                save: 'Salvar',
+                defaultName: 'Seu Nome',
+                effects: {
+                    none: 'Nenhum',
+                    typewriter: 'Máquina de Escrever',
+                    rainbow: 'Arco-íris',
+                    neon: 'Neon',
+                    outline: 'Contorno',
+                    glitch: 'Glitch',
+                },
+            };
+    }
+});
 
-];
+const titleEffects = computed(() => [
+    { id: 'none', name: copy.value.effects.none, premium: false },
+    { id: 'typewriter', name: copy.value.effects.typewriter, premium: true },
+    { id: 'rainbow', name: copy.value.effects.rainbow, premium: false },
+    { id: 'neon', name: copy.value.effects.neon, premium: false },
+    { id: 'outline', name: copy.value.effects.outline, premium: false },
+    { id: 'glitch', name: copy.value.effects.glitch, premium: false },
+]);
 
 const previewClass = computed(() => {
     return `effect-${localSelectedEffect.value}`;
 });
 
 const truncatedTitle = computed(() => {
-    const text = props.title || 'Seu Nome';
+    const text = props.title || copy.value.defaultName;
     if (text.length > 20) {
         return text.slice(0, 20) + '...';
     }
     return text;
 });
 
+function isLockedEffect(effect: { premium: boolean }) {
+    return effect.premium && !authStore.isPremium;
+}
+
+function selectEffect(effect: { id: string; premium: boolean }) {
+    if (isLockedEffect(effect)) {
+        void handlePlansClick();
+        return;
+    }
+    localSelectedEffect.value = effect.id;
+}
+
+function handlePlansClick() {
+    return openPlans(copy.value.premiumMessage);
+}
 
 function saveAndClose() {
     emit('update:modelValue', localSelectedEffect.value);
@@ -117,7 +210,7 @@ function saveAndClose() {
 
     white-space: nowrap;
     overflow: hidden;
-    max-width: o;
+    max-width: 0;
     animation:
         typing 3.5s steps(var(--char-count, 40)) forwards,
         blink-caret .75s step-end infinite;

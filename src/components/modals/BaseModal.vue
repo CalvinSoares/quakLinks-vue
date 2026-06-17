@@ -1,23 +1,31 @@
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="$emit('close')"></div>
+      <div v-if="isOpen" class="ui-modal-shell">
+        <div class="ui-modal-backdrop" @click="$emit('close')"></div>
 
         <div
-          class="relative w-full transform overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 text-left align-middle shadow-xl transition-all"
+          class="ui-modal-panel max-h-[90vh] transform transition-all"
           :class="maxWidthClass" @click.stop>
-          <div v-if="$slots.title" class="px-6 pt-6 pb-4 border-b border-slate-800">
-            <h3 class="text-xl font-bold leading-6 text-white">
-              <slot name="title" />
-            </h3>
+          <div v-if="$slots.title" class="ui-modal-header">
+            <div class="ui-modal-title-wrap">
+              <div class="ui-modal-accent">
+                <span class="h-2.5 w-2.5 rounded-full bg-current"></span>
+              </div>
+              <div class="min-w-0 flex-1 text-white">
+                <slot name="title" />
+              </div>
+            </div>
+            <button type="button" class="ui-modal-close" @click="$emit('close')" aria-label="Fechar modal">
+              <XMarkIcon class="h-5 w-5" />
+            </button>
           </div>
 
-          <div class="p-6">
+          <div class="ui-modal-body overflow-y-auto max-h-[calc(90vh-10rem)]">
             <slot />
           </div>
 
-          <div v-if="$slots.footer" class="px-6 py-4 bg-slate-900/50 border-t border-slate-800 flex justify-end gap-4">
+          <div v-if="$slots.footer" class="ui-modal-footer">
             <slot name="footer" />
           </div>
         </div>
@@ -28,6 +36,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
+import { XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
   isOpen: {

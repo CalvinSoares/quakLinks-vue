@@ -7,11 +7,16 @@
         <audio ref="audioPlayer" :src="currentAudio.url" preload="auto"></audio>
 
         <div class="relative flex-shrink-0">
-            <img :src="currentAudio.coverUrl || '/default-cover.png'" alt="Capa do áudio"
-                class="w-10 h-10 rounded-full object-cover">
+            <AudioCoverArt
+                :cover-url="currentAudio.coverUrl"
+                :alt="copy.audioCover"
+                size-class="w-10 h-10"
+                rounded-class="rounded-full"
+                icon-class="w-4 h-4"
+            />
             <button @click="togglePlay"
                 class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full text-white opacity-0 hover:opacity-100 transition-opacity"
-                aria-label="Tocar/Pausar música">
+                :aria-label="copy.playPause">
                 <SpeakerWaveIcon v-if="isPlaying" class="w-5 h-5" />
                 <SpeakerXMarkIcon v-else class="w-5 h-5" />
             </button>
@@ -24,14 +29,14 @@
                 </div>
 
                 <button v-if="audios.length > 1" @click="playNext"
-                    class="text-slate-300 hover:text-white transition-colors" aria-label="Próxima música">
+                    class="text-slate-300 hover:text-white transition-colors" :aria-label="copy.nextTrack">
                     <ForwardIcon class="w-5 h-5" />
                 </button>
 
                 <div class="w-24">
                     <input type="range" min="0" max="1" step="0.01" :value="volume" @input="handleVolumeChange"
                         class="volume-slider w-full h-1.5 bg-slate-700/50 rounded-lg appearance-none cursor-pointer"
-                        aria-label="Controle de volume" />
+                        :aria-label="copy.volumeControl" />
                 </div>
             </div>
         </transition>
@@ -42,6 +47,8 @@
 import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue';
 import { SpeakerWaveIcon, SpeakerXMarkIcon, ForwardIcon } from '@heroicons/vue/24/solid';
 import type { Audio } from '@/store/page';
+import { useAppLanguage } from '@/composables/useAppLanguage';
+import AudioCoverArt from '@/components/appearance/AudioCoverArt.vue';
 
 const props = defineProps<{
     audios: Audio[];
@@ -49,6 +56,32 @@ const props = defineProps<{
     showWidget: boolean;
     top: string;
 }>();
+const { locale } = useAppLanguage();
+const copy = computed(() => {
+    switch (locale.value) {
+        case 'en':
+            return {
+                audioCover: 'Audio cover',
+                playPause: 'Play/Pause music',
+                nextTrack: 'Next track',
+                volumeControl: 'Volume control',
+            };
+        case 'es':
+            return {
+                audioCover: 'Portada del audio',
+                playPause: 'Reproducir/Pausar música',
+                nextTrack: 'Siguiente canción',
+                volumeControl: 'Control de volumen',
+            };
+        default:
+            return {
+                audioCover: 'Capa do áudio',
+                playPause: 'Tocar/Pausar música',
+                nextTrack: 'Próxima música',
+                volumeControl: 'Controle de volume',
+            };
+    }
+});
 
 
 const audioPlayer = ref<HTMLAudioElement | null>(null);

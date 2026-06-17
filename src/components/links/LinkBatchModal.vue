@@ -76,14 +76,13 @@
                                     </div>
                                 </div>
 
-                                <div v-if="authStore.isPremium"
-                                    class="pt-4 mt-2 border-t border-slate-800/60 space-y-4">
+                                <div class="pt-4 mt-2 border-t border-slate-800/60 space-y-4">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-2">
                                             <ClockIcon class="w-4 h-4 text-sky-400" />
                                             <h3 class="text-sm font-semibold text-white">Agendamento</h3>
-                                            <span
-                                                class="px-1.5 py-0.5 text-[10px] font-bold text-sky-950 bg-sky-400 rounded">PRO</span>
+                                            <span v-if="!authStore.isPremium"
+                                                class="px-1.5 py-0.5 text-[10px] font-bold text-sky-950 bg-sky-400 rounded">PREMIUM</span>
                                         </div>
                                         <button v-if="form.scheduledAt || form.expiresAt" @click="clearSchedule"
                                             type="button" class="text-xs text-slate-400 hover:text-red-400 transition">
@@ -91,7 +90,7 @@
                                         </button>
                                     </div>
 
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div v-if="authStore.isPremium" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-[10px] font-medium text-slate-400 mb-1">Início
                                                 (Aparecer)</label>
@@ -104,6 +103,18 @@
                                             <input v-model="form.expiresAt" type="datetime-local"
                                                 class="input-modern text-xs" />
                                         </div>
+                                    </div>
+
+                                    <div v-else
+                                        class="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-4 text-sm text-amber-200">
+                                        Agendamento de links está disponível no plano PREMIUM. Faça upgrade para liberar
+                                        datas
+                                        de início e expiração.
+                                        <button type="button"
+                                            class="mt-3 block rounded-full border border-amber-400/40 bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-200 transition hover:bg-amber-500/20"
+                                            @click="handlePlansClick">
+                                            Ver planos
+                                        </button>
                                     </div>
                                 </div>
 
@@ -166,7 +177,7 @@
 
                             <div class="p-4 border-t border-slate-800 bg-slate-900">
                                 <button @click="saveAllBatch" :disabled="pendingLinks.length === 0"
-                                    class="w-full py-3 bg-gradient-to-r from-purple-600 to-yellow-600 hover:from-purple-500 hover:to-yellow-500 text-white rounded-xl font-bold shadow-lg shadow-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                    class="ui-btn-primary w-full py-3">
                                     Criar Blocos ({{ pendingLinks.length }})
                                 </button>
                             </div>
@@ -184,6 +195,7 @@
 import { ref, reactive, watch, computed } from 'vue';
 import { socialProfiles, customLinkSocial, type Social } from './social';
 import { useAuthStore } from '@/store/auth';
+import { usePlansNavigation } from '@/composables/usePlansNavigation';
 import { XIcon, LinkIcon, ArrowLeftIcon, TrashIcon, PlaylistAddIcon, ClockIcon } from 'vue-tabler-icons';
 
 const props = defineProps<{
@@ -198,6 +210,7 @@ const emit = defineEmits<{
 }>();
 
 const authStore = useAuthStore();
+const { openPlans } = usePlansNavigation();
 const currentSelection = ref<Social | null>(null);
 const pendingLinks = ref<Array<any>>([]);
 const isEditing = computed(() => !!props.initialData);
@@ -303,6 +316,10 @@ function removeFromQueue(index: number) {
 
 function close() {
     emit('close');
+}
+
+function handlePlansClick() {
+    return openPlans('Agendamento de links está disponível no plano PREMIUM.');
 }
 </script>
 
