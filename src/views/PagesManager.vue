@@ -40,7 +40,8 @@
                             </div>
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2 min-w-0">
-                                    <h3 class="truncate text-sm font-semibold text-white" :title="page.title || copy.untitled">
+                                    <h3 class="truncate text-sm font-semibold text-white"
+                                        :title="page.title || copy.untitled">
                                         {{ page.title || copy.untitled }}
                                     </h3>
                                     <span v-if="page.primaryPage"
@@ -100,7 +101,8 @@
                             {{ copy.domainPremiumBadge }}
                         </span>
 
-                        <span class="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
+                        <span
+                            class="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-[11px] font-semibold text-slate-300">
                             <EyeIcon class="h-3.5 w-3.5" />
                             {{ page.viewCount }}
                         </span>
@@ -149,6 +151,18 @@
                                     class="w-full bg-slate-950 border border-slate-700 rounded-r-lg px-3 py-2 text-white focus:border-indigo-500 outline-none"
                                     :placeholder="copy.slugPlaceholder" />
                             </div>
+                            <div class="mt-2 flex items-center justify-between gap-3 text-xs">
+                                <p class="text-slate-500 truncate">
+                                    {{ copy.slugPreviewPrefix }} <span class="font-semibold text-slate-300">/{{
+                                        form.slug || '...' }}</span>
+                                </p>
+                                <p v-if="slugStatus === 'checking'" class="text-slate-400">{{ copy.slugChecking }}</p>
+                                <p v-else-if="slugStatus === 'available'" class="text-emerald-400">{{ copy.slugAvailable
+                                    }}</p>
+                                <p v-else-if="slugStatus === 'taken'" class="text-red-400">{{ copy.slugInUse }}</p>
+                                <p v-else-if="slugStatus === 'invalid'" class="text-red-400">{{ slugValidationError }}
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -175,7 +189,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useAuthStore } from '@/store/auth';
 import { usePageStore, type Page } from '@/store/page';
 import { useRouter } from 'vue-router';
@@ -185,6 +199,11 @@ import debounce from 'lodash/debounce';
 import DashboardLayout from '@/layouts/DashboardLayout.vue';
 import { useAppLanguage } from '@/composables/useAppLanguage';
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
+import {
+    isPublicHandleAvailable,
+    normalizePublicHandle,
+    validatePublicHandle,
+} from '@/utils/publicHandle';
 
 const authStore = useAuthStore();
 const pageStore = usePageStore();
@@ -199,6 +218,10 @@ const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
 const isSettingPrimaryPageId = ref<string | null>(null);
 const pagePendingDeletion = ref<Page | null>(null);
+const slugStatus = ref<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+const slugValidationError = ref<string | null>(null);
+let slugCheckTimer: ReturnType<typeof setTimeout> | null = null;
+let lastCheckedSlug = '';
 
 const form = reactive({ title: '', slug: '' });
 
@@ -232,6 +255,14 @@ const copy = computed(() => {
                 slugLabel: 'Custom Link (Slug)',
                 slugPrefix: 'quack.com/',
                 slugPlaceholder: 'yourname',
+                slugPreviewPrefix: 'Public link:',
+                slugChecking: 'Checking...',
+                slugAvailable: 'Available',
+                slugInUse: 'This link is already in use.',
+                slugInvalid: 'Choose a valid link.',
+                slugRequired: 'Enter a link.',
+                slugTooShort: 'Use at least 3 characters.',
+                slugReserved: 'This link is not available.',
                 cancel: 'Cancel',
                 creating: 'Creating...',
                 create: 'Create',
@@ -276,6 +307,14 @@ const copy = computed(() => {
                 slugLabel: 'Link Personalizado (Slug)',
                 slugPrefix: 'quack.com/',
                 slugPlaceholder: 'tunombre',
+                slugPreviewPrefix: 'Link público:',
+                slugChecking: 'Verificando...',
+                slugAvailable: 'Disponible',
+                slugInUse: 'Este link ya está en uso.',
+                slugInvalid: 'Elige un link válido.',
+                slugRequired: 'Ingresa un link.',
+                slugTooShort: 'Usa al menos 3 caracteres.',
+                slugReserved: 'Este link no está disponible.',
                 cancel: 'Cancelar',
                 creating: 'Creando...',
                 create: 'Crear',
@@ -320,6 +359,14 @@ const copy = computed(() => {
                 slugLabel: 'Link Personalizado (Slug)',
                 slugPrefix: 'quack.com/',
                 slugPlaceholder: 'seunome',
+                slugPreviewPrefix: 'Link público:',
+                slugChecking: 'Verificando...',
+                slugAvailable: 'Disponível',
+                slugInUse: 'Este link já está em uso.',
+                slugInvalid: 'Escolha um link válido.',
+                slugRequired: 'Informe um link.',
+                slugTooShort: 'Use pelo menos 3 caracteres.',
+                slugReserved: 'Este link não está disponível.',
                 cancel: 'Cancelar',
                 creating: 'Criando...',
                 create: 'Criar',
@@ -339,8 +386,87 @@ const copy = computed(() => {
     }
 });
 
+const validatePageSlug = (value: string) => validatePublicHandle(value, {
+    required: copy.value.slugRequired,
+    tooShort: copy.value.slugTooShort,
+    reserved: copy.value.slugReserved,
+});
+
+const resetSlugFeedback = () => {
+    slugStatus.value = 'idle';
+    slugValidationError.value = null;
+    lastCheckedSlug = '';
+    if (slugCheckTimer) clearTimeout(slugCheckTimer);
+    slugCheckTimer = null;
+};
+
+const checkSlugAvailability = async (value: string) => {
+    const normalized = normalizePublicHandle(value);
+    const validationError = validatePageSlug(normalized);
+
+    if (normalized !== value) {
+        form.slug = normalized;
+    }
+
+    if (validationError) {
+        slugStatus.value = normalized ? 'invalid' : 'idle';
+        slugValidationError.value = validationError;
+        return false;
+    }
+
+    if (lastCheckedSlug === normalized && slugStatus.value !== 'checking') {
+        return slugStatus.value === 'available';
+    }
+
+    slugStatus.value = 'checking';
+    slugValidationError.value = null;
+    lastCheckedSlug = normalized;
+
+    try {
+        const isAvailable = await isPublicHandleAvailable(normalized);
+        slugStatus.value = isAvailable ? 'available' : 'taken';
+        return isAvailable;
+    } catch {
+        slugStatus.value = 'idle';
+        return false;
+    }
+};
+
+watch(() => form.slug, (value) => {
+    const normalized = normalizePublicHandle(value);
+
+    if (normalized !== value) {
+        form.slug = normalized;
+        return;
+    }
+
+    if (!normalized) {
+        resetSlugFeedback();
+        return;
+    }
+
+    const validationError = validatePageSlug(normalized);
+    if (validationError) {
+        slugStatus.value = 'invalid';
+        slugValidationError.value = validationError;
+        lastCheckedSlug = '';
+        if (slugCheckTimer) clearTimeout(slugCheckTimer);
+        slugCheckTimer = null;
+        return;
+    }
+
+    if (slugCheckTimer) clearTimeout(slugCheckTimer);
+    slugCheckTimer = setTimeout(() => {
+        checkSlugAvailability(normalized);
+    }, 350);
+});
+
 onMounted(() => {
     pageStore.fetchUserPages(1);
+});
+
+onUnmounted(() => {
+    resetSlugFeedback();
 });
 
 const handleSearch = debounce(() => {
@@ -356,6 +482,7 @@ function changePage(p: number) {
 function openCreateModal() {
     form.title = '';
     form.slug = '';
+    resetSlugFeedback();
     isCreateModalOpen.value = true;
 }
 
@@ -364,11 +491,21 @@ async function createPage() {
 
     isCreating.value = true;
     try {
+        const isAvailable = await checkSlugAvailability(form.slug);
+        if (!isAvailable) {
+            toast.error(
+                slugStatus.value === 'taken'
+                    ? copy.value.slugInUse
+                    : slugValidationError.value || copy.value.slugInvalid,
+            );
+            return;
+        }
         await pageStore.createNewPage(form);
         toast.success(copy.value.pageCreated);
         isCreateModalOpen.value = false;
     } catch (e: any) {
-        toast.error(e.response?.data?.message || copy.value.createError);
+        const message = e.response?.data?.message || copy.value.createError;
+        toast.error(/user(name)?|slug/i.test(message) ? copy.value.slugInUse : message);
     } finally {
         isCreating.value = false;
     }

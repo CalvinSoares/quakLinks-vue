@@ -193,21 +193,21 @@ const copy = computed(() => {
       };
     case "es":
       return {
-        ariaLabel: "Vista previa del template",
+        ariaLabel: "Vista previa de la plantilla",
         badge: "Vista previa",
         by: "por",
-        showTemplate: "Ver template",
+        showTemplate: "Ver plantilla",
         clickToEnter: "clic para entrar...",
         close: "Cerrar vista previa",
       };
     default:
       return {
-        ariaLabel: "Preview do template",
-        badge: "Preview do template",
+        ariaLabel: "Previa do modelo",
+        badge: "Previa do modelo",
         by: "por",
-        showTemplate: "Ver template",
+        showTemplate: "Ver modelo",
         clickToEnter: "clique para entrar...",
-        close: "Fechar preview",
+        close: "Fechar previa",
       };
   }
 });

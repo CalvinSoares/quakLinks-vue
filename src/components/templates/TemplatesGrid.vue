@@ -77,9 +77,9 @@ const copy = computed(() => {
     case "en":
       return { loadMore: "Load more templates" };
     case "es":
-      return { loadMore: "Cargar más templates" };
+      return { loadMore: "Cargar más plantillas" };
     default:
-      return { loadMore: "Carregar mais templates" };
+      return { loadMore: "Carregar mais modelos" };
   }
 });
 

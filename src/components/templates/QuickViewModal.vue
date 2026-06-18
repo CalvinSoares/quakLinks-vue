@@ -173,11 +173,11 @@ const copy = computed(() => {
       return {
         createdBy: "Creado por",
         cancel: "Cancelar",
-        applyTemplate: "Usar template",
+        applyTemplate: "Usar plantilla",
         favorite: "Favorito",
         unfavorite: "Quitar favorito",
         copyLink: "Copiar enlace",
-        linkCopied: "¡Enlace del template copiado!",
+        linkCopied: "¡Enlace de la plantilla copiado!",
         uses: (count: string) => `${count} usos`,
         blocks: (count: number) => `${count} bloques`,
       };
@@ -185,11 +185,11 @@ const copy = computed(() => {
       return {
         createdBy: "Criado por",
         cancel: "Cancelar",
-        applyTemplate: "Usar template",
+        applyTemplate: "Usar modelo",
         favorite: "Favoritar",
         unfavorite: "Remover favorito",
         copyLink: "Copiar link",
-        linkCopied: "Link do template copiado!",
+        linkCopied: "Link do modelo copiado!",
         uses: (count: string) => `${count} usos`,
         blocks: (count: number) => `${count} blocos`,
       };

@@ -173,11 +173,11 @@ const copy = computed(() => {
     case "es":
       return {
         by: "por",
-        applyNow: "Usar template",
+        applyNow: "Usar plantilla",
         favorite: "Favorito",
         unfavorite: "Quitar favorito",
         viewDetails: "Ver detalles",
-        useTemplate: "Usar template",
+        useTemplate: "Usar plantilla",
         edit: "Editar",
         delete: "Eliminar",
         new: "Nuevo",
@@ -190,17 +190,17 @@ const copy = computed(() => {
     default:
       return {
         by: "por",
-        applyNow: "Usar template",
+        applyNow: "Usar modelo",
         favorite: "Favoritar",
         unfavorite: "Remover favorito",
         viewDetails: "Ver detalhes",
-        useTemplate: "Usar template",
+        useTemplate: "Usar modelo",
         edit: "Editar",
         delete: "Excluir",
         new: "Novo",
         trending: "Em alta",
         copyLink: "Copiar link",
-        preview: "Preview",
+        preview: "Previa",
         uses: (count: string) => `${count} usos`,
         blocks: (count: number) => `${count} blocos`,
       };

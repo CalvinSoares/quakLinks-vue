@@ -140,7 +140,7 @@ const copy = computed(() => {
       };
     case "es":
       return {
-        linksLayout: "Layout de Links",
+        linksLayout: "Disposicion de los Enlaces",
         buttonTheme: "Tema de los Botones",
         colorPalette: "Paleta de Colores",
         primaryText: "Texto Principal",
@@ -153,19 +153,19 @@ const copy = computed(() => {
         shadow: "Sombra",
         enable: "Activar",
         layouts: { list: "Lista", grid: "Grilla", icons_only: "Íconos", stacked: "Apilado" },
-        buttonThemes: { classic: "Clásico", minimal: "Minimal", brutalist: "Brutalista", spotlight: "Spotlight", pixel: "Pixel", torn: "Rasgado" },
+        buttonThemes: { classic: "Clásico", minimal: "Minimal", brutalist: "Brutalista", spotlight: "Destacado", pixel: "Píxel", torn: "Rasgado" },
         fontOptions: {
-          modern: "Modern (Inter)",
-          tech: "Tech (Mono)",
-          retro: "Retro (Pixel)",
-          fantasy: "Fantasy (Cinzel)",
-          elegant: "Elegant (Serif)",
+          modern: "Moderna (Inter)",
+          tech: "Tecnológica (Mono)",
+          retro: "Retro (Píxel)",
+          fantasy: "Fantasia (Cinzel)",
+          elegant: "Elegante (Serif)",
         },
         borderOptions: { square: "Cuadrado", soft: "Suave", curved: "Curvo", pill: "Píldora" },
       };
     default:
       return {
-        linksLayout: "Layout dos Links",
+        linksLayout: "Disposicao dos Links",
         buttonTheme: "Tema dos Botões",
         colorPalette: "Paleta de Cores",
         primaryText: "Texto Principal",
@@ -178,13 +178,13 @@ const copy = computed(() => {
         shadow: "Sombra",
         enable: "Ativar",
         layouts: { list: "Lista", grid: "Grade", icons_only: "Ícones", stacked: "Empilhado" },
-        buttonThemes: { classic: "Clássico", minimal: "Minimal", brutalist: "Brutalista", spotlight: "Spotlight", pixel: "Pixel", torn: "Rasgado" },
+        buttonThemes: { classic: "Clássico", minimal: "Minimal", brutalist: "Brutalista", spotlight: "Destaque", pixel: "Pixel", torn: "Rasgado" },
         fontOptions: {
-          modern: "Modern (Inter)",
-          tech: "Tech (Mono)",
+          modern: "Moderna (Inter)",
+          tech: "Tecnológica (Mono)",
           retro: "Retro (Pixel)",
-          fantasy: "Fantasy (Cinzel)",
-          elegant: "Elegant (Serif)",
+          fantasy: "Fantasia (Cinzel)",
+          elegant: "Elegante (Serif)",
         },
         borderOptions: { square: "Quadrado", soft: "Suave", curved: "Curvo", pill: "Pílula" },
       };

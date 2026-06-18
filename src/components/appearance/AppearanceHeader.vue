@@ -88,9 +88,9 @@ const copy = computed(() => {
                 saving: 'Guardando...',
                 tabs: {
                     profile: 'Perfil',
-                    media: 'Media',
+                    media: 'Midia',
                     colors: 'Colores',
-                    preview: 'Preview',
+                    preview: 'Vista previa',
                 },
             }
         default:
@@ -103,7 +103,7 @@ const copy = computed(() => {
                     profile: 'Perfil',
                     media: 'Mídia',
                     colors: 'Cores',
-                    preview: 'Preview',
+                    preview: 'Previa',
                 },
             }
     }

@@ -1,21 +1,32 @@
 <template>
     <div
-        class="min-h-screen bg-[#0a0a0a] text-white selection:bg-amber-400 selection:text-slate-900 overflow-x-hidden font-sans">
+        class="landing-page min-h-screen bg-[#0a0a0a] text-white selection:bg-amber-400 selection:text-slate-900 font-sans">
 
-        <header class="fixed top-0 left-0 right-0 z-50 pt-6 px-4 flex justify-center">
-            <nav class="w-full max-w-5xl animate-slide-down">
+        <header :class="[
+            'fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out',
+            isScrolled ? 'pt-4 px-4' : 'pt-0 px-0'
+        ]">
+            <nav :class="[
+                'mx-auto transition-all duration-500 ease-in-out w-full',
+                isScrolled ? 'max-w-5xl' : 'max-w-full'
+            ]">
                 <div class="relative group">
-                    <div
-                        class="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-sky-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-                    </div>
+                    <!-- Efeito de brilho externo (apenas quando scrollado para destacar a cápsula) -->
+                    <div :class="[
+                        'absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-sky-500/20 blur-xl transition-opacity duration-700',
+                        isScrolled ? 'opacity-100 rounded-2xl' : 'opacity-0'
+                    ]"></div>
 
-                    <div
-                        class="relative bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex items-center justify-between p-2 pl-6 pr-2 transition-all duration-300 hover:border-white/20">
-
+                    <div :class="[
+                        'relative transition-all duration-500 ease-in-out flex items-center justify-between border-white/10 backdrop-blur-xl',
+                        isScrolled
+                            ? 'bg-slate-900/80 rounded-2xl shadow-2xl p-2 pl-6 pr-2 border'
+                            : 'bg-slate-950/40 rounded-none p-4 px-8 border-b'
+                    ]">
+                        <!-- LOGO -->
                         <a href="/" class="flex items-center gap-3 cursor-pointer group/logo">
                             <div class="relative w-10 h-8 flex items-center justify-center">
-                                <div class="absolute inset-0 bg-amber-500 blur-lg opacity-20 animate-pulse-slow">
-                                </div>
+                                <div class="absolute inset-0 bg-amber-500 blur-lg opacity-20 animate-pulse-slow"></div>
                                 <img src="/duckbio.png" alt="Logo"
                                     class="w-8 h-auto relative z-10 transform group-hover/logo:rotate-12 transition-transform duration-300" />
                             </div>
@@ -24,9 +35,11 @@
                             </span>
                         </a>
 
-
-                        <div
-                            class="hidden md:flex items-center gap-1 bg-slate-950/50 rounded-xl p-1 border border-white/5">
+                        <!-- NAV ITEMS (Centralizados ou condicionados) -->
+                        <div :class="[
+                            'hidden md:flex items-center gap-1 transition-all duration-500 rounded-xl p-1',
+                            isScrolled ? 'bg-slate-950/50 border border-white/5' : 'bg-transparent'
+                        ]">
                             <a v-for="item in navItems" :key="item.name" :href="item.href"
                                 class="px-5 py-2 text-sm font-medium text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-all duration-300 relative group overflow-hidden">
                                 <span class="relative z-10">{{ item.name }}</span>
@@ -36,23 +49,24 @@
                             </a>
                         </div>
 
-
+                        <!-- ACTIONS -->
                         <div class="flex items-center gap-3">
-                            <LanguageMenuButton button-class="h-11 w-11 border-white/10 bg-slate-950/60"
+                            <LanguageMenuButton button-class="h-10 w-10 border-white/10 bg-slate-950/60"
                                 panel-class="right-0 top-[calc(100%+0.75rem)]" panel-width-class="w-72" />
+
                             <a href="/login"
                                 class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block">
                                 {{ copy.auth.login }}
                             </a>
-                            <a href="/register"
-                                class="relative px-6 py-2.5 bg-amber-400 text-slate-900 text-sm font-bold rounded-xl overflow-hidden group hover:scale-105 transition-transform duration-300 shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+
+                            <a href="/register" :class="[
+                                'relative bg-amber-400 text-slate-900 text-sm font-bold overflow-hidden group hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(251,191,36,0.3)]',
+                                isScrolled ? 'px-6 py-2.5 rounded-xl' : 'px-8 py-3 rounded-lg'
+                            ]">
                                 <span class="relative z-10 flex items-center gap-2">
                                     {{ copy.auth.createBio }}
                                     <ArrowRight :size="16" class="group-hover:translate-x-1 transition-transform" />
                                 </span>
-                                <div
-                                    class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
-                                </div>
                             </a>
                         </div>
                     </div>
@@ -60,367 +74,15 @@
             </nav>
         </header>
 
-        <section id="hero" class="relative min-h-screen flex items-center pt-32 pb-20 px-4 overflow-hidden">
+        <HeroSection :copy="copy" />
 
-            <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-                <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/20 rounded-full blur-[120px]">
-                </div>
-                <div
-                    class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-600/10 rounded-full blur-[120px]">
-                </div>
-            </div>
+        <FeaturesCarousel :features="features" :section-copy="copy.features" />
 
-            <div class="container mx-auto max-w-7xl relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <ExploreStickySection />
 
+        <PricingSection :copy="copy" :pricing-cards="pricingCards" />
 
-                <div class="text-left order-2 lg:order-1">
-
-                    <div
-                        class="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-white/5 border border-white/10 rounded-full backdrop-blur-md animate-fade-in-up">
-                        <span class="relative flex h-2 w-2">
-                            <span
-                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                        </span>
-                        <span class="text-xs font-semibold text-slate-300 tracking-wide uppercase">{{ copy.hero.badge
-                        }}</span>
-                    </div>
-
-
-                    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black mb-6 leading-[1.1] tracking-tight animate-fade-in-up"
-                        style="animation-delay: 100ms">
-                        {{ copy.hero.titleStart }} <br />
-                        <span
-                            class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-500 to-orange-500">
-                            {{ copy.hero.titleHighlight }}
-                        </span>
-                    </h1>
-
-
-                    <p class="text-lg text-slate-400 mb-10 max-w-lg leading-relaxed animate-fade-in-up"
-                        style="animation-delay: 200ms">
-                        {{ copy.hero.description }}
-                    </p>
-
-
-                    <div class="flex flex-wrap items-center gap-4 animate-fade-in-up" style="animation-delay: 300ms">
-                        <a href="/register"
-                            class="px-8 py-4 bg-white text-black font-bold rounded-xl hover:bg-slate-200 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                            {{ copy.hero.primaryCta }}
-                            <ArrowRight :size="18" />
-                        </a>
-                        <a href="#explore"
-                            class="px-8 py-4 bg-transparent border border-white/20 text-white font-bold rounded-xl hover:bg-white/5 transition-all flex items-center gap-2">
-                            <Play :size="18" />
-                            {{ copy.hero.secondaryCta }}
-                        </a>
-                    </div>
-
-
-                    <div class="mt-12 flex items-center gap-6 text-sm text-slate-500 animate-fade-in-up"
-                        style="animation-delay: 400ms">
-                        <div class="flex -space-x-3">
-                            <img class="w-10 h-10 rounded-full border-2 border-[#0a0a0a]"
-                                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" />
-                            <img class="w-10 h-10 rounded-full border-2 border-[#0a0a0a]"
-                                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ane" />
-                            <img class="w-10 h-10 rounded-full border-2 border-[#0a0a0a]"
-                                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bob" />
-                        </div>
-                        <p>{{ copy.hero.joinPrefix }} <span class="text-white font-bold">50k+</span> {{
-                            copy.hero.joinSuffix }}</p>
-                    </div>
-                </div>
-
-
-                <div
-                    class="relative flex justify-center lg:justify-end order-1 lg:order-2 [perspective:2000px] group/card">
-
-
-                    <div class="relative w-[280px] sm:w-[340px] aspect-[9/19] transition-all duration-700 ease-out transform-3d animate-float-3d
-                                [transform:rotateX(20deg)_rotateY(-25deg)_rotateZ(10deg)] 
-                                group-hover/card:[transform:rotateX(0deg)_rotateY(0deg)_rotateZ(0deg)_scale(1.05)]">
-
-
-                        <div
-                            class="absolute -inset-[2px] bg-gradient-to-tr from-amber-500 via-purple-500 to-sky-500 rounded-[2.5rem] blur-sm opacity-70">
-                        </div>
-
-                        <div
-                            class="relative w-full h-full bg-[#0f0f0f] rounded-[2.4rem] overflow-hidden border border-white/10 shadow-2xl">
-
-
-                            <div
-                                class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-40">
-                            </div>
-                            <div
-                                class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0f0f0f]/80 to-[#0f0f0f]">
-                            </div>
-
-
-                            <div class="relative z-10 flex flex-col items-center pt-16 px-6 h-full">
-
-                                <div
-                                    class="w-24 h-24 rounded-full border-2 border-amber-400 p-1 shadow-[0_0_20px_rgba(251,191,36,0.3)] mb-4">
-                                    <img src="/duckbio.png"
-                                        class="w-full h-full rounded-full bg-slate-800 object-cover" />
-                                </div>
-
-
-                                <h3 class="text-2xl font-bold text-white mb-1">QuackUser</h3>
-                                <p class="text-xs text-amber-400 mb-8 font-mono">@quack_king</p>
-
-
-                                <div class="w-full space-y-3">
-                                    <div
-                                        class="w-full py-3 px-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer">
-                                        <div
-                                            class="w-8 h-8 rounded-lg bg-red-500 flex items-center justify-center text-xs font-bold">
-                                            YT</div>
-                                        <span class="text-sm font-medium">{{ copy.mockups.subscribe }}</span>
-                                    </div>
-                                    <div
-                                        class="w-full py-3 px-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer">
-                                        <div class="w-8 h-8 rounded-lg bg-[#5865F2] flex items-center justify-center">
-                                            <Gamepad2 size="16" />
-                                        </div>
-                                        <span class="text-sm font-medium">{{ copy.mockups.discordServer }}</span>
-                                    </div>
-                                    <div
-                                        class="w-full py-3 px-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer">
-                                        <div class="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center">
-                                            <Music size="16" />
-                                        </div>
-                                        <span class="text-sm font-medium">{{ copy.mockups.spotifyPlaylist }}</span>
-                                    </div>
-                                </div>
-
-
-                                <div
-                                    class="mt-auto mb-8 w-full bg-black/40 backdrop-blur-md border border-white/5 rounded-xl p-3 flex items-center gap-3">
-                                    <div
-                                        class="w-10 h-10 bg-slate-700 rounded bg-[url('https://i.scdn.co/image/ab67616d0000b27341e31d6ea1d493dd77933ee5')] bg-cover">
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="h-2 w-20 bg-white/40 rounded mb-1.5"></div>
-                                        <div class="h-1.5 w-12 bg-white/20 rounded"></div>
-                                    </div>
-                                    <div class="flex gap-1">
-                                        <div class="w-0.5 h-3 bg-green-500 animate-pulse"></div>
-                                        <div class="w-0.5 h-5 bg-green-500 animate-pulse" style="animation-delay: 0.1s">
-                                        </div>
-                                        <div class="w-0.5 h-3 bg-green-500 animate-pulse" style="animation-delay: 0.2s">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-b-xl z-20">
-                            </div>
-                        </div>
-
-
-                        <div
-                            class="absolute inset-0 rounded-[2.5rem] bg-gradient-to-tr from-white/20 via-transparent to-transparent pointer-events-none z-30">
-                        </div>
-                    </div>
-
-
-                    <div
-                        class="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[80%] h-12 bg-black/50 blur-xl rounded-[100%] [transform:rotateX(60deg)] animate-shadow-pulse">
-                    </div>
-
-                </div>
-            </div>
-
-
-            <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent z-10"></div>
-        </section>
-
-
-        <section id="explore" class="py-24 px-4 relative bg-[#0f0f0f] border-t border-white/5">
-            <div class="container mx-auto max-w-7xl">
-                <div class="grid lg:grid-cols-2 gap-16 items-center">
-
-
-                    <div v-observe class="scroll-hidden space-y-8 order-2 lg:order-1">
-                        <div>
-                            <h3 class="text-4xl md:text-5xl font-black mb-6">{{ copy.explore.titleStart }} <span
-                                    class="text-amber-400">{{ copy.explore.titleHighlight }}</span></h3>
-                            <p class="text-lg text-slate-400 leading-relaxed">
-                                {{ copy.explore.description }}
-                            </p>
-                        </div>
-
-
-                        <div class="space-y-4">
-                            <div v-for="(profile, key) in demoProfiles" :key="key" @click="activeProfileKey = key"
-                                class="p-6 rounded-2xl border transition-all duration-300 cursor-pointer group relative overflow-hidden"
-                                :class="activeProfileKey === key ? 'bg-slate-800 border-amber-500/50 shadow-2xl' : 'bg-slate-900/50 border-white/5 hover:bg-slate-800'">
-
-                                <div class="flex items-center gap-5 relative z-10">
-                                    <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-transform duration-300"
-                                        :class="activeProfileKey === key ? 'scale-110 bg-amber-400 text-slate-900' : 'bg-slate-700 text-slate-300'">
-                                        <component :is="profile.icon" size="24" />
-                                    </div>
-                                    <div>
-                                        <h4 class="text-xl font-bold"
-                                            :class="activeProfileKey === key ? 'text-white' : 'text-slate-300'">{{
-                                                profile.label }}</h4>
-                                        <p class="text-sm text-slate-500">{{ profile.desc }}</p>
-                                    </div>
-                                </div>
-
-                                <div v-if="activeProfileKey === key"
-                                    class="absolute bottom-0 left-0 h-1 bg-amber-400 transition-all duration-[4000ms] ease-linear w-full">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <div v-observe class="scroll-hidden order-1 lg:order-2 flex justify-center perspective-1000">
-                        <div
-                            class="relative w-[320px] sm:w-[380px] h-[700px] bg-slate-950 rounded-[3rem] border-[8px] border-slate-800 shadow-2xl overflow-hidden transform transition-all duration-500 hover:rotate-y-6 hover:scale-105">
-
-                            <div class="w-full h-full relative overflow-y-auto custom-scrollbar transition-all duration-500"
-                                :style="getBackgroundStyle(currentDemo)">
-
-                                <div v-if="currentDemo.overlay === 'noise'"
-                                    class="absolute inset-0 opacity-10 pointer-events-none bg-noise"></div>
-                                <div v-if="currentDemo.overlay === 'scanlines'"
-                                    class="absolute inset-0 opacity-20 pointer-events-none bg-scanlines"></div>
-                                <div class="absolute inset-0 bg-black/20 pointer-events-none"></div>
-
-                                <div class="relative z-10 flex flex-col items-center pt-16 px-6 pb-10 min-h-full">
-
-                                    <div class="relative mb-6">
-                                        <div class="w-24 h-24 rounded-full p-1" :style="getRingStyle(currentDemo)">
-                                            <img :src="currentDemo.avatar"
-                                                class="w-full h-full rounded-full object-cover" />
-                                        </div>
-                                    </div>
-
-                                    <h2 class="text-2xl font-bold mb-2 text-center"
-                                        :class="getTitleClasses(currentDemo)" :style="{ color: currentDemo.textColor }"
-                                        :data-text="currentDemo.username">
-                                        {{ currentDemo.username }}
-                                    </h2>
-
-                                    <p class="text-sm text-center mb-8 opacity-80"
-                                        :style="{ color: currentDemo.textColor }">
-                                        {{ currentDemo.bio }}
-                                    </p>
-
-                                    <div class="w-full space-y-4">
-                                        <div v-for="(link, idx) in currentDemo.links" :key="idx"
-                                            class="w-full p-4 rounded-xl flex items-center gap-3 transition-all duration-300 cursor-pointer group link-item"
-                                            :class="getLinkClasses(currentDemo)"
-                                            :style="{ animationDelay: `${idx * 100}ms` }">
-                                            <component :is="link.icon" size="20" />
-                                            <span class="font-bold text-sm">{{ link.text }}</span>
-                                        </div>
-                                    </div>
-
-                                    <div v-if="currentDemo.showSpotify" class="mt-auto pt-8 w-full animate-fade-in">
-                                        <div
-                                            class="bg-black/40 backdrop-blur-md rounded-xl p-3 flex items-center gap-3 border border-white/10">
-                                            <div
-                                                class="w-10 h-10 bg-green-500 rounded flex items-center justify-center">
-                                                <Music size="20" class="text-black" />
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <div class="h-3 w-24 bg-white/20 rounded mb-1.5"></div>
-                                                <div class="h-2 w-16 bg-white/10 rounded"></div>
-                                            </div>
-                                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div
-                                class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-b-xl z-20">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="features" class="py-24 px-4 bg-[#0a0a0a]">
-            <div class="container mx-auto max-w-6xl">
-                <div v-observe class="scroll-hidden text-center mb-16">
-                    <h3 class="text-4xl font-bold mb-4">{{ copy.features.titleStart }} <span class="text-amber-400">{{
-                        copy.features.titleHighlight }}</span></h3>
-                    <p class="text-slate-400">{{ copy.features.description }}</p>
-                </div>
-
-                <div class="grid md:grid-cols-3 gap-6">
-                    <div v-for="(feature, idx) in features" :key="idx" v-observe
-                        class="scroll-hidden group relative p-8 rounded-3xl bg-slate-900 border border-slate-800 hover:border-amber-500/30 transition-all duration-500 hover:-translate-y-2 overflow-hidden"
-                        :style="{ transitionDelay: `${idx * 100}ms` }">
-
-                        <div
-                            class="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        </div>
-
-                        <div class="relative z-10">
-                            <div
-                                class="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                                <component :is="feature.icon" :size="28" class="text-amber-400" />
-                            </div>
-                            <h4 class="text-xl font-bold mb-3 text-white group-hover:text-amber-400 transition-colors">
-                                {{ feature.title }}</h4>
-                            <p class="text-slate-400 leading-relaxed">{{ feature.description }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="pricing" class="py-24 px-4 bg-slate-900/20 border-y border-white/5">
-            <div class="container mx-auto max-w-6xl">
-                <div v-observe class="scroll-hidden text-center mb-16">
-                    <h3 class="text-4xl font-bold mb-4">{{ copy.pricing.title }}</h3>
-                    <p class="text-slate-400">{{ copy.pricing.description }}</p>
-                </div>
-
-                <div class="grid md:grid-cols-3 gap-8">
-                    <div v-for="(plan, idx) in plans" :key="idx" v-observe
-                        class="scroll-hidden relative p-8 rounded-3xl border transition-all duration-300 hover:scale-105"
-                        :class="plan.popular ? 'bg-slate-900 border-amber-500/50 shadow-2xl shadow-amber-900/10' : 'bg-slate-950/50 border-white/5'"
-                        :style="{ transitionDelay: `${idx * 150}ms` }">
-
-                        <div v-if="plan.popular"
-                            class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-amber-400 text-slate-900 text-xs font-bold rounded-full uppercase tracking-wider">
-                            {{ copy.pricing.recommended }}
-                        </div>
-
-                        <h4 class="text-xl font-bold mb-2">{{ plan.name }}</h4>
-                        <div class="flex items-baseline gap-1 mb-6">
-                            <span class="text-4xl font-black">{{ plan.price }}</span>
-                            <span class="text-sm text-slate-500">{{ copy.pricing.perMonth }}</span>
-                        </div>
-
-                        <ul class="space-y-4 mb-8">
-                            <li v-for="feat in plan.features" :key="feat"
-                                class="flex items-start gap-3 text-sm text-slate-300">
-                                <Check :size="16" class="text-amber-400 shrink-0 mt-0.5" />
-                                {{ feat }}
-                            </li>
-                        </ul>
-
-                        <button class="w-full py-3 rounded-xl font-bold text-sm transition-all"
-                            :class="plan.popular ? 'bg-amber-400 text-slate-900 hover:bg-amber-300' : 'bg-slate-800 text-white hover:bg-slate-700'">
-                            {{ plan.cta }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <FaqSection />
 
         <section class="py-32 px-4 relative overflow-hidden bg-[#0a0a0a]">
             <div class="container mx-auto max-w-4xl relative z-10">
@@ -442,12 +104,9 @@
             </div>
         </section>
 
-        <footer class="border-t border-slate-800/50 py-12 text-center text-slate-500 text-sm bg-[#0a0a0a]">
-            <div class="flex items-center justify-center gap-2 mb-4 opacity-50 hover:opacity-100 transition-opacity">
-                <img src="/duckbio.png" class="w-6 h-auto grayscale" />
-                <span>QuackLinks &copy; 2025</span>
-            </div>
-        </footer>
+
+
+        <FooterSection />
 
     </div>
 </template>
@@ -456,11 +115,37 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import LanguageMenuButton from '@/components/LanguageMenuButton.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { planFeatures } from '@/constants/plans'
 import {
     Sparkles, ArrowRight, Play, Check,
     Link, Palette, BarChart3, Music,
     Zap, Shield, Crown, Terminal, Gamepad2, Brush
 } from 'lucide-vue-next'
+import FooterSection from '@/components/landingpage/FooterSection.vue'
+import FaqSection from '@/components/landingpage/FaqSection.vue'
+import ExploreStickySection from '@/components/landingpage/ExploreStickySection.vue'
+import FeaturesCarousel from '@/components/landingpage/FeaturesCarousel.vue'
+import PricingSection from '@/components/landingpage/PricingSection.vue'
+import HeroSection from '@/components/landingpage/HeroSection.vue'
+
+const isScrolled = ref(false)
+
+const handleScroll = () => {
+    isScrolled.value = window.scrollY > 20
+}
+
+onMounted(() => {
+    handleScroll()
+    document.documentElement.classList.add('landing-snap-scroll')
+    document.body.classList.add('landing-snap-scroll')
+    window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll)
+    document.documentElement.classList.remove('landing-snap-scroll')
+    document.body.classList.remove('landing-snap-scroll')
+})
 
 const { locale } = useAppLanguage()
 
@@ -471,11 +156,11 @@ const translations = {
             badge: 'Nova geração de biolinks',
             titleStart: 'Seu perfil,',
             titleHighlight: 'outra dimensão.',
-            description: 'A plataforma definitiva para centralizar sua identidade digital. Estética cyberpunk, analytics em tempo real e liberdade total.',
+            description: 'A plataforma definitiva para centralizar sua identidade digital. Estetica cyberpunk, analises em tempo real e liberdade total.',
             primaryCta: 'Começar agora',
             secondaryCta: 'Ver demo',
             joinPrefix: 'Junte-se a',
-            joinSuffix: 'creators',
+            joinSuffix: 'criadores',
         },
         mockups: {
             subscribe: 'Inscreva-se',
@@ -488,39 +173,72 @@ const translations = {
             description: 'Nossa engine de renderização permite qualquer estilo. Do minimalismo corporativo ao caos do cybercore.',
         },
         features: {
-            titleStart: 'Features',
-            titleHighlight: 'insanas',
+            titleStart: '',
+            titleHighlight: 'Recursos',
             description: 'Tudo o que você precisa para dominar sua presença digital.',
         },
         pricing: {
             title: 'Planos',
-            description: 'Comece grátis. Evolua quando precisar.',
+            description: 'Do Free ao Premium, com os recursos reais do sistema e upgrade sem fricção.',
             recommended: 'Recomendado',
             perMonth: '/mês',
+            compareLabel: 'Planos reais',
+            helper: 'Os recursos abaixo refletem o que o QuakLinks libera hoje para Free e Premium.',
+            featureLabels: {
+                'Avatar e imagem de fundo': 'Avatar e imagem de fundo',
+                'Gradientes e estilos visuais': 'Gradientes e estilos visuais',
+                'Vídeo no background': 'Vídeo no background',
+                'Cursor personalizado': 'Cursor personalizado',
+                'Playlist e player de áudio': 'Playlist e player de áudio',
+                'Agendamento de links': 'Agendamento de links',
+                'Domínio personalizado': 'Domínio personalizado',
+                'Efeito Máquina de Escrever': 'Efeito Máquina de Escrever',
+                'Templates e assets premium': 'Templates e assets premium',
+            },
+            free: {
+                name: 'Free',
+                pill: 'Base essencial',
+                price: 'R$ 0',
+                priceSuffix: '/sem custo',
+                note: 'Tudo o que você precisa para começar.',
+                description: 'Publique seus links essenciais, monte a base visual da página e comece a personalizar sem pagar nada.',
+                cta: 'Criar conta grátis',
+                extraFeature: 'Publicação dos links essenciais',
+            },
+            premium: {
+                name: 'Premium',
+                pill: 'Recursos avançados',
+                price: 'Upgrade',
+                priceSuffix: 'via checkout',
+                note: 'Desbloqueie os recursos premium de verdade do sistema.',
+                description: 'Libera mídia, cursor, agendamento, domínio personalizado e extras profissionais para uma página muito mais rica.',
+                cta: 'Criar conta e ver Premium',
+                includesFree: 'Tudo do Free, mais',
+            },
         },
         finalCta: {
             titleStart: 'Pronto para o',
             titleHighlight: 'show?',
-            description: 'Junte-se a 50,000+ creators que usam QuackLinks.',
+            description: 'Junte-se a 50,000+ criadores que usam QuackLinks.',
             button: 'Criar conta grátis',
         },
         demoProfiles: {
             gamer: { label: 'Pro Gamer', desc: 'Estilo agressivo, cores neon, efeitos glitch.', bio: 'FPS Pro Player | Live todos os dias às 18h' },
-            artist: { label: 'Artista Digital', desc: 'Glassmorphism, gradientes suaves, elegante.', bio: 'Visual Designer & 3D Artist. Commissions Open.' },
-            dev: { label: 'Developer', desc: 'Minimalista, fonte mono, foco em conteúdo.', bio: 'Fullstack Dev building cool stuff.' },
+            artist: { label: 'Artista Digital', desc: 'Efeito de vidro, gradientes suaves, elegante.', bio: 'Designer visual e artista 3D. Encomendas abertas.' },
+            dev: { label: 'Desenvolvedor', desc: 'Minimalista, fonte mono, foco em conteudo.', bio: 'Desenvolvedor full stack criando coisas legais.' },
         },
         featuresList: [
             { title: 'Instantâneo', description: 'Carregamento ultra-rápido para não perder nenhum clique.' },
             { title: 'Customizável', description: 'Controle total sobre cores, fontes e animações.' },
-            { title: 'Analytics', description: 'Saiba exatamente quem está clicando e de onde vêm.' },
-            { title: 'Mídia Embed', description: 'Spotify, YouTube, Twitch direto na sua página.' },
+            { title: 'Analises', description: 'Saiba exatamente quem esta clicando e de onde vem.' },
+            { title: 'Midia Incorporada', description: 'Spotify, YouTube e Twitch direto na sua pagina.' },
             { title: 'Seguro', description: 'Proteção DDoS e SSL gratuito para todos os links.' },
             { title: 'Domínio Próprio', description: 'Use seu próprio domínio .com ou .br.' },
         ],
         plans: [
-            { name: 'Starter', price: 'R$ 0', features: ['1 Página', 'Links Ilimitados', 'Temas Básicos'], cta: 'Criar Grátis', popular: false },
-            { name: 'Pro', price: 'R$ 29', features: ['3 Páginas', 'Remover Marca', 'Analytics Pro', 'Temas Premium'], cta: 'Assinar Pro', popular: true },
-            { name: 'Agency', price: 'R$ 99', features: ['10 Páginas', 'API Access', 'Suporte Prioritário'], cta: 'Contatar', popular: false },
+            { name: 'Inicial', price: 'R$ 0', features: ['1 Pagina', 'Links Ilimitados', 'Temas Basicos'], cta: 'Criar Gratis', popular: false },
+            { name: 'Pro', price: 'R$ 29', features: ['3 Paginas', 'Remover Marca', 'Analises Pro', 'Temas Premium'], cta: 'Assinar Pro', popular: true },
+            { name: 'Agencia', price: 'R$ 99', features: ['10 Paginas', 'Acesso a API', 'Suporte Prioritario'], cta: 'Contatar', popular: false },
         ],
     },
     en: {
@@ -552,9 +270,42 @@ const translations = {
         },
         pricing: {
             title: 'Pricing',
-            description: 'Start free. Upgrade when you need it.',
+            description: 'From Free to Premium, with the real system features and a clear upgrade path.',
             recommended: 'Recommended',
             perMonth: '/month',
+            compareLabel: 'Real plans',
+            helper: 'The features below reflect what QuakLinks actually unlocks today for Free and Premium.',
+            featureLabels: {
+                'Avatar e imagem de fundo': 'Avatar and background image',
+                'Gradientes e estilos visuais': 'Gradients and visual styles',
+                'Vídeo no background': 'Background video',
+                'Cursor personalizado': 'Custom cursor',
+                'Playlist e player de áudio': 'Playlist and audio player',
+                'Agendamento de links': 'Link scheduling',
+                'Domínio personalizado': 'Custom domain',
+                'Efeito Máquina de Escrever': 'Typewriter effect',
+                'Templates e assets premium': 'Premium templates and assets',
+            },
+            free: {
+                name: 'Free',
+                pill: 'Core essentials',
+                price: '$0',
+                priceSuffix: '/no cost',
+                note: 'Everything you need to start.',
+                description: 'Publish your essential links, build the visual foundation of your page, and start customizing without paying anything.',
+                cta: 'Create free account',
+                extraFeature: 'Publish essential links',
+            },
+            premium: {
+                name: 'Premium',
+                pill: 'Advanced features',
+                price: 'Upgrade',
+                priceSuffix: 'via checkout',
+                note: 'Unlock the premium features that really exist in the product.',
+                description: 'Get media, custom cursor, scheduling, custom domain, and professional extras for a much richer page.',
+                cta: 'Create account and view Premium',
+                includesFree: 'Everything in Free, plus',
+            },
         },
         finalCta: {
             titleStart: 'Ready for the',
@@ -587,11 +338,11 @@ const translations = {
             badge: 'Nueva generación de biolinks',
             titleStart: 'Tu perfil,',
             titleHighlight: 'otra dimensión.',
-            description: 'La plataforma definitiva para centralizar tu identidad digital. Estética cyberpunk, analytics en tiempo real y libertad total.',
+            description: 'La plataforma definitiva para centralizar tu identidad digital. Estetica cyberpunk, analiticas en tiempo real y libertad total.',
             primaryCta: 'Empezar ahora',
             secondaryCta: 'Ver demo',
             joinPrefix: 'Únete a',
-            joinSuffix: 'creators',
+            joinSuffix: 'creadores',
         },
         mockups: {
             subscribe: 'Suscríbete',
@@ -604,39 +355,72 @@ const translations = {
             description: 'Nuestra engine de render permite cualquier estilo. Del minimalismo corporativo al caos cybercore.',
         },
         features: {
-            titleStart: 'Features',
+            titleStart: 'Funciones',
             titleHighlight: 'brutales',
             description: 'Todo lo que necesitas para dominar tu presencia digital.',
         },
         pricing: {
             title: 'Planes',
-            description: 'Empieza gratis. Evoluciona cuando lo necesites.',
+            description: 'De Free a Premium, con las funciones reales del sistema y un upgrade claro.',
             recommended: 'Recomendado',
             perMonth: '/mes',
+            compareLabel: 'Planes reales',
+            helper: 'Las funciones de abajo reflejan lo que QuakLinks desbloquea hoy en Free y Premium.',
+            featureLabels: {
+                'Avatar e imagem de fundo': 'Avatar e imagen de fondo',
+                'Gradientes e estilos visuais': 'Gradientes y estilos visuales',
+                'Vídeo no background': 'Video de fondo',
+                'Cursor personalizado': 'Cursor personalizado',
+                'Playlist e player de áudio': 'Playlist y reproductor de audio',
+                'Agendamento de links': 'Programación de links',
+                'Domínio personalizado': 'Dominio personalizado',
+                'Efeito Máquina de Escrever': 'Efecto máquina de escribir',
+                'Templates e assets premium': 'Plantillas y assets premium',
+            },
+            free: {
+                name: 'Free',
+                pill: 'Base esencial',
+                price: 'R$ 0',
+                priceSuffix: '/sin costo',
+                note: 'Todo lo que necesitas para empezar.',
+                description: 'Publica tus links esenciales, arma la base visual de tu página y empieza a personalizar sin pagar nada.',
+                cta: 'Crear cuenta gratis',
+                extraFeature: 'Publicación de links esenciales',
+            },
+            premium: {
+                name: 'Premium',
+                pill: 'Funciones avanzadas',
+                price: 'Upgrade',
+                priceSuffix: 'vía checkout',
+                note: 'Desbloquea las funciones premium reales del sistema.',
+                description: 'Libera media, cursor personalizado, programación, dominio propio y extras profesionales para una página mucho más completa.',
+                cta: 'Crear cuenta y ver Premium',
+                includesFree: 'Todo lo de Free, más',
+            },
         },
         finalCta: {
             titleStart: '¿Listo para el',
             titleHighlight: 'show?',
-            description: 'Únete a 50,000+ creators que usan QuackLinks.',
+            description: 'Unete a 50,000+ creadores que usan QuackLinks.',
             button: 'Crear cuenta gratis',
         },
         demoProfiles: {
             gamer: { label: 'Pro Gamer', desc: 'Estilo agresivo, colores neon, efectos glitch.', bio: 'FPS Pro Player | Live todos los días a las 18h' },
-            artist: { label: 'Artista Digital', desc: 'Glassmorphism, gradientes suaves, elegante.', bio: 'Visual Designer & 3D Artist. Commissions Open.' },
-            dev: { label: 'Developer', desc: 'Minimalista, fuente mono, foco en contenido.', bio: 'Fullstack Dev building cool stuff.' },
+            artist: { label: 'Artista Digital', desc: 'Efecto de cristal, gradientes suaves, elegante.', bio: 'Disenadora visual y artista 3D. Encargos abiertos.' },
+            dev: { label: 'Desarrollador', desc: 'Minimalista, fuente mono, foco en contenido.', bio: 'Desarrollador full stack creando cosas geniales.' },
         },
         featuresList: [
             { title: 'Instantáneo', description: 'Carga ultrarrápida para no perder ni un clic.' },
             { title: 'Personalizable', description: 'Control total sobre colores, fuentes y animaciones.' },
-            { title: 'Analytics', description: 'Sabe exactamente quién hace clic y de dónde viene.' },
-            { title: 'Media Embed', description: 'Spotify, YouTube y Twitch directo en tu página.' },
+            { title: 'Analiticas', description: 'Sabe exactamente quien hace clic y de donde viene.' },
+            { title: 'Media Integrada', description: 'Spotify, YouTube y Twitch directo en tu pagina.' },
             { title: 'Seguro', description: 'Protección DDoS y SSL gratis para todos los links.' },
             { title: 'Dominio Propio', description: 'Usa tu propio dominio .com o local.' },
         ],
         plans: [
-            { name: 'Starter', price: 'R$ 0', features: ['1 Página', 'Links ilimitados', 'Temas básicos'], cta: 'Crear Gratis', popular: false },
-            { name: 'Pro', price: 'R$ 29', features: ['3 Páginas', 'Quitar marca', 'Analytics Pro', 'Temas premium'], cta: 'Suscribirse Pro', popular: true },
-            { name: 'Agency', price: 'R$ 99', features: ['10 Páginas', 'Acceso API', 'Soporte prioritario'], cta: 'Contactar', popular: false },
+            { name: 'Inicial', price: 'R$ 0', features: ['1 Pagina', 'Links ilimitados', 'Temas basicos'], cta: 'Crear Gratis', popular: false },
+            { name: 'Pro', price: 'R$ 29', features: ['3 Paginas', 'Quitar marca', 'Analiticas Pro', 'Temas premium'], cta: 'Suscribirse Pro', popular: true },
+            { name: 'Agencia', price: 'R$ 99', features: ['10 Paginas', 'Acceso API', 'Soporte prioritario'], cta: 'Contactar', popular: false },
         ],
     },
 }
@@ -675,9 +459,9 @@ const demoProfiles = computed(() => ({
         buttonStyle: 'brutalist',
         showSpotify: true,
         links: [
-            { icon: Crown, text: 'Twitch SUB' },
-            { icon: Gamepad2, text: 'Discord Community' },
-            { icon: Link, text: 'Setup Gear' }
+            { icon: Crown, text: locale.value === 'pt' ? 'Inscricao Twitch' : locale.value === 'es' ? 'Suscripcion Twitch' : 'Twitch SUB' },
+            { icon: Gamepad2, text: locale.value === 'pt' ? 'Comunidade Discord' : locale.value === 'es' ? 'Comunidad Discord' : 'Discord Community' },
+            { icon: Link, text: locale.value === 'pt' ? 'Equipamentos' : locale.value === 'es' ? 'Equipo' : 'Setup Gear' }
         ]
     },
     artist: {
@@ -694,7 +478,7 @@ const demoProfiles = computed(() => ({
         buttonStyle: 'glass',
         showSpotify: true,
         links: [
-            { icon: Palette, text: 'Portfolio 2025' },
+            { icon: Palette, text: 'Portfolio 2026' },
             { icon: Link, text: 'Behance' },
             { icon: Link, text: 'Instagram' }
         ]
@@ -713,10 +497,10 @@ const demoProfiles = computed(() => ({
         buttonStyle: 'minimal',
         showSpotify: false,
         links: [
-            { icon: Terminal, text: 'GitHub Repo' },
-            { icon: Link, text: 'Documentation' },
-            { icon: Link, text: 'Blog Posts' },
-            { icon: Link, text: 'Contact Me' }
+            { icon: Terminal, text: locale.value === 'pt' ? 'Repositorio GitHub' : locale.value === 'es' ? 'Repositorio GitHub' : 'GitHub Repo' },
+            { icon: Link, text: locale.value === 'pt' ? 'Documentacao' : locale.value === 'es' ? 'Documentacion' : 'Documentation' },
+            { icon: Link, text: locale.value === 'pt' ? 'Artigos do Blog' : locale.value === 'es' ? 'Articulos del Blog' : 'Blog Posts' },
+            { icon: Link, text: locale.value === 'pt' ? 'Fale Comigo' : locale.value === 'es' ? 'Contactame' : 'Contact Me' }
         ]
     }
 }))
@@ -748,8 +532,8 @@ const getLinkClasses = (profile) => {
 }
 
 const navItems = computed(() => [
-    { name: 'Showcase', href: '#explore' },
-    { name: copy.value.features.titleStart, href: '#features' },
+    { name: locale.value === 'pt' ? 'Vitrine' : locale.value === 'es' ? 'Vitrina' : 'Showcase', href: '#explore' },
+    // { name: copy.value.features.titleStart, href: '#features' },
     { name: copy.value.pricing.title, href: '#pricing' }
 ])
 
@@ -762,7 +546,40 @@ const features = computed(() => [
     { icon: Crown, ...copy.value.featuresList[5] },
 ])
 
-const plans = computed(() => copy.value.plans)
+const localizePricingFeature = (label) => copy.value.pricing.featureLabels[label] ?? label
+
+const pricingCards = computed(() => {
+    const freeFeatures = [
+        copy.value.pricing.free.extraFeature,
+        ...planFeatures
+            .filter((feature) => Boolean(feature.free))
+            .map((feature) => localizePricingFeature(feature.label)),
+    ]
+
+    const premiumFeatures = [
+        copy.value.pricing.premium.includesFree,
+        ...planFeatures
+            .filter((feature) => !feature.free && Boolean(feature.premium))
+            .map((feature) => localizePricingFeature(feature.label)),
+    ]
+
+    return [
+        {
+            id: 'free',
+            highlight: false,
+            href: '/register',
+            features: freeFeatures,
+            ...copy.value.pricing.free,
+        },
+        {
+            id: 'premium',
+            highlight: true,
+            href: '/register',
+            features: premiumFeatures,
+            ...copy.value.pricing.premium,
+        },
+    ]
+})
 
 onMounted(() => {
     const keys = Object.keys(demoProfiles.value)
@@ -780,8 +597,18 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+:global(html.landing-snap-scroll),
+:global(body.landing-snap-scroll) {
+    scroll-snap-type: y proximity;
+    scroll-behavior: smooth;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
     width: 0px;
+}
+
+.landing-page {
+    overflow-x: clip;
 }
 
 .scroll-hidden {

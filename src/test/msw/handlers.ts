@@ -105,7 +105,7 @@ export const handlers = [
         {
           id: "session-2",
           userId: "user-1",
-          createdAt: "2025-12-01T00:00:00Z",
+          createdAt: "2026-12-01T00:00:00Z",
           expiresAt: "2026-01-10T00:00:00Z",
           revoked: true,
           active: false,

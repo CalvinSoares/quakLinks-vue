@@ -48,13 +48,13 @@ const { locale } = useAppLanguage();
 
 const translations = {
   pt: {
-    subtitle: "Encontre um visual incrível ou gerencie suas criações.",
-    createButton: "Criar template",
+    subtitle: "Encontre um visual incrivel ou gerencie seus modelos.",
+    createButton: "Criar modelo",
     tabs: {
-      explore: "Biblioteca",
+      explore: "Biblioteca de modelos",
       favorites: "Favoritos",
       recent: "Recentes",
-      mine: "Meus uploads",
+      mine: "Meus modelos",
     },
   },
   en: {
@@ -68,13 +68,13 @@ const translations = {
     },
   },
   es: {
-    subtitle: "Encuentra un visual increíble o administra tus creaciones.",
-    createButton: "Crear template",
+    subtitle: "Encuentra un visual increible o administra tus plantillas.",
+    createButton: "Crear plantilla",
     tabs: {
-      explore: "Biblioteca",
-      favorites: "Templates favoritos",
+      explore: "Biblioteca de plantillas",
+      favorites: "Plantillas favoritas",
       recent: "Usados recientemente",
-      mine: "Mis uploads",
+      mine: "Mis plantillas",
     },
   },
 } as const;

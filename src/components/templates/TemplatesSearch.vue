@@ -81,7 +81,7 @@ const copy = computed(() => {
       };
     case "es":
       return {
-        searchPlaceholder: "Explora templates creados por la comunidad",
+        searchPlaceholder: "Explora plantillas creadas por la comunidad",
         sortPopular: "Tendencias",
         sortNewest: "Más nuevos",
         sortOldest: "Más antiguos",
@@ -91,7 +91,7 @@ const copy = computed(() => {
       };
     default:
       return {
-        searchPlaceholder: "Explore templates criados pela comunidade",
+        searchPlaceholder: "Explore modelos criados pela comunidade",
         sortPopular: "Em alta",
         sortNewest: "Mais novos",
         sortOldest: "Mais antigos",

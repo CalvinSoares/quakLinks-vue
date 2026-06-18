@@ -133,12 +133,22 @@
     <Modal :is-open="isUsernameModalOpen" @close="closeAllModals" :title="copy.modals.usernameTitle">
       <form @submit.prevent="handleUpdateUsername" class="p-6 space-y-4">
         <input v-model="forms.username.name" class="ui-input" :placeholder="copy.modals.usernamePlaceholder" />
+        <div class="flex items-center justify-between gap-3 text-xs">
+          <p class="text-slate-500 truncate">
+            {{ copy.modals.usernamePreviewPrefix }} <span class="font-semibold text-slate-300">/{{ forms.username.name
+              || '...' }}</span>
+          </p>
+          <p v-if="usernameStatus === 'checking'" class="text-slate-400">{{ copy.modals.usernameChecking }}</p>
+          <p v-else-if="usernameStatus === 'available'" class="text-emerald-400">{{ copy.modals.usernameAvailable }}</p>
+          <p v-else-if="usernameStatus === 'taken'" class="text-red-400">{{ copy.modals.usernameInUse }}</p>
+          <p v-else-if="usernameStatus === 'invalid'" class="text-red-400">{{ usernameValidationError }}</p>
+        </div>
         <p v-if="forms.username.error" class="error-text text-sm">{{ forms.username.error }}</p>
       </form>
 
       <template #footer>
-        <button type="button" @click="handleUpdateUsername" :disabled="forms.username.isLoading"
-          class="ui-btn-primary w-full">
+        <button type="button" @click="handleUpdateUsername"
+          :disabled="forms.username.isLoading || usernameStatus === 'checking'" class="ui-btn-primary w-full">
           {{ forms.username.isLoading ? copy.modals.saving : copy.modals.saveChanges }}
         </button>
       </template>
@@ -257,7 +267,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, reactive, onMounted } from 'vue';
+import { computed, ref, reactive, onMounted, onUnmounted, watch } from 'vue';
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
 import { useAuthStore } from '@/store/auth';
 import { usePageStore } from '@/store/page';
@@ -269,6 +279,11 @@ import Modal from '@/components/dashboard/Modal.vue';
 import CustomDomainCard from '@/components/dashboard/CustomDomainCard.vue';
 import { toast } from 'vue-sonner';
 import { useAppLanguage } from '@/composables/useAppLanguage';
+import {
+  isPublicHandleAvailable,
+  normalizePublicHandle,
+  validatePublicHandle,
+} from '@/utils/publicHandle';
 
 const authStore = useAuthStore();
 const pageStore = usePageStore();
@@ -360,6 +375,14 @@ const translations = {
     modals: {
       usernameTitle: 'Alterar nome de usuário',
       usernamePlaceholder: 'Novo nome de usuário',
+      usernamePreviewPrefix: 'Seu link:',
+      usernameChecking: 'Verificando...',
+      usernameAvailable: 'Disponível',
+      usernameInUse: 'Este nome de usuário já está em uso.',
+      usernameInvalid: 'Escolha um nome de usuário válido.',
+      usernameRequired: 'Informe um nome de usuário.',
+      usernameTooShort: 'Use pelo menos 3 caracteres.',
+      usernameReserved: 'Este nome de usuário não está disponível.',
       displayNameTitle: 'Alterar nome de exibição',
       displayNamePlaceholder: 'Novo nome de exibição',
       emailTitle: 'Alterar e-mail',
@@ -454,6 +477,14 @@ const translations = {
     modals: {
       usernameTitle: 'Change username',
       usernamePlaceholder: 'New username',
+      usernamePreviewPrefix: 'Your link:',
+      usernameChecking: 'Checking...',
+      usernameAvailable: 'Available',
+      usernameInUse: 'This username is already taken.',
+      usernameInvalid: 'Choose a valid username.',
+      usernameRequired: 'Enter a username.',
+      usernameTooShort: 'Use at least 3 characters.',
+      usernameReserved: 'This username is not available.',
       displayNameTitle: 'Change display name',
       displayNamePlaceholder: 'New display name',
       emailTitle: 'Change email',
@@ -548,6 +579,14 @@ const translations = {
     modals: {
       usernameTitle: 'Cambiar nombre de usuario',
       usernamePlaceholder: 'Nuevo nombre de usuario',
+      usernamePreviewPrefix: 'Tu link:',
+      usernameChecking: 'Verificando...',
+      usernameAvailable: 'Disponible',
+      usernameInUse: 'Este nombre de usuario ya está en uso.',
+      usernameInvalid: 'Elige un nombre de usuario válido.',
+      usernameRequired: 'Ingresa un nombre de usuario.',
+      usernameTooShort: 'Usa al menos 3 caracteres.',
+      usernameReserved: 'Este nombre de usuario no está disponible.',
       displayNameTitle: 'Cambiar nombre de visualización',
       displayNamePlaceholder: 'Nuevo nombre de visualización',
       emailTitle: 'Cambiar email',
@@ -584,6 +623,10 @@ const translations = {
 } as const;
 
 const copy = computed(() => translations[locale.value]);
+const usernameStatus = ref<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+const usernameValidationError = ref<string | null>(null);
+let usernameCheckTimer: number | null = null;
+let lastCheckedUsername = '';
 
 const forms = reactive({
   username: { name: '', isLoading: false, error: null as string | null },
@@ -606,7 +649,96 @@ const forms = reactive({
   },
 });
 
-const openUsernameModal = () => { forms.username.name = user.value?.name || ''; isUsernameModalOpen.value = true; };
+const validateAccountUsername = (value: string) => validatePublicHandle(value, {
+  required: copy.value.modals.usernameRequired,
+  tooShort: copy.value.modals.usernameTooShort,
+  reserved: copy.value.modals.usernameReserved,
+});
+
+const currentUsernameNormalized = computed(() => normalizePublicHandle(user.value?.name || ''));
+
+const resetUsernameFeedback = () => {
+  usernameStatus.value = 'idle';
+  usernameValidationError.value = null;
+  lastCheckedUsername = '';
+  if (usernameCheckTimer) window.clearTimeout(usernameCheckTimer);
+  usernameCheckTimer = null;
+};
+
+const checkAccountUsernameAvailability = async (value: string) => {
+  const normalized = normalizePublicHandle(value);
+  const validationError = validateAccountUsername(normalized);
+
+  if (normalized !== value) {
+    forms.username.name = normalized;
+  }
+
+  if (validationError) {
+    usernameStatus.value = normalized ? 'invalid' : 'idle';
+    usernameValidationError.value = validationError;
+    return false;
+  }
+
+  if (normalized === currentUsernameNormalized.value) {
+    usernameStatus.value = 'available';
+    usernameValidationError.value = null;
+    lastCheckedUsername = normalized;
+    return true;
+  }
+
+  if (lastCheckedUsername === normalized && usernameStatus.value !== 'checking') {
+    return usernameStatus.value === 'available';
+  }
+
+  usernameStatus.value = 'checking';
+  usernameValidationError.value = null;
+  lastCheckedUsername = normalized;
+
+  try {
+    const isAvailable = await isPublicHandleAvailable(normalized);
+    usernameStatus.value = isAvailable ? 'available' : 'taken';
+    return isAvailable;
+  } catch {
+    usernameStatus.value = 'idle';
+    return false;
+  }
+};
+
+watch(() => forms.username.name, (value) => {
+  const normalized = normalizePublicHandle(value);
+
+  if (normalized !== value) {
+    forms.username.name = normalized;
+    return;
+  }
+
+  if (!normalized) {
+    resetUsernameFeedback();
+    return;
+  }
+
+  const validationError = validateAccountUsername(normalized);
+  if (validationError) {
+    usernameStatus.value = 'invalid';
+    usernameValidationError.value = validationError;
+    lastCheckedUsername = '';
+    if (usernameCheckTimer) window.clearTimeout(usernameCheckTimer);
+    usernameCheckTimer = null;
+    return;
+  }
+
+  if (usernameCheckTimer) window.clearTimeout(usernameCheckTimer);
+  usernameCheckTimer = window.setTimeout(() => {
+    checkAccountUsernameAvailability(normalized);
+  }, 350);
+});
+
+const openUsernameModal = () => {
+  forms.username.name = normalizePublicHandle(user.value?.name || '');
+  forms.username.error = null;
+  resetUsernameFeedback();
+  isUsernameModalOpen.value = true;
+};
 const openDisplayNameModal = () => { forms.displayName.title = page.value?.title || ''; isDisplayNameModalOpen.value = true; };
 const openEmailModal = () => { isEmailModalOpen.value = true; };
 const openPasswordModal = () => { isPasswordModalOpen.value = true; };
@@ -627,6 +759,7 @@ const closeAllModals = () => {
       if (key !== 'isLoading') (form as any)[key] = (typeof (form as any)[key] === 'string') ? '' : null;
     });
   });
+  resetUsernameFeedback();
 };
 
 function formatDate(value: string) {
@@ -708,11 +841,27 @@ async function loadSessions() {
 const handleUpdateUsername = async () => {
   forms.username.isLoading = true; forms.username.error = null;
   try {
+    const isAvailable = await checkAccountUsernameAvailability(forms.username.name);
+    if (!isAvailable) {
+      forms.username.error =
+        usernameStatus.value === 'taken'
+          ? copy.value.modals.usernameInUse
+          : usernameValidationError.value || copy.value.modals.usernameInvalid;
+      return;
+    }
     await userStore.updateUserProfile({ name: forms.username.name });
     closeAllModals();
-  } catch (e: any) { forms.username.error = e.message; }
+  } catch (e: any) {
+    forms.username.error = /user(name)?|slug/i.test(e.message)
+      ? copy.value.modals.usernameInUse
+      : e.message;
+  }
   finally { forms.username.isLoading = false; }
 };
+
+onUnmounted(() => {
+  resetUsernameFeedback();
+});
 
 const handleUpdateDisplayName = async () => {
   forms.displayName.isLoading = true; forms.displayName.error = null;

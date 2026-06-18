@@ -156,7 +156,7 @@ const translations = {
     languageLabel: "Idioma",
     heroTitle: "Escolha o plano certo para liberar todos os recursos do QuakLinks",
     heroDescription:
-      "Agora existe um lugar claro para ver o que o plano Free inclui, o que o Premium libera e como iniciar o upgrade sem ficar cacando CTA pelo sistema.",
+      "Agora existe um lugar claro para ver o que o plano gratis inclui, o que o Premium libera e como iniciar a assinatura sem ficar procurando botoes pelo sistema.",
     premiumHighlights: [
       "Remova friccao ao desbloquear video, audio, cursor e dominio personalizado.",
       "Ganhe recursos pensados para paginas mais ricas e com mais identidade visual.",
@@ -167,12 +167,12 @@ const translations = {
       premiumDescription:
         "Sua conta ja tem acesso aos recursos premium. Voce pode continuar usando videos, audio, dominio customizado e extras avancados.",
       freeDescription:
-        "Voce esta no plano Free. Faca upgrade para liberar recursos premium diretamente do checkout.",
+        "Voce esta no plano gratis. Assine para liberar recursos premium diretamente no pagamento.",
     },
     billing: {
       status: "Status da assinatura",
-      loading: "Carregando status real do billing...",
-      reload: "Recarregar billing",
+      loading: "Carregando status real da cobranca...",
+      reload: "Recarregar cobranca",
     },
     actions: {
       subscribePremium: "Assinar Premium",
@@ -187,7 +187,7 @@ const translations = {
     },
     tiers: {
       free: {
-        name: "Free",
+        name: "Gratis",
         priceLabel: "R$ 0",
         description: "Para comecar sua pagina e publicar seus links essenciais.",
         ctaLabel: "Seu plano atual",
@@ -195,7 +195,7 @@ const translations = {
       },
       premium: {
         name: "Premium",
-        priceLabel: "Upgrade",
+        priceLabel: "Assinar",
         description:
           "Para destravar personalizacao avancada, midia e recursos profissionais.",
         ctaLabel: "Assinar Premium",
@@ -206,13 +206,13 @@ const translations = {
       labels: {
         "Avatar e imagem de fundo": "Avatar e imagem de fundo",
         "Gradientes e estilos visuais": "Gradientes e estilos visuais",
-        "Vídeo no background": "Video no background",
+        "Vídeo no background": "Video de fundo",
         "Cursor personalizado": "Cursor personalizado",
         "Playlist e player de áudio": "Playlist e player de audio",
         "Agendamento de links": "Agendamento de links",
         "Domínio personalizado": "Dominio personalizado",
         "Efeito Máquina de Escrever": "Efeito Maquina de Escrever",
-        "Templates e assets premium": "Templates e assets premium",
+        "Templates e assets premium": "Modelos e recursos premium",
       },
       descriptions: {
         "Avatar e imagem de fundo": "Base visual essencial para qualquer pagina.",
@@ -228,7 +228,7 @@ const translations = {
     },
     statusMap: {
       ACTIVE: "Ativo",
-      CHECKOUT_PENDING: "Checkout pendente",
+      CHECKOUT_PENDING: "Pagamento pendente",
       CANCELED: "Cancelado",
       CANCELLED: "Cancelado",
       INCOMPLETE: "Incompleto",
@@ -250,13 +250,13 @@ const translations = {
         "Seu retorno do checkout foi confirmado e o plano Premium ja aparece ativo nesta conta.",
       successPendingTitle: "Pagamento recebido",
       successPendingMessage:
-        "O checkout retornou com sucesso. Se a assinatura ainda nao virou Premium, o webhook pode estar terminando o processamento.",
-      canceledTitle: "Checkout cancelado",
+        "O pagamento retornou com sucesso. Se a assinatura ainda nao virou Premium, a confirmacao pode estar terminando o processamento.",
+      canceledTitle: "Pagamento cancelado",
       canceledMessage:
         "Nenhuma cobranca foi concluida. Voce pode revisar os beneficios e tentar novamente quando quiser.",
       toasts: {
         paymentConfirmed: "Pagamento confirmado e assinatura atualizada.",
-        checkoutDone: "Checkout concluido. Atualizando status do billing.",
+        checkoutDone: "Pagamento concluido. Atualizando status da cobranca.",
         paymentCanceled: "Pagamento cancelado.",
         loadBillingError: "Nao foi possivel carregar os dados de billing.",
         startPaymentError: "Nao foi possivel iniciar o pagamento.",
@@ -387,7 +387,7 @@ const translations = {
     languageLabel: "Idioma",
     heroTitle: "Elige el plan correcto para desbloquear todas las funciones de QuakLinks",
     heroDescription:
-      "Ahora hay un lugar claro para ver lo que incluye el plan Free, lo que desbloquea Premium y como iniciar el upgrade sin buscar CTAs por todo el sistema.",
+      "Ahora hay un lugar claro para ver lo que incluye el plan gratis, lo que desbloquea Premium y como iniciar la suscripcion sin buscar botones por todo el sistema.",
     premiumHighlights: [
       "Quita friccion al desbloquear video, audio, cursor y dominio personalizado.",
       "Obtiene funciones pensadas para paginas mas ricas y con mas identidad visual.",
@@ -398,12 +398,12 @@ const translations = {
       premiumDescription:
         "Tu cuenta ya tiene acceso a las funciones premium. Puedes seguir usando video, audio, dominio personalizado y extras avanzados.",
       freeDescription:
-        "Estas en el plan Free. Haz upgrade para desbloquear funciones premium directamente desde el checkout.",
+        "Estas en el plan gratis. Suscribete para desbloquear funciones premium directamente desde el pago.",
     },
     billing: {
       status: "Estado de la suscripcion",
-      loading: "Cargando estado real de billing...",
-      reload: "Recargar billing",
+      loading: "Cargando estado real de la facturacion...",
+      reload: "Recargar facturacion",
     },
     actions: {
       subscribePremium: "Suscribirse a Premium",
@@ -418,7 +418,7 @@ const translations = {
     },
     tiers: {
       free: {
-        name: "Free",
+        name: "Gratis",
         priceLabel: "R$ 0",
         description: "Para empezar tu pagina y publicar tus enlaces esenciales.",
         ctaLabel: "Tu plan actual",
@@ -426,7 +426,7 @@ const translations = {
       },
       premium: {
         name: "Premium",
-        priceLabel: "Upgrade",
+        priceLabel: "Suscribirse",
         description: "Desbloquea personalizacion avanzada, medios y funciones profesionales.",
         ctaLabel: "Suscribirse a Premium",
         pill: "Funciones avanzadas",
@@ -442,7 +442,7 @@ const translations = {
         "Agendamento de links": "Programacion de enlaces",
         "Domínio personalizado": "Dominio personalizado",
         "Efeito Máquina de Escrever": "Efecto maquina de escribir",
-        "Templates e assets premium": "Templates y assets premium",
+        "Templates e assets premium": "Plantillas y recursos premium",
       },
       descriptions: {
         "Avatar e imagem de fundo": "Base visual esencial para cualquier pagina.",
@@ -458,7 +458,7 @@ const translations = {
     },
     statusMap: {
       ACTIVE: "Activo",
-      CHECKOUT_PENDING: "Checkout pendiente",
+      CHECKOUT_PENDING: "Pago pendiente",
       CANCELED: "Cancelado",
       CANCELLED: "Cancelado",
       INCOMPLETE: "Incompleto",
@@ -481,14 +481,14 @@ const translations = {
       successPendingTitle: "Pago recibido",
       successPendingMessage:
         "El checkout volvio con exito. Si la suscripcion todavia no aparece como Premium, el webhook puede seguir procesandose.",
-      canceledTitle: "Checkout cancelado",
+      canceledTitle: "Pago cancelado",
       canceledMessage:
         "No se completo ningun cobro. Puedes revisar los beneficios e intentarlo de nuevo cuando quieras.",
       toasts: {
         paymentConfirmed: "Pago confirmado y suscripcion actualizada.",
-        checkoutDone: "Checkout completado. Actualizando estado del billing.",
+        checkoutDone: "Pago completado. Actualizando estado de la facturacion.",
         paymentCanceled: "Pago cancelado.",
-        loadBillingError: "No se pudieron cargar los datos de billing.",
+        loadBillingError: "No se pudieron cargar los datos de facturacion.",
         startPaymentError: "No se pudo iniciar el pago.",
       },
     },

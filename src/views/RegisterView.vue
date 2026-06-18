@@ -28,13 +28,23 @@
 
           <form @submit.prevent="handleRegister" class="w-full space-y-4">
             <div class="relative">
-              <input v-model="name" id="name" type="text" required :disabled="isLoading"
+              <input v-model="name" id="name" type="text" required :disabled="isLoading" autocomplete="username"
                 class="peer w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 disabled:opacity-50"
                 :placeholder="copy.nameLabel" />
               <label for="name"
                 class="absolute left-4 -top-2.5 text-slate-400 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-500 peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-purple-400 peer-focus:text-sm pointer-events-none bg-slate-900 px-1">
                 {{ copy.nameLabel }}
               </label>
+              <div class="mt-2 flex items-center justify-between gap-3 text-xs">
+                <p class="text-slate-500 truncate">
+                  {{ copy.usernamePreviewPrefix }} <span class="text-slate-300 font-semibold">/{{ name || '...'
+                    }}</span>
+                </p>
+                <p v-if="usernameStatus === 'checking'" class="text-slate-400">{{ copy.usernameChecking }}</p>
+                <p v-else-if="usernameStatus === 'available'" class="text-emerald-400">{{ copy.usernameAvailable }}</p>
+                <p v-else-if="usernameStatus === 'taken'" class="text-red-400">{{ copy.usernameInUse }}</p>
+                <p v-else-if="usernameStatus === 'invalid'" class="text-red-400">{{ usernameError }}</p>
+              </div>
             </div>
 
             <div class="relative">
@@ -125,12 +135,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import LanguageMenuButton from '@/components/LanguageMenuButton.vue';
 import TurnstileWidget from '@/components/auth/TurnstileWidget.vue';
 import { useAppLanguage } from '@/composables/useAppLanguage';
+import {
+  isPublicHandleAvailable,
+  normalizePublicHandle,
+  validatePublicHandle,
+} from '@/utils/publicHandle';
 
 const name = ref('');
 const email = ref('');
@@ -153,7 +168,15 @@ const translations = {
   pt: {
     title: 'Criar Conta',
     subtitle: 'Crie sua conta para continuar.',
-    nameLabel: 'Nome completo',
+    nameLabel: 'Nome de usuário',
+    usernamePreviewPrefix: 'Seu link:',
+    usernameChecking: 'Verificando...',
+    usernameAvailable: 'Disponível',
+    usernameInUse: 'Este nome de usuário já está em uso.',
+    usernameInvalid: 'Escolha um nome de usuário válido.',
+    usernameRequired: 'Informe um nome de usuário.',
+    usernameTooShort: 'Use pelo menos 3 caracteres.',
+    usernameReserved: 'Este nome de usuário não está disponível.',
     emailLabel: 'E-mail',
     passwordLabel: 'Senha',
     creating: 'Criando...',
@@ -168,7 +191,15 @@ const translations = {
   en: {
     title: 'Create Account',
     subtitle: 'Create your account to continue.',
-    nameLabel: 'Full name',
+    nameLabel: 'Username',
+    usernamePreviewPrefix: 'Your link:',
+    usernameChecking: 'Checking...',
+    usernameAvailable: 'Available',
+    usernameInUse: 'This username is already taken.',
+    usernameInvalid: 'Choose a valid username.',
+    usernameRequired: 'Enter a username.',
+    usernameTooShort: 'Use at least 3 characters.',
+    usernameReserved: 'This username is not available.',
     emailLabel: 'Email',
     passwordLabel: 'Password',
     creating: 'Creating...',
@@ -183,7 +214,15 @@ const translations = {
   es: {
     title: 'Crear Cuenta',
     subtitle: 'Crea tu cuenta para continuar.',
-    nameLabel: 'Nombre completo',
+    nameLabel: 'Nombre de usuario',
+    usernamePreviewPrefix: 'Tu link:',
+    usernameChecking: 'Verificando...',
+    usernameAvailable: 'Disponible',
+    usernameInUse: 'Este nombre de usuario ya está en uso.',
+    usernameInvalid: 'Elige un nombre de usuario válido.',
+    usernameRequired: 'Ingresa un nombre de usuario.',
+    usernameTooShort: 'Usa al menos 3 caracteres.',
+    usernameReserved: 'Este nombre de usuario no está disponible.',
     emailLabel: 'Email',
     passwordLabel: 'Contraseña',
     creating: 'Creando...',
@@ -199,6 +238,86 @@ const translations = {
 
 const copy = computed(() => translations[locale.value]);
 const isPasswordVisible = ref(false);
+const usernameStatus = ref<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+const usernameError = ref<string | null>(null);
+let usernameCheckTimer: number | null = null;
+let lastCheckedUsername = '';
+
+const checkUsernameAvailability = async (value: string) => {
+  const normalized = normalizePublicHandle(value);
+  const validationError = validatePublicHandle(normalized, {
+    required: copy.value.usernameRequired,
+    tooShort: copy.value.usernameTooShort,
+    reserved: copy.value.usernameReserved,
+  });
+
+  if (normalized !== value) {
+    name.value = normalized;
+  }
+
+  if (validationError) {
+    usernameStatus.value = normalized ? 'invalid' : 'idle';
+    usernameError.value = validationError;
+    return false;
+  }
+
+  if (lastCheckedUsername === normalized && usernameStatus.value !== 'checking') {
+    return usernameStatus.value === 'available';
+  }
+
+  usernameStatus.value = 'checking';
+  usernameError.value = null;
+  lastCheckedUsername = normalized;
+
+  try {
+    const isAvailable = await isPublicHandleAvailable(normalized);
+    usernameStatus.value = isAvailable ? 'available' : 'taken';
+    return isAvailable;
+  } catch {
+    usernameStatus.value = 'idle';
+    return false;
+  }
+};
+
+watch(name, (value) => {
+  const normalized = normalizePublicHandle(value);
+  if (normalized !== value) {
+    name.value = normalized;
+    return;
+  }
+
+  if (!normalized) {
+    usernameStatus.value = 'idle';
+    usernameError.value = null;
+    lastCheckedUsername = '';
+    if (usernameCheckTimer) window.clearTimeout(usernameCheckTimer);
+    usernameCheckTimer = null;
+    return;
+  }
+
+  const validationError = validatePublicHandle(normalized, {
+    required: copy.value.usernameRequired,
+    tooShort: copy.value.usernameTooShort,
+    reserved: copy.value.usernameReserved,
+  });
+  if (validationError) {
+    usernameStatus.value = 'invalid';
+    usernameError.value = validationError;
+    lastCheckedUsername = '';
+    if (usernameCheckTimer) window.clearTimeout(usernameCheckTimer);
+    usernameCheckTimer = null;
+    return;
+  }
+
+  if (usernameCheckTimer) window.clearTimeout(usernameCheckTimer);
+  usernameCheckTimer = window.setTimeout(() => {
+    checkUsernameAvailability(normalized);
+  }, 350);
+});
+
+onUnmounted(() => {
+  if (usernameCheckTimer) window.clearTimeout(usernameCheckTimer);
+});
 
 onMounted(() => {
   setTimeout(() => isMounted.value = true, 100);
@@ -222,6 +341,15 @@ const handleRegister = async () => {
   success.value = null;
   isLoading.value = true;
   try {
+    const isAvailable = await checkUsernameAvailability(name.value);
+    if (!isAvailable) {
+      error.value =
+        usernameStatus.value === 'taken'
+          ? copy.value.usernameInUse
+          : usernameError.value || copy.value.usernameInvalid;
+      return;
+    }
+
     await authStore.register({
       name: name.value,
       email: email.value,
@@ -248,7 +376,12 @@ const handleRegister = async () => {
       turnstileResetKey.value += 1;
     }
     if (err.response && err.response.status === 409) {
-      error.value = copy.value.emailInUse;
+      const resolved = resolveErrorMessage(err, '');
+      if (/user(name)?|slug/i.test(resolved)) {
+        error.value = copy.value.usernameInUse;
+      } else {
+        error.value = copy.value.emailInUse;
+      }
     } else {
       error.value = resolveErrorMessage(err, copy.value.genericError);
     }

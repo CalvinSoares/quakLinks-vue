@@ -18,9 +18,9 @@ const copy = computed(() => {
     case "en":
       return { loading: "Loading templates..." };
     case "es":
-      return { loading: "Cargando templates..." };
+      return { loading: "Cargando plantillas..." };
     default:
-      return { loading: "Carregando templates..." };
+      return { loading: "Carregando modelos..." };
   }
 });
 </script>

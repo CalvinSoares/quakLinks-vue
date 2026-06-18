@@ -2,14 +2,8 @@
   <div class="space-y-6">
     <section class="group-section">
       <h3 class="section-title">{{ copy.identity }}</h3>
-      <div class="space-y-4">
-        <div class="rounded-xl border border-slate-800/50 bg-slate-900/50 p-4 text-sm text-slate-400">
-          {{ copy.identityHint }}
-        </div>
-
-        <AssetUploader :title="copy.avatarUpload" :current-url="form.avatarUrl" upload-type="avatar"
-          accepted-files="image/*" @upload="$emit('upload', $event)" @remove="$emit('remove', 'avatarUrl')" />
-      </div>
+      <AssetUploader :title="copy.avatarUpload" :current-url="form.avatarUrl" upload-type="avatar"
+        accepted-files="image/*" @upload="$emit('upload', $event)" @remove="$emit('remove', 'avatarUrl')" />
     </section>
 
     <section class="group-section">
@@ -66,7 +60,6 @@ const copy = computed(() => {
     case "en":
       return {
         identity: "Identity",
-        identityHint: "The current API does not expose Google or Discord social photos. Use a local avatar for the page.",
         avatarUpload: "Upload Custom Avatar",
         information: "Information",
         displayName: "Display Name",
@@ -80,7 +73,6 @@ const copy = computed(() => {
     case "es":
       return {
         identity: "Identidad",
-        identityHint: "La API actual no expone fotos sociales de Google o Discord. Usa un avatar local para la página.",
         avatarUpload: "Subir Avatar Personalizado",
         information: "Información",
         displayName: "Nombre de Visualización",
@@ -94,8 +86,7 @@ const copy = computed(() => {
     default:
       return {
         identity: "Identidade",
-        identityHint: "A API atual nao expõe fotos sociais do Google ou Discord. Use um avatar local para a página.",
-        avatarUpload: "Upload Avatar Personalizado",
+        avatarUpload: "Avatar Personalizado",
         information: "Informações",
         displayName: "Nome de Exibição",
         displayNamePlaceholder: "Ex: @seunome",
