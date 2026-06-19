@@ -6,13 +6,13 @@
                 <!-- Coluna 1: Marca -->
                 <div class="col-span-2 lg:col-span-1">
                     <a href="/" class="flex items-center gap-3 mb-6">
-                        <img src="/duckbio.png" alt="Logo" class="w-8 h-auto" />
+                        <img src="/duckbio.png" alt="QuackLinks — logo da plataforma de biolinks" class="w-8 h-auto" />
                         <span class="font-bold text-xl tracking-tight text-white">
                             Quack<span class="text-amber-400">Links</span>
                         </span>
                     </a>
                     <p class="text-slate-500 text-sm leading-relaxed mb-6">
-                        A solução definitiva para organizar sua presença online com estilo, velocidade e simplicidade.
+                        QuackLinks é a solução definitiva para organizar sua presença online com estilo, velocidade e simplicidade. Crie sua página de links na bio em quacklinks.com.br.
                     </p>
                     <div class="flex gap-4">
                         <!-- Ícones Sociais (Exemplo) -->

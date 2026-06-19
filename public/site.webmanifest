@@ -1,0 +1,22 @@
+{
+  "name": "QuackLinks",
+  "short_name": "QuackLinks",
+  "description": "Plataforma brasileira de biolinks para criar sua página de links na bio.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/duckbio.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

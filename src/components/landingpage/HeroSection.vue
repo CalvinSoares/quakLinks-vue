@@ -1,6 +1,12 @@
 <template>
     <section v-if="copy" id="hero" @mousemove="handleGlobalParallax"
         class="relative min-h-screen flex items-center pt-32 pb-20 px-4 overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none z-0 opacity-70">
+            <GridScan :sensitivity="0.55" :line-thickness="1" lines-color="#2F293A" :grid-scale="0.1"
+                scan-color="#FBBF24" :scan-opacity="0.4" enable-post :bloom-intensity="0.6"
+                :chromatic-aberration="0.002" :noise-intensity="0.01" class-name="pointer-events-none" />
+            <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#0a0a0a]"></div>
+        </div>
         <!-- 1. BACKGROUND PARALLAX BLOBS -->
         <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
             <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/20 rounded-full blur-[120px] transition-transform duration-300 ease-out"
@@ -22,7 +28,7 @@
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                     </span>
                     <span class="text-xs font-semibold text-slate-300 tracking-wide uppercase">{{ copy.hero.badge
-                        }}</span>
+                    }}</span>
                 </div>
 
                 <!-- Headline com Troca de Palavras (ou Gradiente Animado) -->
@@ -123,6 +129,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ArrowRight, Play, Instagram, Youtube } from 'lucide-vue-next'
+import GridScan from './GridScan.vue'
 
 // LÓGICA DE PARALLAX DO FUNDO
 const parallax = ref({ x: 0, y: 0 })

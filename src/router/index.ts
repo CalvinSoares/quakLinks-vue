@@ -57,11 +57,24 @@ const router = createRouter({
       path: "/login",
       name: "login",
       component: LoginView,
+      meta: {
+        seo: {
+          title: "Entrar",
+          description:
+            "Acesse sua conta QuackLinks para gerenciar suas páginas de biolink, links na bio e personalização.",
+          noindex: true,
+        },
+      },
     },
     {
       path: "/",
       name: "home",
       component: LandingPage,
+      meta: {
+        seo: {
+          skipRouterSeo: true,
+        },
+      },
     },
     {
       path: "/_public",
@@ -72,21 +85,46 @@ const router = createRouter({
       path: "/register",
       name: "register",
       component: RegisterView,
+      meta: {
+        seo: {
+          title: "Criar conta grátis",
+          description:
+            "Crie sua conta gratuita no QuackLinks e monte sua página de links na bio em minutos. Biolinks personalizados em quacklinks.com.br.",
+        },
+      },
     },
     {
       path: "/verify-email",
       name: "verify-email",
       component: VerifyEmailView,
+      meta: {
+        seo: {
+          title: "Verificar e-mail",
+          noindex: true,
+        },
+      },
     },
     {
       path: "/esqueci-senha",
       name: "forgot-password",
       component: ForgotPasswordView,
+      meta: {
+        seo: {
+          title: "Recuperar senha",
+          noindex: true,
+        },
+      },
     },
     {
       path: "/reset-password",
       name: "reset-password",
       component: ResetPasswordView,
+      meta: {
+        seo: {
+          title: "Redefinir senha",
+          noindex: true,
+        },
+      },
     },
     {
       path: "/dashboard",
@@ -97,59 +135,91 @@ const router = createRouter({
       path: "/analytics",
       name: "Analytics",
       component: AnalyticsView,
-      meta: { requiresAuth: true },
+      meta: {
+        requiresAuth: true,
+        seo: { title: "Análises", noindex: true },
+      },
     },
     {
       path: "/settings",
       name: "dashboard-settings",
       component: AccountSettingsView,
-      meta: { requiresAuth: true },
+      meta: {
+        requiresAuth: true,
+        seo: { title: "Configurações", noindex: true },
+      },
     },
 
     {
       path: "/dashboard/pages",
       name: "pages-manager",
       component: PagesManager,
-      meta: { requiresAuth: true },
+      meta: {
+        requiresAuth: true,
+        seo: { title: "Minhas páginas", noindex: true },
+      },
     },
     {
       path: "/dashboard/appearance",
       name: "appearance",
       component: AppearanceView,
-      meta: { requiresAuth: true },
+      meta: {
+        requiresAuth: true,
+        seo: { title: "Personalização", noindex: true },
+      },
     },
     {
       path: "/dashboard/templates",
       name: "templates",
       component: TemplatesView,
-      meta: { requiresAuth: true },
+      meta: {
+        requiresAuth: true,
+        seo: { title: "Modelos", noindex: true },
+      },
     },
     {
       path: "/dashboard/plans",
       name: "plans",
       component: PlansView,
-      meta: { requiresAuth: true },
+      meta: {
+        requiresAuth: true,
+        seo: { title: "Planos", noindex: true },
+      },
     },
     {
       path: "/dashboard/overview",
       name: "dashboard-overview",
       component: AccountOverview,
-      meta: { requiresAuth: true },
+      meta: {
+        requiresAuth: true,
+        seo: { title: "Visão geral", noindex: true },
+      },
     },
     {
       path: "/:slug",
       name: "user-page",
       component: UserPageView,
+      meta: {
+        seo: {
+          skipRouterSeo: true,
+        },
+      },
     },
     {
       path: "/auth/callback/:provider?",
       name: "authCallback",
       component: AuthCallback,
+      meta: {
+        seo: { noindex: true },
+      },
     },
     {
       path: "/spotify/callback",
       name: "spotify-callback",
       component: SpotifyCallback,
+      meta: {
+        seo: { noindex: true },
+      },
     },
   ],
 });

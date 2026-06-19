@@ -104,6 +104,9 @@ import { useUiStore } from '@/store/uiStore';
 import AudioPlayer from '@/components/appearance/AudioPlayer.vue';
 import ProfileHeader from '@/components/appearance/ProfileHeader.vue';
 import UniversalBlock from '@/components/appearance/UniversalBlock.vue';
+import { SITE_NAME } from '@/config/seo';
+import { buildSeoHead } from '@/utils/seoHead';
+import { useHead } from '@unhead/vue';
 
 const route = useRoute();
 const uiStore = useUiStore();
@@ -307,6 +310,28 @@ watch(
   },
   { immediate: true }
 );
+
+const pageSeo = computed(() => {
+  const currentPage = page.value;
+  if (!currentPage) return null;
+
+  const pageTitle = currentPage.title || slug.value || SITE_NAME;
+  return {
+    title: pageTitle,
+    description:
+      currentPage.bio ||
+      `Confira a página de links de ${pageTitle} no QuackLinks.`,
+    path: slug.value ? `/${slug.value}` : '/',
+    type: 'profile' as const,
+    image: currentPage.avatarUrl || undefined,
+  };
+});
+
+useHead(computed(() => {
+  const options = pageSeo.value;
+  if (!options) return {};
+  return buildSeoHead(options);
+}));
 
 onUnmounted(() => {
   uiStore.clearCursorOverride();

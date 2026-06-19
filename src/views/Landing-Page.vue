@@ -27,7 +27,7 @@
                         <a href="/" class="flex items-center gap-3 cursor-pointer group/logo">
                             <div class="relative w-10 h-8 flex items-center justify-center">
                                 <div class="absolute inset-0 bg-amber-500 blur-lg opacity-20 animate-pulse-slow"></div>
-                                <img src="/duckbio.png" alt="Logo"
+                                <img src="/duckbio.png" alt="QuackLinks — logo da plataforma de biolinks"
                                     class="w-8 h-auto relative z-10 transform group-hover/logo:rotate-12 transition-transform duration-300" />
                             </div>
                             <span class="font-bold text-lg tracking-tight hidden sm:block">
@@ -115,6 +115,14 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import LanguageMenuButton from '@/components/LanguageMenuButton.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useSeo } from '@/composables/useSeo'
+import { landingFaqItems } from '@/constants/faq'
+import {
+  getFaqSchema,
+  getOrganizationSchema,
+  getSoftwareApplicationSchema,
+  getWebSiteSchema,
+} from '@/config/seo'
 import { planFeatures } from '@/constants/plans'
 import {
     Sparkles, ArrowRight, Play, Check,
@@ -127,6 +135,16 @@ import ExploreStickySection from '@/components/landingpage/ExploreStickySection.
 import FeaturesCarousel from '@/components/landingpage/FeaturesCarousel.vue'
 import PricingSection from '@/components/landingpage/PricingSection.vue'
 import HeroSection from '@/components/landingpage/HeroSection.vue'
+
+useSeo({
+  path: '/',
+  jsonLd: [
+    getOrganizationSchema(),
+    getWebSiteSchema(),
+    getSoftwareApplicationSchema(),
+    getFaqSchema(landingFaqItems),
+  ],
+})
 
 const isScrolled = ref(false)
 
@@ -153,10 +171,10 @@ const translations = {
     pt: {
         auth: { login: 'Entrar', createBio: 'Criar Bio' },
         hero: {
-            badge: 'Nova geração de biolinks',
-            titleStart: 'Seu perfil,',
-            titleHighlight: 'outra dimensão.',
-            description: 'A plataforma definitiva para centralizar sua identidade digital. Estetica cyberpunk, analises em tempo real e liberdade total.',
+            badge: 'QuackLinks — Nova geração de biolinks',
+            titleStart: 'QuackLinks:',
+            titleHighlight: 'seu perfil, outra dimensão.',
+            description: 'QuackLinks é a plataforma definitiva para centralizar sua identidade digital. Estética cyberpunk, análises em tempo real e liberdade total para sua página de links na bio.',
             primaryCta: 'Começar agora',
             secondaryCta: 'Ver demo',
             joinPrefix: 'Junte-se a',

@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Allow: /register
+Allow: /login
+
+Disallow: /dashboard/
+Disallow: /settings
+Disallow: /analytics
+Disallow: /auth/
+Disallow: /spotify/
+Disallow: /verify-email
+Disallow: /esqueci-senha
+Disallow: /reset-password
+
+Sitemap: https://quacklinks.com.br/sitemap.xml

@@ -44,6 +44,7 @@
 <script setup>
 import { ref } from 'vue';
 import { ChevronDown } from 'lucide-vue-next';
+import { landingFaqItems } from '@/constants/faq';
 
 const activeIndex = ref(null);
 
@@ -51,32 +52,7 @@ const toggle = (index) => {
     activeIndex.value = activeIndex.value === index ? null : index;
 };
 
-const faqItems = [
-    {
-        question: "Como funciona a landing?",
-        answer: "Você navega pelas seções e vê exemplos reais do produto. Comece pelo <a href=\"#explore\">Explore</a> para ver a animação e estilos, depois confira <a href=\"#features\">Recursos</a> e <a href=\"#pricing\">Planos</a>."
-    },
-    {
-        question: "Quais seções existem aqui?",
-        answer: "A landing tem: <a href=\"#explore\">Explore</a>, <a href=\"#features\">Recursos</a>, <a href=\"#pricing\">Planos</a> e este <a href=\"#faq\">FAQ</a>. Tudo foi organizado para você entender o produto sem cair em páginas inexistentes."
-    },
-    {
-        question: "Como faço para começar?",
-        answer: "Crie sua conta em <a href=\"/register\">/register</a>. Depois você consegue criar e editar suas páginas no painel."
-    },
-    {
-        question: "Qual a diferença entre Free e Premium?",
-        answer: "O Free cobre a base para publicar links e montar a identidade visual. O Premium destrava mídia (vídeo/áudio), cursor personalizado, agendamento, domínio personalizado e extras. Veja a comparação em <a href=\"#pricing\">Planos</a>."
-    },
-    {
-        question: "Posso usar vídeo no fundo e domínio personalizado?",
-        answer: "Esses recursos fazem parte do Premium. A lista completa do que destrava está em <a href=\"#pricing\">Planos</a>."
-    },
-    {
-        question: "Onde vejo detalhes e faço upgrade?",
-        answer: "Depois de criar conta, você consegue ver e iniciar o upgrade em <a href=\"/dashboard/plans\">/dashboard/plans</a>."
-    }
-];
+const faqItems = landingFaqItems;
 </script>
 
 <style scoped>
