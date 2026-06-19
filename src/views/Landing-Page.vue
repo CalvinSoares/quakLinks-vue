@@ -4,6 +4,7 @@
 
         <header :class="[
             'fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out',
+            isExploreActive ? 'opacity-0 -translate-y-full pointer-events-none' : '',
             isScrolled ? 'pt-4 px-4' : 'pt-0 px-0'
         ]">
             <nav :class="[
@@ -78,7 +79,7 @@
 
         <FeaturesCarousel :features="features" :section-copy="copy.features" />
 
-        <ExploreStickySection />
+        <ExploreStickySection @explore-active="isExploreActive = $event" />
 
         <PricingSection :copy="copy" :pricing-cards="pricingCards" />
 
@@ -147,6 +148,7 @@ useSeo({
 })
 
 const isScrolled = ref(false)
+const isExploreActive = ref(false)
 
 const handleScroll = () => {
     isScrolled.value = window.scrollY > 20

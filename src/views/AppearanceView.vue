@@ -21,15 +21,19 @@
           @open-plans="openPlans" />
 
         <div v-else-if="activeTab === 'blocks'" key="blocks">
-          <BlockManager @edit="openBlockEditor" />
+          <BlockManager :key="`${pageStore.currentPage?.id ?? 'page'}-${blockDraftKey}`"
+            :ordered-blocks="previewBlocks" @edit="openBlockEditor" @order-change="handleBlockOrderChange" />
         </div>
       </AppearanceSidebar>
 
       <AppearanceBlockEditorModal :block="editingBlock" :content="editingBlockContent" @close="editingBlock = null"
         @save="saveBlockEdit" />
 
-      <AppearancePreviewPanel :is-editing-page="isEditingPage" :preview-data="previewData" :preview-mode="previewMode"
-        @update:preview-mode="previewMode = $event" />
+      <AppearancePreviewPanel
+        v-model:preview-mode="previewMode"
+        :is-editing-page="isEditingPage"
+        :preview-data="previewData"
+      />
 
       <AppearanceUnsavedChangesModal :open="showUnsavedModal" @discard="confirmExit(false)"
         @save-and-exit="confirmExit(true)" />
@@ -55,7 +59,12 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted, computed, nextTick } from 'vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
-import { usePageStore, type Page } from '@/store/page'
+import { usePageStore, type Block } from '@/store/page'
+import {
+  applyPageToForm,
+  buildPageSavePayload,
+  buildPreviewPage,
+} from "@/utils/appearancePage";
 import { uploadFileWithSignedUrl } from '@/services/uploadService'
 import AppearanceBlockEditorModal from '@/components/appearance/AppearanceBlockEditorModal.vue'
 import AppearanceBackgroundTab from '@/components/appearance/AppearanceBackgroundTab.vue'
@@ -142,14 +151,70 @@ const authStore = useAuthStore();
 const router = useRouter();
 const { locale } = useAppLanguage();
 const pendingFiles = reactive<Partial<Record<UploadableField, File>>>({})
-const previewMode = ref('mobile');
+const previewMode = ref<'mobile' | 'desktop'>('mobile');
 const LOCAL_PREVIEW_PREFIX = "data:";
-const previewData = computed(() => ({
-  ...form,
-  viewCount: pageStore.currentPage?.viewCount || 0,
-  audios: pageStore.currentPage?.audios || [],
-  isBodyGradient: isBodyGradient.value
-}))
+const pendingBlockOrder = ref<string[] | null>(null);
+const blockDraftKey = ref(0);
+
+function getOrderedBlocks(orderIds: string[] | null): Block[] {
+  const sourceBlocks = pageStore.currentPage?.blocks ?? [];
+  if (!orderIds?.length) {
+    return [...sourceBlocks].sort((a, b) => a.order - b.order);
+  }
+
+  const blocksById = new Map(sourceBlocks.map((block) => [block.id, block]));
+  return orderIds
+    .map((id, index) => {
+      const block = blocksById.get(id);
+      return block ? { ...block, order: index } : null;
+    })
+    .filter((block): block is Block => block !== null);
+}
+
+const previewBlocks = computed(() => getOrderedBlocks(pendingBlockOrder.value));
+
+const savedBlockOrder = computed(() =>
+  (pageStore.currentPage?.blocks ?? [])
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((block) => block.id)
+    .join('|'),
+);
+
+const isBlockOrderDirty = computed(() => {
+  if (!pendingBlockOrder.value) {
+    return false;
+  }
+
+  return pendingBlockOrder.value.join('|') !== savedBlockOrder.value;
+});
+
+function getBlockIdSet(blocks: Block[] | undefined) {
+  return (blocks ?? []).map((block) => block.id).sort().join('|');
+}
+
+function getSavedBlockOrderIds(): string[] {
+  return (pageStore.currentPage?.blocks ?? [])
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((block) => block.id);
+}
+
+function handleBlockOrderChange(blocks: Block[]) {
+  pendingBlockOrder.value = blocks.map((block) => block.id);
+}
+
+function resetBlockDraft() {
+  pendingBlockOrder.value = null;
+  blockDraftKey.value += 1;
+}
+
+const previewData = computed(() =>
+  buildPreviewPage(form, pageStore.currentPage, {
+    blocks: previewBlocks.value,
+    isBodyGradient: isBodyGradient.value,
+  }),
+);
 
 const originalForm = ref({});
 
@@ -213,69 +278,37 @@ const copy = computed(() => {
 })
 
 const isDirty = computed(() => {
-  return !isEqual(form, originalForm.value);
+  return !isEqual(form, originalForm.value) || isBlockOrderDirty.value;
 });
 
-watch(() => pageStore.currentPage, (newPage) => {
-  if (newPage) {
+watch(() => pageStore.currentPage?.id, (pageId, previousPageId) => {
+  const page = pageStore.currentPage;
+  if (!pageId || !page) {
+    return;
+  }
 
-    Object.assign(form, {
-      title: newPage.title ?? '',
-      bio: newPage.bio ?? '',
-      location: newPage.location ?? '',
-
-      backgroundType: newPage.backgroundType ?? 'solid',
-      gradientDirection: newPage.gradientDirection ?? 'to bottom',
-      gradientColorA: newPage.gradientColorA ?? '#1E3A8A',
-      gradientColorB: newPage.gradientColorB ?? '#4C1D95',
-      backgroundColor: newPage.backgroundColor ?? '#1E293B',
-      backgroundUrl: newPage.backgroundUrl ?? null,
-      backgroundVideoUrl: newPage.backgroundVideoUrl ?? null,
-      backgroundOverlay: newPage.backgroundOverlay ?? 'none',
-      backgroundBlur: newPage.backgroundBlur ?? 0,
-      pageLayout: newPage.pageLayout ?? 'standard',
-      isBodyGradient: true,
-
-
-      textColor: newPage.textColor ?? '#FFFFFF',
-      iconColor: newPage.iconColor ?? '#CCCCCC',
-      useStandardIconColors: newPage.useStandardIconColors ?? true,
-      glowEffect: newPage.glowEffect ?? 'none',
-      fontFamily: newPage.fontFamily ?? 'Inter',
-      titleEffect: newPage.typewriterEffect ? 'typewriter' : (newPage.titleEffect ?? 'none'),
-
-
-      linkStyle: newPage.linkStyle ?? 'classic',
-      layoutLinkStyle: newPage.layoutLinkStyle ?? 'list',
-      buttonStyle: newPage.buttonStyle ?? 'solid',
-      buttonColor: newPage.buttonColor ?? null,
-      buttonRoundness: newPage.buttonRoundness ?? 'rounded-lg',
-      buttonShadow: newPage.buttonShadow ?? false,
-
-
-      avatarUrl: newPage.avatarUrl ?? null,
-      imageProvider: authStore.user?.imageProvider || 'LOCAL',
-      cursorUrl: newPage.cursorUrl ?? null,
-      profileRingType: newPage.profileRingType ?? 'none',
-      profileRingColors: (newPage.profileRingColors && newPage.profileRingColors.length > 0)
-        ? [...newPage.profileRingColors]
-        : ['#FFFFFF', '#8B5CF6'],
-
-      showProfileCard: newPage.showProfileCard ?? true,
-      profileCardColor: newPage.profileCardColor ?? '#1f293780',
-      profileCardOpacity: newPage.profileCardOpacity ?? 0.2,
-      showViewCount: newPage.showViewCount ?? true,
-
-      shuffleAudios: newPage.shuffleAudios ?? false,
-      showAudioPlayer: newPage.showAudioPlayer ?? true,
-      showEmbeds: newPage.showEmbeds ?? true,
-    });
+  if (pageId !== previousPageId) {
+    applyPageToForm(form, page);
+    form.imageProvider = authStore.user?.imageProvider || 'LOCAL';
+    isBodyGradient.value = page.isBodyGradient ?? true;
 
     nextTick(() => {
       originalForm.value = JSON.parse(JSON.stringify(form));
+      resetBlockDraft();
     });
   }
 }, { immediate: true });
+
+watch(
+  () => getBlockIdSet(pageStore.currentPage?.blocks),
+  (nextSet, previousSet) => {
+    if (!previousSet || nextSet === previousSet) {
+      return;
+    }
+
+    resetBlockDraft();
+  },
+);
 
 onMounted(async () => {
   const slug = route.query.slug as string;
@@ -332,6 +365,7 @@ async function confirmExit(save: boolean) {
     await saveChanges();
   } else {
     Object.assign(form, originalForm.value);
+    resetBlockDraft();
   }
 
   if (pendingNavigation.value) {
@@ -474,25 +508,14 @@ function openPlans(message?: string) {
 
 async function saveChanges() {
   isSaving.value = true;
+  const blockOrderToSave = pendingBlockOrder.value?.length
+    ? [...pendingBlockOrder.value]
+    : null;
+
   try {
     syncPendingFilesWithCurrentSelections();
 
-    const pagePayload: Partial<Page> = {};
-    const originalPage = pageStore.currentPage;
-
-    Object.keys(form).forEach(key => {
-      const typedKey = key as keyof typeof form;
-
-      if (typedKey === 'imageProvider') return;
-
-      if (originalPage && typedKey in originalPage) {
-        const formValue = form[typedKey];
-        const originalValue = originalPage[typedKey as keyof Page];
-        if (JSON.stringify(formValue) !== JSON.stringify(originalValue)) {
-          if (formValue !== null) (pagePayload as any)[typedKey] = formValue;
-        }
-      }
-    });
+    const pagePayload = buildPageSavePayload(form, originalForm.value);
 
     for (const key in pendingFiles) {
       const field = key as UploadableField;
@@ -504,8 +527,20 @@ async function saveChanges() {
       }
     }
 
-    if (Object.keys(pagePayload).length > 0) await pageStore.updateMyPage(pagePayload);
+    if (Object.keys(pagePayload).length > 0) {
+      await pageStore.updateMyPage(pagePayload);
+    }
+
+    if (blockOrderToSave) {
+      const savedOrder = getSavedBlockOrderIds().join('|');
+      if (blockOrderToSave.join('|') !== savedOrder) {
+        await pageStore.reorderBlocks(getOrderedBlocks(blockOrderToSave));
+      }
+    }
+
     Object.keys(pendingFiles).forEach(key => delete pendingFiles[key as UploadableField]);
+    originalForm.value = JSON.parse(JSON.stringify(form));
+    resetBlockDraft();
     toast.success(copy.value.saveSuccess);
 
   } catch (error) {

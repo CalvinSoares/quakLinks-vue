@@ -1,16 +1,11 @@
 <template>
     <div
         class="w-full relative overflow-y-auto overflow-x-hidden text-white transition-all duration-500"
-        :class="fillViewport ? 'min-h-screen h-full' : 'min-h-[80vh]'"
+        :class="fillViewport ? 'min-h-full h-full' : 'min-h-[80vh]'"
         :style="pageContainerStyle">
 
-        <div class="left-0 top-0 w-full transition-all duration-500 ease-in-out overflow-hidden z-0"
-            :class="[
-                fillViewport && (page.pageLayout || 'standard') === 'standard'
-                    ? 'fixed inset-0'
-                    : 'absolute',
-                getBackgroundDimensions,
-            ]">
+        <div class="left-0 top-0 w-full transition-all duration-500 ease-in-out overflow-hidden z-0 absolute"
+            :class="getBackgroundDimensions">
             <video v-if="page.backgroundType === 'video' && page.backgroundVideoUrl" :key="page.backgroundVideoUrl"
                 class="w-full h-full object-cover" :style="{ filter: `blur(${page.backgroundBlur || 0}px)` }"
                 :poster="page.backgroundUrl || ''" autoplay loop muted playsinline>
@@ -31,13 +26,13 @@
         <div class="relative z-10 flex flex-col items-center px-4 transition-all duration-500"
             :class="[
                 getContentAlignment,
-                fillViewport ? 'min-h-screen' : 'min-h-full',
+                fillViewport ? 'min-h-full' : 'min-h-full',
             ]">
 
             <div class="relative w-full max-w-md mx-auto transition-all duration-300 rounded-2xl p-6 sm:p-8"
                 :class="{ 'mt-0': page.pageLayout === 'standard' }" :style="profileCardStyle">
 
-                <ProfileHeader :page="page" />
+                <ProfileHeader :page="page" :allow-slug-fallback="allowSlugFallback" />
 
                 <div v-if="sortedBlocks.length > 0" :class="containerClasses">
                     <UniversalBlock v-for="block in sortedBlocks" :key="block.id" :block="block" :page="page"
@@ -77,14 +72,19 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { buildProfileCardStyle } from '@/utils/profileCardStyle';
 
 import ProfileHeader from './ProfileHeader.vue';
 import UniversalBlock from './UniversalBlock.vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     page: any;
     fillViewport?: boolean;
-}>();
+    allowSlugFallback?: boolean;
+}>(), {
+    fillViewport: false,
+    allowSlugFallback: true,
+});
 
 
 const sortedBlocks = computed(() => {
@@ -169,15 +169,21 @@ const mediaBackgroundStyle = computed(() => {
 
     const hasImage = props.page.backgroundUrl && props.page.backgroundUrl.length > 0;
 
-    if (props.page.backgroundType === 'image' && hasImage) {
+    const bgType = (props.page.backgroundType || 'solid').toLowerCase();
+
+    if (bgType === 'image' && hasImage) {
         style.backgroundImage = `url(${props.page.backgroundUrl})`;
-    } else if (props.page.backgroundType === 'video') {
+    } else if (bgType === 'video') {
         style.backgroundColor = 'transparent';
+    } else if (bgType === 'gradient') {
+        style.backgroundImage = `linear-gradient(${props.page.gradientDirection || 'to bottom'}, ${props.page.gradientColorA || '#1E3A8A'}, ${props.page.gradientColorB || '#4C1D95'})`;
+    } else if (bgType === 'solid' || bgType === 'color') {
+        style.backgroundColor = props.page.backgroundColor || '#111827';
     } else {
         style.backgroundImage = `linear-gradient(${props.page.gradientDirection || 'to bottom'}, ${props.page.gradientColorA || '#1E3A8A'}, ${props.page.gradientColorB || '#4C1D95'})`;
     }
 
-    if (!style.backgroundImage && props.page.pageLayout === 'standard') {
+    if (!style.backgroundImage && props.page.pageLayout === 'standard' && !style.backgroundColor) {
         style.backgroundColor = props.page.backgroundColor || '#111827';
     }
     return style;
@@ -190,21 +196,7 @@ const embeddableAudios = computed(() => {
 });
 
 
-const profileCardStyle = computed(() => {
-    const pageData = props.page;
-    if (!pageData.showProfileCard) return { backgroundColor: 'transparent', border: 'none', boxShadow: 'none' };
-
-    const baseColorRgb = '107, 114, 128';
-    const opacity = pageData.profileCardOpacity ?? 0.2;
-
-    return {
-        backgroundColor: `rgba(${baseColorRgb}, ${opacity})`,
-        backdropFilter: `blur(16px)`,
-        '-webkit-backdrop-filter': `blur(16px)`,
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)'
-    };
-});
+const profileCardStyle = computed(() => buildProfileCardStyle(props.page));
 
 function getSpotifyEmbedUrl(url: string): string {
     if (!url.includes('spotify.com')) return '';

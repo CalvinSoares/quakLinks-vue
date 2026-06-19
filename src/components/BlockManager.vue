@@ -20,24 +20,26 @@
         <div class="border-t border-slate-800 my-4"></div>
 
         <div class="space-y-3">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Seus Blocos</h3>
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Seus Blocos</h3>
+            <p class="text-[11px] text-slate-500 mb-3">Segure o ícone ⠿ e arraste para reordenar.</p>
 
             <div v-if="!localBlocks || localBlocks.length === 0" class="text-center py-8 text-slate-500 text-sm">
                 Nenhum bloco adicionado ainda.
             </div>
 
-            <draggable v-else v-model="localBlocks" item-key="id" handle=".drag-handle" ghost-class="ghost-card"
-                class="space-y-2">
+            <draggable v-else v-model="localBlocks" item-key="id" v-bind="dragOptions" class="block-list"
+                @start="onDragStart" @end="onDragEnd">
                 <template #item="{ element: block }">
                     <div
-                        class="flex items-center gap-3 p-3 bg-slate-900 border border-slate-800 rounded-lg group hover:border-slate-600 transition-all select-none">
+                        class="block-row flex items-center gap-3 p-3 bg-slate-900 border border-slate-800 rounded-lg group hover:border-slate-600 transition-colors select-none">
 
                         <div
-                            class="drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-300 p-1">
+                            class="drag-handle shrink-0 cursor-grab active:cursor-grabbing text-slate-500 hover:text-slate-200 p-1 rounded-md hover:bg-slate-800/80"
+                            title="Arrastar para reordenar">
                             <GripVerticalIcon class="w-4 h-4" />
                         </div>
 
-                        <div class="p-2 bg-slate-800 rounded text-slate-400">
+                        <div class="p-2 bg-slate-800 rounded text-slate-400 shrink-0">
                             <component :is="getIconForType(block.type)" class="w-4 h-4" />
                         </div>
 
@@ -48,13 +50,13 @@
                             <p class="text-[10px] text-slate-500 truncate">{{ getBlockSubtitle(block) }}</p>
                         </div>
 
-                        <div class="flex items-center gap-1">
-                            <button @click="$emit('edit', block)"
-                                class="p-1.5 text-slate-400 hover:text-white rounded hover:bg-slate-800" title="Editar">
+                        <div class="flex items-center gap-1 shrink-0 no-drag">
+                            <button type="button" @click="$emit('edit', block)"
+                                class="no-drag p-1.5 text-slate-400 hover:text-white rounded hover:bg-slate-800" title="Editar">
                                 <PencilIcon class="w-4 h-4" />
                             </button>
-                            <button @click="deleteBlock(block.id)"
-                                class="p-1.5 text-slate-400 hover:text-red-500 rounded hover:bg-slate-800"
+                            <button type="button" @click="deleteBlock(block.id)"
+                                class="no-drag p-1.5 text-slate-400 hover:text-red-500 rounded hover:bg-slate-800"
                                 title="Excluir">
                                 <TrashIcon class="w-4 h-4" />
                             </button>
@@ -213,8 +215,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
-import { usePageStore } from '@/store/page';
+import { ref, reactive, computed, watch } from 'vue';
+import { usePageStore, type Block } from '@/store/page';
 import {
     LinkIcon, H1Icon, FileTextIcon, MinusIcon,
     VideoIcon, BrandYoutubeIcon, BrandPinterestIcon,
@@ -226,7 +228,12 @@ import SwitchToggle from './SwitchToggle.vue';
 import draggable from 'vuedraggable';
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue';
 
-const emit = defineEmits(['edit']);
+const emit = defineEmits(['edit', 'order-change']);
+
+const props = defineProps<{
+    orderedBlocks?: Block[];
+}>();
+
 const pageStore = usePageStore();
 const activeCategory = ref('basic');
 
@@ -237,23 +244,62 @@ const selectedType = ref<string>('');
 const blockIdPendingDeletion = ref<string | null>(null);
 const tempContent = reactive<any>({});
 
-const localBlocks = computed({
-    get: () => {
-        return [...(pageStore.currentPage?.blocks || [])].sort((a, b) => a.order - b.order);
-    },
-    set: (newBlocks) => {
-        const updatedBlocks = newBlocks.map((block, index) => ({
-            ...block,
-            order: index
-        }));
+const localBlocks = ref<Block[]>([]);
+const isDragging = ref(false);
 
-        if (pageStore.currentPage) {
-            pageStore.currentPage.blocks = updatedBlocks;
+const dragOptions = {
+    animation: 200,
+    handle: '.drag-handle',
+    ghostClass: 'ghost-card',
+    chosenClass: 'chosen-card',
+    dragClass: 'drag-card',
+    forceFallback: true,
+    fallbackOnBody: true,
+    scroll: true,
+    bubbleScroll: true,
+    scrollSensitivity: 80,
+};
+
+function syncLocalBlocks(blocks: Block[]) {
+    localBlocks.value = [...blocks].sort((a, b) => a.order - b.order);
+}
+
+watch(
+    () => props.orderedBlocks,
+    (blocks) => {
+        if (isDragging.value || !blocks) {
+            return;
         }
 
-        pageStore.reorderBlocks(updatedBlocks);
+        syncLocalBlocks(blocks);
+    },
+    { immediate: true, deep: true },
+);
+
+function onDragStart() {
+    isDragging.value = true;
+}
+
+function onDragEnd(event: { oldIndex?: number; newIndex?: number }) {
+    isDragging.value = false;
+
+    if (
+        event.oldIndex === undefined
+        || event.newIndex === undefined
+        || event.oldIndex === event.newIndex
+        || localBlocks.value.length === 0
+    ) {
+        return;
     }
-})
+
+    const updatedBlocks = localBlocks.value.map((block, index) => ({
+        ...block,
+        order: index,
+    }));
+
+    localBlocks.value = updatedBlocks;
+    emit('order-change', updatedBlocks);
+}
 
 const categories = [
     { id: 'basic', label: 'Básico' },
@@ -436,9 +482,30 @@ const headerOrTextContent = computed({
     border-radius: 10px;
 }
 
-.ghost-card {
-    opacity: 0.5;
+.block-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.block-row {
+    touch-action: none;
+}
+
+:deep(.ghost-card) {
+    opacity: 0.45;
     background: #1e293b;
     border: 1px dashed #6366f1;
+    border-radius: 0.5rem;
+}
+
+:deep(.chosen-card) {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.35), 0 12px 30px rgba(15, 23, 42, 0.45);
+}
+
+:deep(.drag-card) {
+    opacity: 0.95;
+    cursor: grabbing;
 }
 </style>

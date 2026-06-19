@@ -1,42 +1,55 @@
 <template>
-  <main class="flex-1 relative bg-[#0B0F19] flex flex-col overflow-hidden">
+  <main class="flex-1 relative bg-[#0B0F19] flex flex-col overflow-hidden min-w-0 min-h-0">
     <div class="absolute inset-0 z-0 opacity-20 pointer-events-none"
       style="background-image: radial-gradient(#4b5563 1px, transparent 1px); background-size: 24px 24px;"></div>
 
-    <div v-if="isEditingPage" class="relative z-10 w-full h-full flex flex-col items-center justify-center p-8">
-      <div
-        class="absolute top-6 z-30 flex items-center gap-2 p-1.5 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-full shadow-xl">
-        <button @click="$emit('update:previewMode', 'mobile')"
-          :class="previewMode === 'mobile' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'"
-          class="p-2 rounded-full transition-all">
-          <DevicePhoneMobileIcon class="w-5 h-5" />
-        </button>
-        <div class="w-px h-4 bg-slate-700"></div>
-        <button @click="$emit('update:previewMode', 'desktop')"
-          :class="previewMode === 'desktop' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'"
-          class="p-2 rounded-full transition-all">
-          <ComputerDesktopIcon class="w-5 h-5" />
-        </button>
+    <div v-if="isEditingPage" class="relative z-10 flex flex-col w-full h-full min-h-0 p-4 lg:p-6">
+      <div class="shrink-0 flex justify-center pb-4">
+        <div
+          class="flex items-center gap-2 p-1.5 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-full shadow-xl">
+          <button type="button" @click="setPreviewMode('mobile')"
+            :class="previewMode === 'mobile' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'"
+            class="p-2 rounded-full transition-colors">
+            <DevicePhoneMobileIcon class="w-5 h-5" />
+          </button>
+          <div class="w-px h-4 bg-slate-700"></div>
+          <button type="button" @click="setPreviewMode('desktop')"
+            :class="previewMode === 'desktop' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'"
+            class="p-2 rounded-full transition-colors">
+            <ComputerDesktopIcon class="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
-      <transition name="scale" mode="out-in">
-        <div v-if="previewMode === 'mobile'" key="mobile"
-          class="relative transition-all h-full duration-500 ease-out origin-center scale-[0.85] lg:scale-[0.9] xl:scale-100">
+      <div class="relative flex-1 min-h-0 w-full flex items-center justify-center">
+        <div v-if="previewMode === 'mobile'"
+          class="absolute inset-0 flex items-center justify-center">
           <div
-            class="relative w-[360px] h-full bg-black rounded-[3rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] border-[8px] border-slate-900 ring-1 ring-slate-800/50 overflow-hidden">
+            class="relative w-[390px] h-full max-h-[780px] min-h-[520px] bg-black rounded-[3rem] shadow-[0_0_60px_-12px_rgba(0,0,0,0.85)] border-[10px] border-slate-900 ring-1 ring-slate-800/50 overflow-hidden">
             <div class="w-full h-full bg-slate-950 overflow-y-auto custom-scrollbar">
-              <LivePreview :preview-data="previewData" />
+              <LivePreview :preview-data="previewData" :allow-slug-fallback="false" />
             </div>
           </div>
         </div>
 
-        <div v-else key="desktop"
-          class="w-full max-w-5xl h-[80vh] bg-slate-900 rounded-xl shadow-2xl border border-slate-800 flex flex-col overflow-hidden">
-          <div class="flex-1 overflow-y-auto custom-scrollbar bg-black">
-            <LivePreview :preview-data="previewData" class="min-h-full" />
+        <div v-else
+          class="absolute inset-0 flex items-center justify-center px-2">
+          <div
+            class="w-full max-w-6xl h-full max-h-[820px] min-h-[520px] bg-slate-900 rounded-xl shadow-2xl border border-slate-800 flex flex-col overflow-hidden">
+            <div class="h-9 shrink-0 bg-slate-800/80 border-b border-slate-700/80 flex items-center px-4 gap-2">
+              <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-green-500/80"></span>
+              <span class="ml-3 text-[11px] text-slate-400 font-mono truncate">
+                quacklinks.com.br/{{ previewData?.slug || 'preview' }}
+              </span>
+            </div>
+            <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-black relative">
+              <LivePreview :preview-data="previewData" :allow-slug-fallback="false" fill-viewport />
+            </div>
           </div>
         </div>
-      </transition>
+      </div>
     </div>
 
     <div v-else
@@ -60,15 +73,23 @@ import {
 } from "@heroicons/vue/24/solid";
 import { useAppLanguage } from "@/composables/useAppLanguage";
 
-defineProps<{
+const props = defineProps<{
   isEditingPage: boolean;
   previewData: any;
   previewMode: string;
 }>();
 
-defineEmits(["update:previewMode"]);
+const emit = defineEmits<{
+  "update:previewMode": [mode: "mobile" | "desktop"];
+}>();
 
 const { locale } = useAppLanguage();
+
+function setPreviewMode(mode: "mobile" | "desktop") {
+  if (props.previewMode !== mode) {
+    emit("update:previewMode", mode);
+  }
+}
 
 const copy = computed(() => {
   switch (locale.value) {
@@ -90,3 +111,22 @@ const copy = computed(() => {
   }
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
+}
+</style>

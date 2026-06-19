@@ -104,9 +104,10 @@ import { useUiStore } from '@/store/uiStore';
 import AudioPlayer from '@/components/appearance/AudioPlayer.vue';
 import ProfileHeader from '@/components/appearance/ProfileHeader.vue';
 import UniversalBlock from '@/components/appearance/UniversalBlock.vue';
+import { useHead } from '@unhead/vue';
 import { SITE_NAME } from '@/config/seo';
 import { buildSeoHead } from '@/utils/seoHead';
-import { useHead } from '@unhead/vue';
+import { buildProfileCardStyle } from '@/utils/profileCardStyle';
 
 const route = useRoute();
 const uiStore = useUiStore();
@@ -233,16 +234,21 @@ const mediaBackgroundStyle = computed(() => {
   };
 
   const hasImage = page.value.backgroundUrl && page.value.backgroundUrl.length > 0;
+  const bgType = (page.value.backgroundType || 'solid').toLowerCase();
 
-  if (page.value.backgroundType === 'image' && hasImage) {
+  if (bgType === 'image' && hasImage) {
     style.backgroundImage = `url(${page.value.backgroundUrl})`;
-  } else if (page.value.backgroundType === 'video') {
+  } else if (bgType === 'video') {
     style.backgroundColor = 'transparent';
+  } else if (bgType === 'gradient') {
+    style.backgroundImage = `linear-gradient(${page.value.gradientDirection || 'to bottom'}, ${page.value.gradientColorA || '#1E3A8A'}, ${page.value.gradientColorB || '#4C1D95'})`;
+  } else if (bgType === 'solid' || bgType === 'color') {
+    style.backgroundColor = page.value.backgroundColor || '#111827';
   } else {
     style.backgroundImage = `linear-gradient(${page.value.gradientDirection || 'to bottom'}, ${page.value.gradientColorA || '#1E3A8A'}, ${page.value.gradientColorB || '#4C1D95'})`;
   }
 
-  if (!style.backgroundImage && page.value.pageLayout === 'standard') {
+  if (!style.backgroundImage && page.value.pageLayout === 'standard' && !style.backgroundColor) {
     style.backgroundColor = page.value.backgroundColor || '#111827';
   }
 
@@ -250,17 +256,11 @@ const mediaBackgroundStyle = computed(() => {
 });
 
 const profileCardStyle = computed(() => {
-  if (!page.value || !page.value.showProfileCard) return { backgroundColor: 'transparent', border: 'none', boxShadow: 'none' };
-  const baseColorRgb = '107, 114, 128';
-  const opacity = page.value.profileCardOpacity ?? 0.2;
+  if (!page.value) {
+    return { backgroundColor: 'transparent', border: 'none', boxShadow: 'none' };
+  }
 
-  return {
-    backgroundColor: page.value.profileCardColor || `rgba(${baseColorRgb}, ${opacity})`,
-    backdropFilter: `blur(16px)`,
-    '-webkit-backdrop-filter': `blur(16px)`,
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)'
-  };
+  return buildProfileCardStyle(page.value);
 });
 
 const embeddableAudios = computed(() => {

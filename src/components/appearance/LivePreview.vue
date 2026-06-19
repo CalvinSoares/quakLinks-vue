@@ -4,7 +4,7 @@
     <AudioPlayer v-if="directAudios.length > 0" :audios="directAudios" :shuffle="previewData.shuffleAudios"
       :show-widget="previewData.showAudioPlayer" top="top-10" />
 
-    <PageRenderer :page="pageWithLinks" />
+    <PageRenderer :page="pageWithLinks" :fill-viewport="fillViewport" :allow-slug-fallback="allowSlugFallback" />
 
   </div>
   <div v-else class="flex items-center justify-center h-full text-slate-500">
@@ -20,9 +20,14 @@ import { usePageStore, type Page } from '@/store/page';
 import { useAppLanguage } from '@/composables/useAppLanguage';
 
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   previewData: any;
-}>();
+  fillViewport?: boolean;
+  allowSlugFallback?: boolean;
+}>(), {
+  fillViewport: false,
+  allowSlugFallback: true,
+});
 
 
 const pageStore = usePageStore();
@@ -41,10 +46,10 @@ const copy = computed(() => {
 const pageWithLinks = computed(() => {
   return {
     ...props.previewData,
-    links: pageStore.currentPage?.links || [],
-    user: pageStore.currentPage?.user || null,
-    audios: pageStore.currentPage?.audios || [],
-    blocks: pageStore.currentPage?.blocks || [],
+    links: props.previewData.links ?? pageStore.currentPage?.links ?? [],
+    user: pageStore.currentPage?.user ?? null,
+    audios: props.previewData.audios ?? pageStore.currentPage?.audios ?? [],
+    blocks: props.previewData.blocks ?? pageStore.currentPage?.blocks ?? [],
   };
 });
 

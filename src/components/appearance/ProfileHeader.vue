@@ -25,10 +25,9 @@
                 <span v-else>{{ displayName }}</span>
             </h1>
 
-            <p v-if="page.bio" class="mt-2 text-center text-sm opacity-90 whitespace-pre-wrap w-full "
+            <p v-if="page.bio" class="mt-2 text-center text-sm opacity-90 whitespace-pre-wrap w-full max-w-full px-2 break-words"
                 :style="{ color: page.textColor ? `${page.textColor}CC` : '#CBD5E1' }">
-                <span class="self-center text-center text-wrap  max-w-[10vw] break-words">{{ page.bio
-                    }}</span>
+                {{ page.bio }}
             </p>
 
             <div class="mt-3 flex justify-between gap-4 text-xs font-medium opacity-70"
@@ -59,10 +58,21 @@
 import { computed } from 'vue';
 import { useAuthStore } from '@/store/auth';
 
-const props = defineProps<{ page: any }>();
+const props = withDefaults(defineProps<{ page: any; allowSlugFallback?: boolean }>(), {
+    allowSlugFallback: true,
+});
 const { user } = useAuthStore();
 
-const displayName = computed(() => props.page.title || props.page.slug || user?.name || 'User');
+const displayName = computed(() => {
+    const title = props.page.title;
+    if (title !== null && title !== undefined && title !== '') {
+        return title;
+    }
+    if (props.allowSlugFallback) {
+        return props.page.slug || user?.name || 'User';
+    }
+    return '';
+});
 
 const finalAvatarUrl = computed(() => {
     if (props.page.avatarUrl) {

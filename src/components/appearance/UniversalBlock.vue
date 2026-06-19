@@ -116,7 +116,7 @@
                         </svg>
                     </a>
 
-                    <a v-if="block.content.reminders && !isExpired" :href="googleCalendarLink" target="_blank"
+                    <a v-if="block.content.reminders && !isExpired && hasValidCountdownDate" :href="googleCalendarLink" target="_blank"
                         class="w-full  px-4 py-2.5 border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2 group/btn">
                         <svg class="w-4 h-4 text-slate-400 group-hover/btn:text-white transition-colors" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
@@ -203,21 +203,45 @@ function pad(n: number) {
     return n < 10 ? `0${n}` : n;
 }
 
-function updateTimer() {
-    if (props.block.type !== 'COUNTDOWN' || !props.block.content.date) return;
+function parseCountdownDate(value: unknown): Date | null {
+    if (value === null || value === undefined || value === '') {
+        return null;
+    }
 
-    const now = new Date().getTime();
-    const target = new Date(props.block.content.date).getTime();
+    const parsed = new Date(value as string | number);
+    if (Number.isNaN(parsed.getTime())) {
+        return null;
+    }
+
+    return parsed;
+}
+
+function emptyTimeLeft() {
+    return {
+        [copy.value.timerLabels.days]: 0,
+        [copy.value.timerLabels.hrs]: 0,
+        [copy.value.timerLabels.min]: 0,
+        [copy.value.timerLabels.sec]: 0,
+    };
+}
+
+function updateTimer() {
+    if (props.block.type !== 'COUNTDOWN') return;
+
+    const eventDate = parseCountdownDate(props.block.content.date);
+    if (!eventDate) {
+        isExpired.value = false;
+        timeLeft.value = emptyTimeLeft();
+        return;
+    }
+
+    const now = Date.now();
+    const target = eventDate.getTime();
     const distance = target - now;
 
     if (distance < 0) {
         isExpired.value = true;
-        timeLeft.value = {
-            [copy.value.timerLabels.days]: 0,
-            [copy.value.timerLabels.hrs]: 0,
-            [copy.value.timerLabels.min]: 0,
-            [copy.value.timerLabels.sec]: 0
-        };
+        timeLeft.value = emptyTimeLeft();
         clearInterval(timerInterval);
         return;
     }
@@ -227,15 +251,27 @@ function updateTimer() {
         [copy.value.timerLabels.days]: Math.floor(distance / (1000 * 60 * 60 * 24)),
         [copy.value.timerLabels.hrs]: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
         [copy.value.timerLabels.min]: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        [copy.value.timerLabels.sec]: Math.floor((distance % (1000 * 60)) / 1000)
+        [copy.value.timerLabels.sec]: Math.floor((distance % (1000 * 60)) / 1000),
     };
 }
 
+const hasValidCountdownDate = computed(() => {
+    if (props.block.type !== 'COUNTDOWN') {
+        return false;
+    }
+
+    return parseCountdownDate(props.block.content.date) !== null;
+});
+
 const googleCalendarLink = computed(() => {
     if (props.block.type !== 'COUNTDOWN') return '#';
+
     const c = props.block.content;
-    const start = new Date(c.date).toISOString().replace(/-|:|\.\d\d\d/g, "");
-    const end = new Date(new Date(c.date).getTime() + 60 * 60 * 1000).toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const eventDate = parseCountdownDate(c.date);
+    if (!eventDate) return '#';
+
+    const start = eventDate.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const end = new Date(eventDate.getTime() + 60 * 60 * 1000).toISOString().replace(/-|:|\.\d\d\d/g, "");
 
     const details = encodeURIComponent(c.description || '');
     const title = encodeURIComponent(c.title || copy.value.eventFallback);
@@ -246,13 +282,18 @@ const googleCalendarLink = computed(() => {
 watch(() => props.block.content.date, () => {
     updateTimer();
     clearInterval(timerInterval);
-    timerInterval = setInterval(updateTimer, 1000);
+    if (props.block.type === 'COUNTDOWN' && parseCountdownDate(props.block.content.date)) {
+        timerInterval = setInterval(updateTimer, 1000);
+    }
 });
 
 onMounted(() => {
     if (props.block.type === 'COUNTDOWN') {
         updateTimer();
-        timerInterval = setInterval(updateTimer, 1000);
+        clearInterval(timerInterval);
+        if (parseCountdownDate(props.block.content.date)) {
+            timerInterval = setInterval(updateTimer, 1000);
+        }
     }
 });
 

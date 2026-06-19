@@ -3,6 +3,7 @@ import { withIdempotencyKey } from "@/services/idempotency";
 import { useUserStore } from "./user";
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { normalizeBackgroundType } from "@/utils/appearancePage";
 
 interface Link {
   id: string;
@@ -225,7 +226,7 @@ function mapAudio(audio: BackendAudio): Audio {
   };
 }
 
-function mapLinksFromBlocks(blocks: Block[]): Link[] {
+export function mapLinksFromBlocks(blocks: Block[]): Link[] {
   return blocks
     .filter((block) => block.type === BlockType.LINK)
     .map((block) => ({
@@ -259,7 +260,7 @@ function composePage(
     title: page.title ?? "",
     bio: page.bio ?? "",
     avatarUrl: page.avatarUrl ?? null,
-    backgroundType: page.backgroundType ?? "COLOR",
+    backgroundType: normalizeBackgroundType(page.backgroundType),
     gradientDirection: page.gradientDirection ?? null,
     gradientColorA: page.gradientColorA ?? null,
     gradientColorB: page.gradientColorB ?? null,
@@ -287,7 +288,7 @@ function composePage(
     titleEffect: page.titleEffect ?? undefined,
     showProfileCard: page.showProfileCard ?? true,
     profileCardColor: page.profileCardColor ?? null,
-    profileCardOpacity: page.profileCardOpacity ?? 1,
+    profileCardOpacity: page.profileCardOpacity ?? 0.2,
     showViewCount: page.showViewCount ?? false,
     linkStyle: page.linkStyle ?? undefined,
     layoutLinkStyle: page.layoutLinkStyle ?? undefined,
@@ -710,21 +711,17 @@ export const usePageStore = defineStore("page", () => {
       return;
     }
 
-    currentPage.value.blocks = newOrder.map((block, index) => ({
-      ...block,
-      order: index,
-    }));
-    currentPage.value.links = mapLinksFromBlocks(currentPage.value.blocks);
+    const previousBlocks = [...currentPage.value.blocks];
 
     try {
-      const payload = currentPage.value.blocks.map((block, index) => ({
-        id: block.id,
-        order: index,
+      const payload = newOrder.map((block, index) => ({
+        blockId: block.id,
+        displayOrder: index,
       }));
 
       const response = await api.put<BackendBlock[]>(
         `/pages/${currentPage.value.id}/blocks/reorder`,
-        { blocks: payload },
+        { items: payload },
       );
 
       currentPage.value.blocks = response.data
@@ -733,7 +730,8 @@ export const usePageStore = defineStore("page", () => {
       currentPage.value.links = mapLinksFromBlocks(currentPage.value.blocks);
     } catch (err: any) {
       console.error("Erro ao reordenar blocos:", err);
-      await fetchMyPage();
+      currentPage.value.blocks = previousBlocks;
+      currentPage.value.links = mapLinksFromBlocks(previousBlocks);
       throw err;
     }
   }
