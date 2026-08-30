@@ -12,7 +12,7 @@
             <div v-observe class="scroll-fade text-center mb-16">
 
                 <h3 class="text-4xl md:text-6xl font-black mb-4 text-white">
-                    Escolha seu <span class="text-amber-400">Poder</span>
+                    Planos <span class="text-amber-400">simples</span>
                 </h3>
                 <p class="text-slate-400 text-base max-w-lg mx-auto">
                     {{ copy.pricing.description }}
@@ -38,7 +38,7 @@
                         <h4 class="text-2xl font-black text-white mb-2">{{ pricingCards[0].name }}</h4>
                         <div class="flex items-baseline gap-1 mb-6">
                             <span class="text-5xl font-black text-white tracking-tighter">{{ pricingCards[0].price
-                                }}</span>
+                            }}</span>
                             <span class="text-slate-500 text-sm italic">{{ pricingCards[0].priceSuffix }}</span>
                         </div>
                     </div>
@@ -78,7 +78,7 @@
                         <h4 class="text-2xl font-black text-white mb-2">{{ pricingCards[1].name }}</h4>
                         <div class="flex items-baseline gap-2 mb-6">
                             <span class="text-5xl font-black text-amber-400 tracking-tighter">{{ pricingCards[1].price
-                                }}</span>
+                            }}</span>
                             <span class="text-slate-400 text-sm font-medium">{{ pricingCards[1].priceSuffix }}</span>
                         </div>
                     </div>

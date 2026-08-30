@@ -1,4 +1,5 @@
 <template>
+
   <div
     class="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden px-4 font-sans">
     <div class="absolute right-4 top-4 z-20">
@@ -29,6 +30,7 @@
           </div>
 
           <div class="w-full space-y-3">
+            <!-- [Google login desabilitado temporariamente]
             <button type="button" @click="handleSocialLogin('google')"
               class="flex items-center justify-center gap-3 w-full py-3 text-sm font-semibold text-slate-800 bg-white rounded-lg hover:bg-slate-200 transition-colors base cursor-pointer">
               <svg class="w-5 h-5" viewBox="0 0 48 48">
@@ -47,6 +49,7 @@
               </svg>
               {{ copy.googleButton }}
             </button>
+            -->
             <button type="button" @click="handleSocialLogin('discord')"
               class="flex items-center justify-center gap-3 w-full py-3 text-sm font-semibold text-white bg-[#24292F] rounded-lg hover:bg-[#30363d] transition-colors">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -115,8 +118,7 @@
               <TurnstileWidget v-model="turnstileToken" :reset-key="turnstileResetKey" />
             </div>
 
-            <button type="submit" :disabled="isLoading"
-              class="ui-btn-primary w-full py-3">
+            <button type="submit" :disabled="isLoading" class="ui-btn-primary w-full py-3">
               <svg v-if="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor"
@@ -166,7 +168,7 @@ const translations = {
   pt: {
     welcomeTitle: "Bem-vindo(a)",
     welcomeSubtitle: "Faça login para continuar.",
-    googleButton: "Continuar com Google",
+    // googleButton: "Continuar com Google", // [Google login desabilitado]
     discordButton: "Entrar com Discord",
     orLabel: "ou",
     emailLabel: "E-mail",
@@ -182,7 +184,7 @@ const translations = {
   en: {
     welcomeTitle: "Welcome",
     welcomeSubtitle: "Sign in to continue.",
-    googleButton: "Continue with Google",
+    // googleButton: "Continue with Google", // [Google login disabled]
     discordButton: "Sign in with Discord",
     orLabel: "or",
     emailLabel: "Email",
@@ -198,7 +200,7 @@ const translations = {
   es: {
     welcomeTitle: "Bienvenido(a)",
     welcomeSubtitle: "Inicia sesión para continuar.",
-    googleButton: "Continuar con Google",
+    // googleButton: "Continuar con Google", // [Google login deshabilitado]
     discordButton: "Entrar con Discord",
     orLabel: "o",
     emailLabel: "Email",
@@ -264,6 +266,8 @@ const handleLogin = async () => {
 
 const handleSocialLogin = async (provider: "google" | "discord") => {
   error.value = null;
+  // [Google login desabilitado - apenas Discord permitido]
+  if (provider === "google") return;
 
   try {
     await authStore.startSocialLogin(provider);

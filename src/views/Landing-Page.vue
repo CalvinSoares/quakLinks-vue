@@ -12,7 +12,6 @@
                 isScrolled ? 'max-w-5xl' : 'max-w-full'
             ]">
                 <div class="relative group">
-                    <!-- Efeito de brilho externo (apenas quando scrollado para destacar a cápsula) -->
                     <div :class="[
                         'absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-sky-500/20 blur-xl transition-opacity duration-700',
                         isScrolled ? 'opacity-100 rounded-2xl' : 'opacity-0'
@@ -24,7 +23,6 @@
                             ? 'bg-slate-900/80 rounded-2xl shadow-2xl p-2 pl-6 pr-2 border'
                             : 'bg-slate-950/40 rounded-none p-4 px-8 border-b'
                     ]">
-                        <!-- LOGO -->
                         <a href="/" class="flex items-center gap-3 cursor-pointer group/logo">
                             <div class="relative w-10 h-8 flex items-center justify-center">
                                 <div class="absolute inset-0 bg-amber-500 blur-lg opacity-20 animate-pulse-slow"></div>
@@ -36,7 +34,6 @@
                             </span>
                         </a>
 
-                        <!-- NAV ITEMS (Centralizados ou condicionados) -->
                         <div :class="[
                             'hidden md:flex items-center gap-1 transition-all duration-500 rounded-xl p-1',
                             isScrolled ? 'bg-slate-950/50 border border-white/5' : 'bg-transparent'
@@ -50,7 +47,6 @@
                             </a>
                         </div>
 
-                        <!-- ACTIONS -->
                         <div class="flex items-center gap-3">
                             <LanguageMenuButton button-class="h-10 w-10 border-white/10 bg-slate-950/60"
                                 panel-class="right-0 top-[calc(100%+0.75rem)]" panel-width-class="w-72" />
@@ -85,27 +81,70 @@
 
         <FaqSection />
 
-        <section class="py-32 px-4 relative overflow-hidden bg-[#0a0a0a]">
-            <div class="container mx-auto max-w-4xl relative z-10">
-                <div v-observe
-                    class="scroll-scale-hidden relative rounded-[3rem] p-12 overflow-hidden text-center border border-amber-500/30 bg-slate-900/80 backdrop-blur-xl">
-                    <div
-                        class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent opacity-50">
+        <!-- Final CTA Section with React Bits style ScrollExpand -->
+        <section ref="finalCtaSection" class="final-cta-section relative bg-[#0a0a0a]" :style="containerStyle">
+            <div class="scroll-expand-sticky">
+                <div class="scroll-expand-frame" :style="frameStyle">
+                    <div class="scroll-expand-content-inner">
+                        <div class="text-center max-w-3xl mx-auto px-4 w-full">
+                            <h2 class="text-4xl md:text-5xl lg:text-6xl font-black mb-4 text-white">
+                                <template v-if="locale === 'pt'">Pronto pra <span
+                                        class="text-amber-400">começar?</span></template>
+                                <template v-else-if="locale === 'en'">Ready to <span class="text-amber-400">get
+                                        started?</span></template>
+                                <template v-else>Listo para <span class="text-amber-400">empezar?</span></template>
+                            </h2>
+
+                            <p class="text-lg text-slate-400 mb-10">
+                                {{ copy.finalCta.description }}
+                            </p>
+
+                            <form @submit.prevent="handleSubmitUsername" class="max-w-xl mx-auto mb-6">
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <div class="relative flex-1">
+                                        <span
+                                            class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-mono pointer-events-none">
+                                            quacklinks.com.br/
+                                        </span>
+                                        <input v-model="checkUsernameInput" type="text"
+                                            :placeholder="copy.finalCta.usernamePlaceholder"
+                                            class="w-full pl-[150px] pr-12 py-4 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-amber-400 transition-colors"
+                                            :class="{
+                                                'border-emerald-500': usernameStatus === 'available',
+                                                'border-red-500': usernameStatus === 'taken' || usernameStatus === 'invalid'
+                                            }"
+                                            :disabled="isCheckingUsername" @input="handleUsernameInput" />
+                                        <div v-if="isCheckingUsername" class="absolute right-4 top-1/2 -translate-y-1/2">
+                                            <div
+                                                class="w-4 h-4 border-2 border-slate-700 border-t-amber-400 rounded-full animate-spin">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit"
+                                        class="px-6 py-4 bg-amber-400 text-slate-900 font-bold rounded-xl hover:bg-amber-300 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                        :disabled="isCheckingUsername || !checkUsernameInput.trim()">
+                                        {{ copy.finalCta.button }}
+                                    </button>
+                                </div>
+                                <p v-if="usernameCheckMessage" class="mt-3 text-sm text-left"
+                                    :class="usernameCheckMessage.type === 'success' ? 'text-emerald-400' : 'text-red-400'">
+                                    {{ usernameCheckMessage.text }}
+                                </p>
+                            </form>
+
+                            <p class="text-sm text-slate-500">
+                                <template v-if="locale === 'pt'">Já tem conta? <a href="/login"
+                                        class="text-amber-400 hover:underline">Fazer login</a></template>
+                                <template v-else-if="locale === 'en'">Already have an account? <a href="/login"
+                                        class="text-amber-400 hover:underline">Sign in</a></template>
+                                <template v-else>¿Ya tienes cuenta? <a href="/login"
+                                        class="text-amber-400 hover:underline">Iniciar sesión</a></template>
+                            </p>
+                        </div>
                     </div>
-
-                    <h2 class="text-4xl md:text-6xl font-black mb-6">{{ copy.finalCta.titleStart }} <span
-                            class="text-amber-400">{{ copy.finalCta.titleHighlight }}</span></h2>
-                    <p class="text-xl text-slate-400 mb-10">{{ copy.finalCta.description }}</p>
-
-                    <a href="/register"
-                        class="inline-block px-10 py-5 bg-amber-400 text-slate-900 text-lg font-bold rounded-2xl hover:bg-amber-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(251,191,36,0.4)] transition-all duration-300">
-                        {{ copy.finalCta.button }}
-                    </a>
                 </div>
             </div>
         </section>
-
-
 
         <FooterSection />
 
@@ -114,23 +153,25 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import LanguageMenuButton from '@/components/LanguageMenuButton.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useSeo } from '@/composables/useSeo'
 import { landingFaqItems } from '@/constants/faq'
 import {
-  getFaqSchema,
-  getOrganizationSchema,
-  getSoftwareApplicationSchema,
-  getWebSiteSchema,
+    getFaqSchema,
+    getOrganizationSchema,
+    getSoftwareApplicationSchema,
+    getWebSiteSchema,
 } from '@/config/seo'
 import { planFeatures } from '@/constants/plans'
 import {
-    Sparkles, ArrowRight, Play, Check,
+    ArrowRight,
     Link, Palette, BarChart3, Music,
     Zap, Shield, Crown, Terminal, Gamepad2, Brush
 } from 'lucide-vue-next'
 import FooterSection from '@/components/landingpage/FooterSection.vue'
+import { isPublicHandleAvailable, normalizePublicHandle, reservedPublicHandles } from '@/utils/publicHandle'
 import FaqSection from '@/components/landingpage/FaqSection.vue'
 import ExploreStickySection from '@/components/landingpage/ExploreStickySection.vue'
 import FeaturesCarousel from '@/components/landingpage/FeaturesCarousel.vue'
@@ -138,33 +179,102 @@ import PricingSection from '@/components/landingpage/PricingSection.vue'
 import HeroSection from '@/components/landingpage/HeroSection.vue'
 
 useSeo({
-  path: '/',
-  jsonLd: [
-    getOrganizationSchema(),
-    getWebSiteSchema(),
-    getSoftwareApplicationSchema(),
-    getFaqSchema(landingFaqItems),
-  ],
+    path: '/',
+    jsonLd: [
+        getOrganizationSchema(),
+        getWebSiteSchema(),
+        getSoftwareApplicationSchema(),
+        getFaqSchema(landingFaqItems),
+    ],
 })
 
 const isScrolled = ref(false)
 const isExploreActive = ref(false)
+const finalCtaSection = ref(null)
+const router = useRouter()
 
-const handleScroll = () => {
+// Username check state
+const checkUsernameInput = ref('')
+const isCheckingUsername = ref(false)
+const usernameStatus = ref('idle')
+const usernameCheckMessage = ref(null)
+let usernameCheckTimer = null
+
+// ScrollExpand state
+const smoothProgress = ref(0)
+const targetProgress = ref(0)
+let rafId = null
+let ticking = false
+
+const containerStyle = computed(() => ({
+    position: 'relative',
+    width: '100%',
+    height: '160vh',
+}))
+
+const eased = (t) => 1 - Math.pow(1 - t, 3)
+
+const frameStyle = computed(() => {
+    const t = eased(smoothProgress.value)
+    const widthPct = 40 + (100 - 40) * t
+    const heightPct = 60 + (100 - 60) * t
+    const radius = 24 - 24 * t
+    return {
+        width: `${widthPct}%`,
+        height: `${heightPct}vh`,
+        borderRadius: `${radius}px`,
+        background: 'linear-gradient(180deg, #0f0f0f 0%, #050505 100%)',
+        boxShadow: '0 30px 80px -20px rgba(0, 0, 0, 0.6)',
+    }
+})
+
+function updateProgress() {
+    if (!finalCtaSection.value) return
+    const rect = finalCtaSection.value.getBoundingClientRect()
+    const windowHeight = window.innerHeight
+    const totalScrollable = Math.max(rect.height - windowHeight, 1)
+    const distanceScrolled = Math.max(0, -rect.top)
+    targetProgress.value = Math.min(distanceScrolled / totalScrollable, 1)
+}
+
+function handleScrollProgress() {
+    if (!ticking) {
+        requestAnimationFrame(() => {
+            updateProgress()
+            ticking = false
+        })
+        ticking = true
+    }
+}
+
+function animate() {
+    const diff = targetProgress.value - smoothProgress.value
+    if (Math.abs(diff) > 0.0005) {
+        smoothProgress.value += diff * 0.15
+    } else {
+        smoothProgress.value = targetProgress.value
+    }
+    rafId = requestAnimationFrame(animate)
+}
+
+const handleScrollNav = () => {
     isScrolled.value = window.scrollY > 20
 }
 
 onMounted(() => {
-    handleScroll()
-    document.documentElement.classList.add('landing-snap-scroll')
-    document.body.classList.add('landing-snap-scroll')
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScrollNav()
+    animate()
+    window.addEventListener('scroll', handleScrollNav, { passive: true })
+    window.addEventListener('scroll', handleScrollProgress, { passive: true })
+    window.addEventListener('resize', handleScrollProgress, { passive: true })
 })
 
 onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll)
-    document.documentElement.classList.remove('landing-snap-scroll')
-    document.body.classList.remove('landing-snap-scroll')
+    window.removeEventListener('scroll', handleScrollNav)
+    window.removeEventListener('scroll', handleScrollProgress)
+    window.removeEventListener('resize', handleScrollProgress)
+    if (rafId) cancelAnimationFrame(rafId)
+    if (usernameCheckTimer) clearTimeout(usernameCheckTimer)
 })
 
 const { locale } = useAppLanguage()
@@ -173,14 +283,12 @@ const translations = {
     pt: {
         auth: { login: 'Entrar', createBio: 'Criar Bio' },
         hero: {
-            badge: 'QuackLinks — Nova geração de biolinks',
-            titleStart: 'QuackLinks:',
-            titleHighlight: 'seu perfil, outra dimensão.',
-            description: 'QuackLinks é a plataforma definitiva para centralizar sua identidade digital. Estética cyberpunk, análises em tempo real e liberdade total para sua página de links na bio.',
-            primaryCta: 'Começar agora',
-            secondaryCta: 'Ver demo',
-            joinPrefix: 'Junte-se a',
-            joinSuffix: 'criadores',
+            badge: 'Todos os seus links num lugar só',
+            titleStart: 'Monta o teu',
+            titleHighlight: 'link na bio.',
+            description: 'Junta Instagram, YouTube, Twitch, Spotify e mais num link só.',
+            primaryCta: 'Criar minha página',
+            secondaryCta: 'Ver exemplos',
         },
         mockups: {
             subscribe: 'Inscreva-se',
@@ -188,90 +296,88 @@ const translations = {
             spotifyPlaylist: 'Playlist Spotify',
         },
         explore: {
-            titleStart: 'Explore',
-            titleHighlight: 'possibilidades',
-            description: 'Nossa engine de renderização permite qualquer estilo. Do minimalismo corporativo ao caos do cybercore.',
+            titleStart: 'Dá uma',
+            titleHighlight: 'olhada',
+            description: 'Escolhe entre vários estilos. Gamer, elegante, minimalista ou cria o teu.',
         },
         features: {
             titleStart: '',
             titleHighlight: 'Recursos',
-            description: 'Tudo o que você precisa para dominar sua presença digital.',
+            description: 'Só o essencial pra montar sua página.',
         },
         pricing: {
             title: 'Planos',
-            description: 'Do Free ao Premium, com os recursos reais do sistema e upgrade sem fricção.',
+            description: 'Grátis pra começar. Upgrade quando quiser.',
             recommended: 'Recomendado',
             perMonth: '/mês',
-            compareLabel: 'Planos reais',
-            helper: 'Os recursos abaixo refletem o que o QuakLinks libera hoje para Free e Premium.',
+            compareLabel: 'Planos',
+            helper: 'Recursos que você realmente usa.',
             featureLabels: {
                 'Avatar e imagem de fundo': 'Avatar e imagem de fundo',
-                'Gradientes e estilos visuais': 'Gradientes e estilos visuais',
-                'Vídeo no background': 'Vídeo no background',
+                'Gradientes e estilos visuais': 'Gradientes e estilos',
+                'Vídeo no background': 'Vídeo de fundo',
                 'Cursor personalizado': 'Cursor personalizado',
-                'Playlist e player de áudio': 'Playlist e player de áudio',
-                'Agendamento de links': 'Agendamento de links',
-                'Domínio personalizado': 'Domínio personalizado',
-                'Efeito Máquina de Escrever': 'Efeito Máquina de Escrever',
-                'Templates e assets premium': 'Templates e assets premium',
+                'Playlist e player de áudio': 'Player de música',
+                'Agendamento de links': 'Agendar links',
+                'Domínio personalizado': 'Domínio próprio',
+                'Efeito Máquina de Escrever': 'Efeito máquina de escrever',
+                'Templates e assets premium': 'Templates premium',
             },
             free: {
                 name: 'Free',
-                pill: 'Base essencial',
+                pill: 'Grátis',
                 price: 'R$ 0',
-                priceSuffix: '/sem custo',
-                note: 'Tudo o que você precisa para começar.',
-                description: 'Publique seus links essenciais, monte a base visual da página e comece a personalizar sem pagar nada.',
+                priceSuffix: 'para sempre',
+                note: 'Comece sem pagar nada.',
+                description: 'Publique seus links e monte a página do jeito que quiser.',
                 cta: 'Criar conta grátis',
-                extraFeature: 'Publicação dos links essenciais',
+                extraFeature: 'Links essenciais',
             },
             premium: {
                 name: 'Premium',
-                pill: 'Recursos avançados',
+                pill: 'Avançado',
                 price: 'Upgrade',
-                priceSuffix: 'via checkout',
-                note: 'Desbloqueie os recursos premium de verdade do sistema.',
-                description: 'Libera mídia, cursor, agendamento, domínio personalizado e extras profissionais para uma página muito mais rica.',
-                cta: 'Criar conta e ver Premium',
+                priceSuffix: '',
+                note: 'Recursos extras de verdade.',
+                description: 'Mais opções visuais, domínio próprio e muito mais.',
+                cta: 'Ver Premium',
                 includesFree: 'Tudo do Free, mais',
             },
         },
         finalCta: {
-            titleStart: 'Pronto para o',
-            titleHighlight: 'show?',
-            description: 'Junte-se a 50,000+ criadores que usam QuackLinks.',
-            button: 'Criar conta grátis',
+            description: 'É de graça. Leva 2 minutos.',
+            button: 'Criar conta',
+            usernamePlaceholder: 'seu-nome',
+            usernameChecking: 'Verificando...',
+            usernameAvailable: 'Nome disponível',
+            usernameTaken: 'Nome já está em uso',
+            usernameInvalid: 'Use só letras, números, _ ou -',
+            usernameTooShort: 'Mínimo de 3 caracteres',
+            usernameReserved: 'Esse nome não está disponível',
         },
         demoProfiles: {
-            gamer: { label: 'Pro Gamer', desc: 'Estilo agressivo, cores neon, efeitos glitch.', bio: 'FPS Pro Player | Live todos os dias às 18h' },
-            artist: { label: 'Artista Digital', desc: 'Efeito de vidro, gradientes suaves, elegante.', bio: 'Designer visual e artista 3D. Encomendas abertas.' },
-            dev: { label: 'Desenvolvedor', desc: 'Minimalista, fonte mono, foco em conteudo.', bio: 'Desenvolvedor full stack criando coisas legais.' },
+            gamer: { label: 'Pro Gamer', desc: 'Estilo gamer, cores neon.', bio: 'FPS Pro Player | Live todos os dias às 18h' },
+            artist: { label: 'Artista', desc: 'Gradientes suaves, elegante.', bio: 'Designer e artista 3D. Encomendas abertas.' },
+            dev: { label: 'Dev', desc: 'Minimalista, foco no conteúdo.', bio: 'Dev full stack criando coisas legais.' },
         },
         featuresList: [
-            { title: 'Instantâneo', description: 'Carregamento ultra-rápido para não perder nenhum clique.' },
-            { title: 'Customizável', description: 'Controle total sobre cores, fontes e animações.' },
-            { title: 'Analises', description: 'Saiba exatamente quem esta clicando e de onde vem.' },
-            { title: 'Midia Incorporada', description: 'Spotify, YouTube e Twitch direto na sua pagina.' },
-            { title: 'Seguro', description: 'Proteção DDoS e SSL gratuito para todos os links.' },
-            { title: 'Domínio Próprio', description: 'Use seu próprio domínio .com ou .br.' },
-        ],
-        plans: [
-            { name: 'Inicial', price: 'R$ 0', features: ['1 Pagina', 'Links Ilimitados', 'Temas Basicos'], cta: 'Criar Gratis', popular: false },
-            { name: 'Pro', price: 'R$ 29', features: ['3 Paginas', 'Remover Marca', 'Analises Pro', 'Temas Premium'], cta: 'Assinar Pro', popular: true },
-            { name: 'Agencia', price: 'R$ 99', features: ['10 Paginas', 'Acesso a API', 'Suporte Prioritario'], cta: 'Contatar', popular: false },
+            { title: 'Rápido', description: 'Página carrega num piscar.' },
+            { title: 'Personalizável', description: 'Muda cores, fontes e mais.' },
+            { title: 'Análises', description: 'Veja quem clica nos seus links.' },
+            { title: 'Música', description: 'Spotify direto na sua página.' },
+            { title: 'Domínio', description: 'Usa seu próprio domínio.' },
+            { title: 'Mobile', description: 'Funciona bem no celular.' },
         ],
     },
     en: {
         auth: { login: 'Login', createBio: 'Create Bio' },
         hero: {
-            badge: 'Next generation biolinks',
-            titleStart: 'Your profile,',
-            titleHighlight: 'another dimension.',
-            description: 'The definitive platform to centralize your digital identity. Cyberpunk aesthetics, real-time analytics, and total freedom.',
-            primaryCta: 'Start now',
-            secondaryCta: 'View demo',
-            joinPrefix: 'Join',
-            joinSuffix: 'creators',
+            badge: 'All your links in one place',
+            titleStart: 'Build your',
+            titleHighlight: 'link in bio.',
+            description: 'Instagram, YouTube, Twitch, Spotify and more, all in one link.',
+            primaryCta: 'Create my page',
+            secondaryCta: 'See examples',
         },
         mockups: {
             subscribe: 'Subscribe',
@@ -279,90 +385,88 @@ const translations = {
             spotifyPlaylist: 'Spotify Playlist',
         },
         explore: {
-            titleStart: 'Explore',
-            titleHighlight: 'possibilities',
-            description: 'Our rendering engine supports any style. From corporate minimalism to cybercore chaos.',
+            titleStart: 'Take a',
+            titleHighlight: 'look',
+            description: 'Choose from different styles. Gamer, elegant, minimalist or create your own.',
         },
         features: {
-            titleStart: 'Crazy',
-            titleHighlight: 'features',
-            description: 'Everything you need to dominate your digital presence.',
+            titleStart: '',
+            titleHighlight: 'Features',
+            description: 'Just the essentials to build your page.',
         },
         pricing: {
             title: 'Pricing',
-            description: 'From Free to Premium, with the real system features and a clear upgrade path.',
+            description: 'Free to start. Upgrade when you want.',
             recommended: 'Recommended',
             perMonth: '/month',
-            compareLabel: 'Real plans',
-            helper: 'The features below reflect what QuakLinks actually unlocks today for Free and Premium.',
+            compareLabel: 'Plans',
+            helper: 'Features you actually use.',
             featureLabels: {
                 'Avatar e imagem de fundo': 'Avatar and background image',
-                'Gradientes e estilos visuais': 'Gradients and visual styles',
+                'Gradientes e estilos visuais': 'Gradients and styles',
                 'Vídeo no background': 'Background video',
                 'Cursor personalizado': 'Custom cursor',
-                'Playlist e player de áudio': 'Playlist and audio player',
-                'Agendamento de links': 'Link scheduling',
+                'Playlist e player de áudio': 'Music player',
+                'Agendamento de links': 'Schedule links',
                 'Domínio personalizado': 'Custom domain',
                 'Efeito Máquina de Escrever': 'Typewriter effect',
-                'Templates e assets premium': 'Premium templates and assets',
+                'Templates e assets premium': 'Premium templates',
             },
             free: {
                 name: 'Free',
-                pill: 'Core essentials',
+                pill: 'Free',
                 price: '$0',
-                priceSuffix: '/no cost',
-                note: 'Everything you need to start.',
-                description: 'Publish your essential links, build the visual foundation of your page, and start customizing without paying anything.',
+                priceSuffix: 'forever',
+                note: 'Start without paying anything.',
+                description: 'Publish your links and build your page your way.',
                 cta: 'Create free account',
-                extraFeature: 'Publish essential links',
+                extraFeature: 'Essential links',
             },
             premium: {
                 name: 'Premium',
-                pill: 'Advanced features',
+                pill: 'Advanced',
                 price: 'Upgrade',
-                priceSuffix: 'via checkout',
-                note: 'Unlock the premium features that really exist in the product.',
-                description: 'Get media, custom cursor, scheduling, custom domain, and professional extras for a much richer page.',
-                cta: 'Create account and view Premium',
+                priceSuffix: '',
+                note: 'Real extra features.',
+                description: 'More visual options, custom domain and more.',
+                cta: 'View Premium',
                 includesFree: 'Everything in Free, plus',
             },
         },
         finalCta: {
-            titleStart: 'Ready for the',
-            titleHighlight: 'show?',
-            description: 'Join 50,000+ creators using QuackLinks.',
-            button: 'Create free account',
+            description: "It's free. Takes 2 minutes.",
+            button: 'Create account',
+            usernamePlaceholder: 'your-name',
+            usernameChecking: 'Checking...',
+            usernameAvailable: 'Name available',
+            usernameTaken: 'Name already taken',
+            usernameInvalid: 'Use only letters, numbers, _ or -',
+            usernameTooShort: 'Minimum of 3 characters',
+            usernameReserved: 'This name is not available',
         },
         demoProfiles: {
-            gamer: { label: 'Pro Gamer', desc: 'Aggressive style, neon colors, glitch effects.', bio: 'FPS Pro Player | Live every day at 6 PM' },
-            artist: { label: 'Digital Artist', desc: 'Glassmorphism, soft gradients, elegant.', bio: 'Visual Designer & 3D Artist. Commissions Open.' },
-            dev: { label: 'Developer', desc: 'Minimalist, mono font, content first.', bio: 'Fullstack Dev building cool stuff.' },
+            gamer: { label: 'Pro Gamer', desc: 'Gamer style, neon colors.', bio: 'FPS Pro Player | Live every day at 6 PM' },
+            artist: { label: 'Artist', desc: 'Soft gradients, elegant.', bio: 'Visual Designer & 3D Artist. Commissions Open.' },
+            dev: { label: 'Dev', desc: 'Minimalist, content first.', bio: 'Fullstack Dev building cool stuff.' },
         },
         featuresList: [
-            { title: 'Instant', description: 'Ultra-fast loading so you do not lose a single click.' },
-            { title: 'Customizable', description: 'Full control over colors, fonts, and animations.' },
-            { title: 'Analytics', description: 'See exactly who is clicking and where they come from.' },
-            { title: 'Media Embed', description: 'Spotify, YouTube, Twitch directly on your page.' },
-            { title: 'Secure', description: 'DDoS protection and free SSL for every link.' },
-            { title: 'Custom Domain', description: 'Use your own .com or local domain.' },
-        ],
-        plans: [
-            { name: 'Starter', price: '$0', features: ['1 Page', 'Unlimited Links', 'Basic Themes'], cta: 'Start Free', popular: false },
-            { name: 'Pro', price: '$29', features: ['3 Pages', 'Remove Branding', 'Pro Analytics', 'Premium Themes'], cta: 'Subscribe Pro', popular: true },
-            { name: 'Agency', price: '$99', features: ['10 Pages', 'API Access', 'Priority Support'], cta: 'Contact Sales', popular: false },
+            { title: 'Fast', description: 'Page loads in a blink.' },
+            { title: 'Customizable', description: 'Change colors, fonts and more.' },
+            { title: 'Analytics', description: 'See who clicks your links.' },
+            { title: 'Music', description: 'Spotify right on your page.' },
+            { title: 'Domain', description: 'Use your own domain.' },
+            { title: 'Mobile', description: 'Works great on phones.' },
         ],
     },
     es: {
         auth: { login: 'Entrar', createBio: 'Crear Bio' },
         hero: {
-            badge: 'Nueva generación de biolinks',
-            titleStart: 'Tu perfil,',
-            titleHighlight: 'otra dimensión.',
-            description: 'La plataforma definitiva para centralizar tu identidad digital. Estetica cyberpunk, analiticas en tiempo real y libertad total.',
-            primaryCta: 'Empezar ahora',
-            secondaryCta: 'Ver demo',
-            joinPrefix: 'Únete a',
-            joinSuffix: 'creadores',
+            badge: 'Todos tus links en un solo lugar',
+            titleStart: 'Monta tu',
+            titleHighlight: 'link en bio.',
+            description: 'Instagram, YouTube, Twitch, Spotify y más, todo en un link.',
+            primaryCta: 'Crear mi página',
+            secondaryCta: 'Ver ejemplos',
         },
         mockups: {
             subscribe: 'Suscríbete',
@@ -370,96 +474,82 @@ const translations = {
             spotifyPlaylist: 'Playlist Spotify',
         },
         explore: {
-            titleStart: 'Explora',
-            titleHighlight: 'posibilidades',
-            description: 'Nuestra engine de render permite cualquier estilo. Del minimalismo corporativo al caos cybercore.',
+            titleStart: 'Echa un',
+            titleHighlight: 'vistazo',
+            description: 'Elige entre diferentes estilos. Gamer, elegante, minimalista o crea el tuyo.',
         },
         features: {
-            titleStart: 'Funciones',
-            titleHighlight: 'brutales',
-            description: 'Todo lo que necesitas para dominar tu presencia digital.',
+            titleStart: '',
+            titleHighlight: 'Funciones',
+            description: 'Solo lo esencial para montar tu página.',
         },
         pricing: {
             title: 'Planes',
-            description: 'De Free a Premium, con las funciones reales del sistema y un upgrade claro.',
+            description: 'Gratis para empezar. Upgrade cuando quieras.',
             recommended: 'Recomendado',
             perMonth: '/mes',
-            compareLabel: 'Planes reales',
-            helper: 'Las funciones de abajo reflejan lo que QuakLinks desbloquea hoy en Free y Premium.',
+            compareLabel: 'Planes',
+            helper: 'Funciones que realmente usas.',
             featureLabels: {
                 'Avatar e imagem de fundo': 'Avatar e imagen de fondo',
-                'Gradientes e estilos visuais': 'Gradientes y estilos visuales',
+                'Gradientes e estilos visuais': 'Gradientes y estilos',
                 'Vídeo no background': 'Video de fondo',
                 'Cursor personalizado': 'Cursor personalizado',
-                'Playlist e player de áudio': 'Playlist y reproductor de audio',
-                'Agendamento de links': 'Programación de links',
-                'Domínio personalizado': 'Dominio personalizado',
+                'Playlist e player de áudio': 'Reproductor de música',
+                'Agendamento de links': 'Programar links',
+                'Domínio personalizado': 'Dominio propio',
                 'Efeito Máquina de Escrever': 'Efecto máquina de escribir',
-                'Templates e assets premium': 'Plantillas y assets premium',
+                'Templates e assets premium': 'Plantillas premium',
             },
             free: {
                 name: 'Free',
-                pill: 'Base esencial',
+                pill: 'Gratis',
                 price: 'R$ 0',
-                priceSuffix: '/sin costo',
-                note: 'Todo lo que necesitas para empezar.',
-                description: 'Publica tus links esenciales, arma la base visual de tu página y empieza a personalizar sin pagar nada.',
+                priceSuffix: 'para siempre',
+                note: 'Empieza sin pagar nada.',
+                description: 'Publica tus links y arma la página como quieras.',
                 cta: 'Crear cuenta gratis',
-                extraFeature: 'Publicación de links esenciales',
+                extraFeature: 'Links esenciales',
             },
             premium: {
                 name: 'Premium',
-                pill: 'Funciones avanzadas',
+                pill: 'Avanzado',
                 price: 'Upgrade',
-                priceSuffix: 'vía checkout',
-                note: 'Desbloquea las funciones premium reales del sistema.',
-                description: 'Libera media, cursor personalizado, programación, dominio propio y extras profesionales para una página mucho más completa.',
-                cta: 'Crear cuenta y ver Premium',
+                priceSuffix: '',
+                note: 'Funciones extra de verdad.',
+                description: 'Más opciones visuales, dominio propio y mucho más.',
+                cta: 'Ver Premium',
                 includesFree: 'Todo lo de Free, más',
             },
         },
         finalCta: {
-            titleStart: '¿Listo para el',
-            titleHighlight: 'show?',
-            description: 'Unete a 50,000+ creadores que usan QuackLinks.',
-            button: 'Crear cuenta gratis',
+            description: 'Es gratis. Tarda 2 minutos.',
+            button: 'Crear cuenta',
+            usernamePlaceholder: 'tu-nombre',
+            usernameChecking: 'Verificando...',
+            usernameAvailable: 'Nombre disponible',
+            usernameTaken: 'El nombre ya está en uso',
+            usernameInvalid: 'Usa solo letras, números, _ o -',
+            usernameTooShort: 'Mínimo de 3 caracteres',
+            usernameReserved: 'Ese nombre no está disponible',
         },
         demoProfiles: {
-            gamer: { label: 'Pro Gamer', desc: 'Estilo agresivo, colores neon, efectos glitch.', bio: 'FPS Pro Player | Live todos los días a las 18h' },
-            artist: { label: 'Artista Digital', desc: 'Efecto de cristal, gradientes suaves, elegante.', bio: 'Disenadora visual y artista 3D. Encargos abiertos.' },
-            dev: { label: 'Desarrollador', desc: 'Minimalista, fuente mono, foco en contenido.', bio: 'Desarrollador full stack creando cosas geniales.' },
+            gamer: { label: 'Pro Gamer', desc: 'Estilo gamer, colores neon.', bio: 'FPS Pro Player | Live todos los días a las 18h' },
+            artist: { label: 'Artista', desc: 'Gradientes suaves, elegante.', bio: 'Diseñadora visual y artista 3D. Encargos abiertos.' },
+            dev: { label: 'Dev', desc: 'Minimalista, foco en contenido.', bio: 'Dev full stack creando cosas geniales.' },
         },
         featuresList: [
-            { title: 'Instantáneo', description: 'Carga ultrarrápida para no perder ni un clic.' },
-            { title: 'Personalizable', description: 'Control total sobre colores, fuentes y animaciones.' },
-            { title: 'Analiticas', description: 'Sabe exactamente quien hace clic y de donde viene.' },
-            { title: 'Media Integrada', description: 'Spotify, YouTube y Twitch directo en tu pagina.' },
-            { title: 'Seguro', description: 'Protección DDoS y SSL gratis para todos los links.' },
-            { title: 'Dominio Propio', description: 'Usa tu propio dominio .com o local.' },
-        ],
-        plans: [
-            { name: 'Inicial', price: 'R$ 0', features: ['1 Pagina', 'Links ilimitados', 'Temas basicos'], cta: 'Crear Gratis', popular: false },
-            { name: 'Pro', price: 'R$ 29', features: ['3 Paginas', 'Quitar marca', 'Analiticas Pro', 'Temas premium'], cta: 'Suscribirse Pro', popular: true },
-            { name: 'Agencia', price: 'R$ 99', features: ['10 Paginas', 'Acceso API', 'Soporte prioritario'], cta: 'Contactar', popular: false },
+            { title: 'Rápido', description: 'Página carga en un abrir de ojos.' },
+            { title: 'Personalizable', description: 'Cambia colores, fuentes y más.' },
+            { title: 'Analíticas', description: 'Mira quién hace clic en tus links.' },
+            { title: 'Música', description: 'Spotify directo en tu página.' },
+            { title: 'Dominio', description: 'Usa tu propio dominio.' },
+            { title: 'Móvil', description: 'Funciona bien en el celular.' },
         ],
     },
 }
 
 const copy = computed(() => translations[locale.value])
-
-const vObserve = {
-    mounted: (el) => {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    el.classList.add('is-visible')
-                    observer.unobserve(el)
-                }
-            })
-        }, { threshold: 0.15, rootMargin: '50px' })
-        observer.observe(el)
-    }
-}
 
 const activeProfileKey = ref('gamer')
 let intervalId = null
@@ -525,35 +615,8 @@ const demoProfiles = computed(() => ({
     }
 }))
 
-const currentDemo = computed(() => demoProfiles.value[activeProfileKey.value])
-
-const getBackgroundStyle = (profile) => ({
-    background: profile.background,
-})
-
-const getRingStyle = (profile) => {
-    if (profile.buttonStyle === 'brutalist') return { border: '2px solid #ff0055', boxShadow: '0 0 15px #ff0055' }
-    if (profile.buttonStyle === 'glass') return { background: 'linear-gradient(45deg, #a78bfa, #f472b6)' }
-    return { border: '2px dashed #333' }
-}
-
-const getTitleClasses = (profile) => {
-    if (profile.titleEffect === 'glitch') return 'effect-glitch font-black tracking-widest uppercase'
-    if (profile.titleEffect === 'typewriter') return 'typewriter font-mono'
-    if (profile.titleEffect === 'neon') return 'effect-neon font-mono'
-    return ''
-}
-
-const getLinkClasses = (profile) => {
-    if (profile.buttonStyle === 'brutalist') return 'bg-white text-black font-bold border-b-4 border-r-4 border-slate-500 hover:translate-x-1 hover:translate-y-1 hover:border-0 hover:shadow-none'
-    if (profile.buttonStyle === 'glass') return 'bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-white/20'
-    if (profile.buttonStyle === 'minimal') return 'border border-slate-800 hover:border-slate-600 text-slate-300 hover:text-white'
-    return ''
-}
-
 const navItems = computed(() => [
     { name: locale.value === 'pt' ? 'Vitrine' : locale.value === 'es' ? 'Vitrina' : 'Showcase', href: '#explore' },
-    // { name: copy.value.features.titleStart, href: '#features' },
     { name: copy.value.pricing.title, href: '#pricing' }
 ])
 
@@ -569,37 +632,142 @@ const features = computed(() => [
 const localizePricingFeature = (label) => copy.value.pricing.featureLabels[label] ?? label
 
 const pricingCards = computed(() => {
-    const freeFeatures = [
-        copy.value.pricing.free.extraFeature,
-        ...planFeatures
-            .filter((feature) => Boolean(feature.free))
-            .map((feature) => localizePricingFeature(feature.label)),
-    ]
+    const freeFeatures = planFeatures
+        .filter((feature) => feature.free === true)
+        .map((feature) => localizePricingFeature(feature.label))
 
-    const premiumFeatures = [
-        copy.value.pricing.premium.includesFree,
-        ...planFeatures
-            .filter((feature) => !feature.free && Boolean(feature.premium))
-            .map((feature) => localizePricingFeature(feature.label)),
-    ]
+    const premiumFeatures = planFeatures
+        .filter((feature) => feature.premium === true)
+        .map((feature) => localizePricingFeature(feature.label))
 
     return [
         {
-            id: 'free',
-            highlight: false,
-            href: '/register',
-            features: freeFeatures,
-            ...copy.value.pricing.free,
+            name: copy.value.pricing.free.name,
+            pill: copy.value.pricing.free.pill,
+            price: copy.value.pricing.free.price,
+            priceSuffix: copy.value.pricing.free.priceSuffix,
+            note: copy.value.pricing.free.note,
+            description: copy.value.pricing.free.description,
+            cta: copy.value.pricing.free.cta,
+            popular: false,
+            features: [
+                copy.value.pricing.free.extraFeature,
+                ...freeFeatures
+            ]
         },
         {
-            id: 'premium',
-            highlight: true,
-            href: '/register',
-            features: premiumFeatures,
-            ...copy.value.pricing.premium,
-        },
+            name: copy.value.pricing.premium.name,
+            pill: copy.value.pricing.premium.pill,
+            price: copy.value.pricing.premium.price,
+            priceSuffix: copy.value.pricing.premium.priceSuffix,
+            note: copy.value.pricing.premium.note,
+            description: copy.value.pricing.premium.description,
+            cta: copy.value.pricing.premium.cta,
+            popular: true,
+            features: [
+                copy.value.pricing.premium.includesFree,
+                ...premiumFeatures
+            ]
+        }
     ]
 })
+
+// Username validation
+function validateUsername(value) {
+    if (!value || value.length === 0) {
+        return { valid: false, reason: 'empty' }
+    }
+    if (value.length < 3) {
+        return { valid: false, reason: 'tooShort' }
+    }
+    if (reservedPublicHandles.has(value)) {
+        return { valid: false, reason: 'reserved' }
+    }
+    if (!/^[a-z0-9_-]+$/.test(value)) {
+        return { valid: false, reason: 'invalid' }
+    }
+    return { valid: true }
+}
+
+function getValidationMessage(reason) {
+    const map = {
+        empty: null,
+        tooShort: copy.value.finalCta.usernameTooShort,
+        reserved: copy.value.finalCta.usernameReserved,
+        invalid: copy.value.finalCta.usernameInvalid
+    }
+    return map[reason] ?? null
+}
+
+const handleUsernameInput = () => {
+    usernameCheckMessage.value = null
+    usernameStatus.value = 'idle'
+    if (usernameCheckTimer) clearTimeout(usernameCheckTimer)
+
+    const normalized = normalizePublicHandle(checkUsernameInput.value)
+    if (!normalized) return
+
+    const validation = validateUsername(normalized)
+    if (!validation.valid) {
+        const msg = getValidationMessage(validation.reason)
+        if (msg) {
+            usernameStatus.value = 'invalid'
+            usernameCheckMessage.value = { type: 'error', text: msg }
+        }
+        return
+    }
+
+    usernameCheckTimer = setTimeout(() => {
+        checkAvailability(normalized)
+    }, 600)
+}
+
+async function checkAvailability(normalized) {
+    isCheckingUsername.value = true
+    usernameStatus.value = 'checking'
+    usernameCheckMessage.value = { type: 'info', text: copy.value.finalCta.usernameChecking }
+
+    try {
+        const available = await isPublicHandleAvailable(normalized)
+        if (available) {
+            usernameStatus.value = 'available'
+            usernameCheckMessage.value = { type: 'success', text: copy.value.finalCta.usernameAvailable }
+        } else {
+            usernameStatus.value = 'taken'
+            usernameCheckMessage.value = { type: 'error', text: copy.value.finalCta.usernameTaken }
+        }
+    } catch {
+        usernameStatus.value = 'taken'
+        usernameCheckMessage.value = { type: 'error', text: copy.value.finalCta.usernameTaken }
+    } finally {
+        isCheckingUsername.value = false
+    }
+}
+
+const handleSubmitUsername = async () => {
+    const raw = checkUsernameInput.value
+    const normalized = normalizePublicHandle(raw)
+    checkUsernameInput.value = normalized
+
+    if (!normalized) return
+
+    const validation = validateUsername(normalized)
+    if (!validation.valid) {
+        const msg = getValidationMessage(validation.reason)
+        if (msg) {
+            usernameStatus.value = 'invalid'
+            usernameCheckMessage.value = { type: 'error', text: msg }
+        }
+        return
+    }
+
+    if (usernameStatus.value !== 'available') {
+        await checkAvailability(normalized)
+        if (usernameStatus.value !== 'available') return
+    }
+
+    router.push({ path: '/register', query: { username: normalized } })
+}
 
 onMounted(() => {
     const keys = Object.keys(demoProfiles.value)
@@ -613,239 +781,57 @@ onMounted(() => {
 onUnmounted(() => {
     if (intervalId) clearInterval(intervalId)
 })
-
 </script>
 
 <style scoped>
-:global(html.landing-snap-scroll),
-:global(body.landing-snap-scroll) {
-    scroll-snap-type: y proximity;
-    scroll-behavior: smooth;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-    width: 0px;
-}
-
 .landing-page {
     overflow-x: clip;
 }
 
-.scroll-hidden {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: all 0.8s ease;
+/* ScrollExpand: o frame interno é sticky dentro de um container de altura maior */
+.scroll-expand-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
 }
 
-.scroll-scale-hidden {
-    opacity: 0;
-    transform: scale(0.9);
-    transition: all 0.8s ease;
+.scroll-expand-frame {
+    overflow: hidden;
+    will-change: width, height, border-radius;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.is-visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-}
-
-@keyframes slide-down {
-    from {
-        transform: translateY(-100%);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-@keyframes fade-in-up {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+.scroll-expand-content-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
 }
 
 @keyframes pulse-slow {
-
-    0%,
-    100% {
-        opacity: 0.2;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
-}
-
-@keyframes slide-in-up {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-slide-down {
-    animation: slide-down 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-fade-in-up {
-    opacity: 0;
-    animation: fade-in-up 0.8s ease-out forwards;
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.5; }
 }
 
 .animate-pulse-slow {
     animation: pulse-slow 3s ease-in-out infinite;
 }
 
-.animate-fade-in {
-    animation: slide-in-up 0.5s ease-out forwards;
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
-@keyframes float-3d {
-
-    0%,
-    100% {
-        transform: rotateX(20deg) rotateY(-25deg) rotateZ(10deg) translateY(0);
-    }
-
-    50% {
-        transform: rotateX(20deg) rotateY(-25deg) rotateZ(10deg) translateY(-20px);
-    }
-}
-
-@keyframes shadow-pulse {
-
-    0%,
-    100% {
-        opacity: 0.5;
-        transform: translateX(-50%) rotateX(60deg) scale(1);
-    }
-
-    50% {
-        opacity: 0.3;
-        transform: translateX(-50%) rotateX(60deg) scale(0.9);
-    }
-}
-
-.animate-float-3d {
-    animation: float-3d 6s ease-in-out infinite;
-}
-
-.animate-shadow-pulse {
-    animation: shadow-pulse 6s ease-in-out infinite;
-}
-
-.transform-3d {
-    transform-style: preserve-3d;
-}
-
-.bg-scanlines {
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2));
-    background-size: 100% 4px;
-}
-
-.bg-noise {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-}
-
-.effect-glitch {
-    position: relative;
-}
-
-.effect-glitch::before,
-.effect-glitch::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: inherit;
-    overflow: hidden;
-}
-
-.effect-glitch::before {
-    left: 2px;
-    text-shadow: -2px 0 #ff00c1;
-    clip-path: inset(44% 0 61% 0);
-    animation: glitch-anim-1 3s infinite linear alternate-reverse;
-}
-
-.effect-glitch::after {
-    left: -2px;
-    text-shadow: -2px 0 #00fff9;
-    clip-path: inset(55% 0 10% 0);
-    animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
-}
-
-@keyframes glitch-anim-1 {
-    0% {
-        clip-path: inset(20% 0 80% 0);
-    }
-
-    100% {
-        clip-path: inset(80% 0 10% 0);
-    }
-}
-
-@keyframes glitch-anim-2 {
-    0% {
-        clip-path: inset(10% 0 50% 0);
-    }
-
-    100% {
-        clip-path: inset(40% 0 20% 0);
-    }
-}
-
-.typewriter {
-    overflow: hidden;
-    white-space: nowrap;
-    border-right: .15em solid #a78bfa;
-    animation: typing 3.5s steps(30, end), blink-caret .75s step-end infinite;
-    display: inline-block;
-    max-width: 100%;
-}
-
-@keyframes typing {
-    from {
-        width: 0
-    }
-
-    to {
-        width: 100%
-    }
-}
-
-@keyframes blink-caret {
-
-    from,
-    to {
-        border-color: transparent
-    }
-
-    50% {
-        border-color: #a78bfa;
-    }
-}
-
-.effect-neon {
-    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #00ff9d, 0 0 40px #00ff9d;
-}
-
-.perspective-1000 {
-    perspective: 1000px;
+.animate-spin {
+    animation: spin 0.8s linear infinite;
 }
 </style>

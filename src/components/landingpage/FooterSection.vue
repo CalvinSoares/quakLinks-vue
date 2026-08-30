@@ -1,7 +1,7 @@
 <template>
     <footer class="bg-[#0a0a0a] border-t border-white/5 pt-20 pb-10 px-4 overflow-hidden">
         <div class="container mx-auto max-w-7xl">
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-12 mb-16">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12 mb-16">
 
                 <!-- Coluna 1: Marca -->
                 <div class="col-span-2 lg:col-span-1">
@@ -12,11 +12,10 @@
                         </span>
                     </a>
                     <p class="text-slate-500 text-sm leading-relaxed mb-6">
-                        QuackLinks é a solução definitiva para organizar sua presença online com estilo, velocidade e simplicidade. Crie sua página de links na bio em quacklinks.com.br.
+                        Todos os seus links num lugar só. Crie sua página de links na bio em segundos.
                     </p>
                     <div class="flex gap-4">
-                        <!-- Ícones Sociais (Exemplo) -->
-                        <a :href="githubUrl" target="_blank"
+                        <a href="https://github.com/CalvinSoares" target="_blank"
                             class="text-slate-500 hover:text-amber-400 transition-colors">
                             <Github :size="20" />
                         </a>
@@ -45,65 +44,41 @@
                     </ul>
                 </div>
 
-                <!-- Coluna 4: Recursos -->
+                <!-- Coluna 4: Legal -->
                 <div>
-                    <h5 class="text-white font-bold mb-6 text-sm uppercase tracking-widest">Recursos</h5>
-                    <ul class="space-y-4">
-                        <li v-for="link in navResources" :key="link.label">
-                            <a :href="link.href" class="text-slate-500 hover:text-white text-sm transition-colors">{{
-                                link.label }}</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Coluna 5: GitHub / Externos -->
-                <div>
-                    <h5 class="text-white font-bold mb-6 text-sm uppercase tracking-widest">Open Source</h5>
+                    <h5 class="text-white font-bold mb-6 text-sm uppercase tracking-widest">Legal</h5>
                     <ul class="space-y-4">
                         <li>
-                            <a :href="githubUrl" target="_blank"
-                                class="flex items-center gap-2 text-slate-500 hover:text-white text-sm transition-colors group">
-                                Meu GitHub
-                                <ExternalLink :size="14" class="opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </a>
+                            <a href="/privacidade"
+                                class="text-slate-500 hover:text-white text-sm transition-colors">Política de
+                                Privacidade</a>
                         </li>
                         <li>
-                            <a :href="`${githubUrl}/quacklinks`" target="_blank"
-                                class="flex items-center gap-2 text-slate-500 hover:text-white text-sm transition-colors group">
-                                Repositório
-                                <ExternalLink :size="14" class="opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </a>
+                            <a href="/termos" class="text-slate-500 hover:text-white text-sm transition-colors">Termos
+                                de Uso</a>
                         </li>
                     </ul>
                 </div>
             </div>
 
             <!-- Bottom Footer -->
-            <div class="pt-8 border-t border-white/5 flex flex-col md:row items-center justify-between gap-4">
+            <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
                 <p class="text-slate-600 text-xs">
-                    © 2026 QuackLinks. Desenvolvido com ❤️ para a comunidade.
+                    © 2026 QuackLinks. Feito com ❤️
                 </p>
-                <div class="flex gap-8 text-xs text-slate-600">
-                    <a href="#" class="hover:text-slate-400">Privacidade</a>
-                    <a href="#" class="hover:text-slate-400">Termos</a>
-                </div>
             </div>
         </div>
     </footer>
 </template>
 
 <script setup>
-import { Github, ExternalLink } from 'lucide-vue-next';
-
-// Link do GitHub Parametrizável
-const githubUrl = "https://github.com/seu-usuario";
+import { Github } from 'lucide-vue-next';
 
 const navDashboard = [
     { label: 'Visão geral', href: '/dashboard/overview' },
     { label: 'Páginas', href: '/dashboard/pages' },
     { label: 'Personalização', href: '/dashboard/appearance' },
     { label: 'Modelos', href: '/dashboard/templates' },
-    { label: 'Análises', href: '/analytics' },
     { label: 'Planos', href: '/dashboard/plans' },
 ];
 
@@ -112,12 +87,5 @@ const navProduct = [
     { label: 'FAQ', href: '#faq' },
     { label: 'Criar conta', href: '/register' },
     { label: 'Entrar', href: '/login' },
-];
-
-const navResources = [
-    { label: 'Documentação', href: '#' },
-    { label: 'Suporte', href: '#' },
-    { label: 'Integrações', href: '#' },
-    { label: 'API', href: '#' },
 ];
 </script>

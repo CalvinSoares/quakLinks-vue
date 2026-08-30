@@ -130,7 +130,8 @@
                   :class="task.completed ? 'text-slate-500 line-through hover:text-slate-300' : 'text-slate-300 hover:text-amber-300'">
                   {{ task.label }}
                 </button>
-                <button v-else-if="task.action === 'spotify'" type="button" @click="handleSpotifyConnect" class="transition-colors"
+                <button v-else-if="task.action === 'spotify'" type="button" @click="handleSpotifyConnect"
+                  class="transition-colors"
                   :class="task.completed ? 'text-slate-500 line-through hover:text-slate-300' : 'text-slate-300 hover:text-amber-300'">
                   {{ task.label }}
                 </button>
@@ -176,6 +177,7 @@
               </div>
             </div>
 
+            <!-- [Google account desabilitado temporariamente]
             <div
               class="relative overflow-hidden rounded-2xl border transition-all duration-300 group bg-slate-900 border-slate-800 hover:border-slate-700">
               <div class="p-5 flex items-center justify-between gap-4 relative z-10">
@@ -211,6 +213,7 @@
                 </button>
               </div>
             </div>
+            -->
 
           </div>
         </div>
@@ -225,8 +228,7 @@
 
             <div class="flex-1 space-y-2">
               <input ref="avatarInputRef" type="file" accept="image/*" class="hidden" @change="handleAvatarSelected" />
-              <button type="button" @click="triggerAvatarPicker" :disabled="isLoading"
-                class="ui-btn-primary w-full">
+              <button type="button" @click="triggerAvatarPicker" :disabled="isLoading" class="ui-btn-primary w-full">
                 {{ hasModalAvatar ? copy.modal.changeAvatar : copy.modal.addAvatar }}
               </button>
               <button v-if="canShowAvatarSecondaryAction" type="button" @click="handleRemoveAvatar"
@@ -439,11 +441,11 @@ const discordStatusText = computed(() =>
     ? copy.value.social.linked
     : copy.value.social.unlinked
 );
-const googleStatusText = computed(() =>
-  authStore.isGoogleConnected
-    ? copy.value.social.linked
-    : copy.value.social.unlinked
-);
+// [Google login desabilitado] const googleStatusText = computed(() =>
+//   authStore.isGoogleConnected
+//     ? copy.value.social.linked
+//     : copy.value.social.unlinked
+// );
 
 const resolvedAvatarUrl = computed(() =>
   resolveAvatarUrl({
@@ -600,6 +602,8 @@ onUnmounted(() => {
 });
 
 async function handleSocialConnect(provider: 'discord' | 'google') {
+  // [Google login desabilitado - apenas Discord permitido]
+  if (provider === 'google') return;
   try {
     await authStore.startSocialLogin(provider);
   } catch (e: any) {
@@ -612,6 +616,8 @@ async function handleSocialConnect(provider: 'discord' | 'google') {
 }
 
 async function handleSocialUnlink(provider: 'discord' | 'google') {
+  // [Google login desabilitado - apenas Discord permitido]
+  if (provider === 'google') return;
   try {
     await userStore.unlinkAccount(provider);
     toast.success(`${provider} ${copy.value.social.unlinkSuccess}`);

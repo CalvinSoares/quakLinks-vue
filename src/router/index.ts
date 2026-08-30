@@ -17,6 +17,8 @@ const AnalyticsView = () => import("@/views/AnalyticsView.vue");
 const LandingPage = () => import("@/views/Landing-Page.vue");
 const PagesManager = () => import("@/views/PagesManager.vue");
 const SpotifyCallback = () => import("@/views/SpotifyCallback.vue");
+const PrivacyPolicy = () => import("@/views/PrivacyPolicy.vue");
+const TermsOfService = () => import("@/views/TermsOfService.vue");
 
 function normalizeHost(host?: string | null) {
   if (!host) {
@@ -219,6 +221,29 @@ const router = createRouter({
       component: SpotifyCallback,
       meta: {
         seo: { noindex: true },
+      },
+    },
+    {
+      path: "/privacidade",
+      name: "privacy-policy",
+      component: PrivacyPolicy,
+      meta: {
+        seo: {
+          title: "Política de Privacidade",
+          description:
+            "Leia sobre como a QuackLinks coleta, usa e protege seus dados pessoais.",
+        },
+      },
+    },
+    {
+      path: "/termos",
+      name: "terms-of-service",
+      component: TermsOfService,
+      meta: {
+        seo: {
+          title: "Termos de Uso",
+          description: "Conheça os Termos de Uso da plataforma QuackLinks.",
+        },
       },
     },
   ],

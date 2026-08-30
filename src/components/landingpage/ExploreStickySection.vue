@@ -1,72 +1,40 @@
 <template>
-  <section
-    id="explore"
-    ref="scrollTrack"
-    class="explore-sticky-track relative h-[420vh] bg-[#050505]"
-  >
+  <section id="explore" ref="scrollTrack" class="explore-sticky-track relative h-[420vh] bg-[#050505]">
     <div class="explore-sticky-pin relative h-screen w-full overflow-hidden">
-      <Aurora
-        class="absolute inset-0 opacity-65"
-        :color-stops="activeAuroraStops"
-        :amplitude="1.1"
-        :blend="0.58"
-        :speed="0.65"
-      />
+      <Aurora class="absolute inset-0 opacity-65" :color-stops="activeAuroraStops" :amplitude="1.1" :blend="0.58"
+        :speed="0.65" />
 
       <div
-        class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#050505_78%)] pointer-events-none"
-      />
-      <div
-        class="absolute inset-0 opacity-[0.1] pointer-events-none explore-grid"
-      />
+        class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#050505_78%)] pointer-events-none" />
+      <div class="absolute inset-0 opacity-[0.1] pointer-events-none explore-grid" />
 
-      <div
-        class="relative z-10 h-full w-full flex flex-col px-4 sm:px-6 py-5 sm:py-6"
-      >
-        <div
-          class="flex-1 min-h-0 flex items-center justify-center"
-          :style="contentShellStyle"
-        >
-          <div
-            class="w-full max-w-6xl flex flex-col lg:flex-row items-center gap-5 sm:gap-6 lg:gap-10"
-            :class="textOnLeft ? 'lg:flex-row' : 'lg:flex-row-reverse'"
-          >
+      <div class="relative z-10 h-full w-full flex flex-col px-4 sm:px-6 py-5 sm:py-6">
+        <div class="flex-1 min-h-0 flex items-center justify-center" :style="contentShellStyle">
+          <div class="w-full max-w-6xl flex flex-col lg:flex-row items-center gap-5 sm:gap-6 lg:gap-10"
+            :class="textOnLeft ? 'lg:flex-row' : 'lg:flex-row-reverse'">
             <!-- Texto dinâmico ao lado -->
-            <div
-              class="w-full lg:w-[40%] xl:w-[38%] shrink-0 relative min-h-[140px] sm:min-h-[160px] lg:min-h-[220px]"
-            >
+            <div class="w-full lg:w-[40%] xl:w-[38%] shrink-0 relative min-h-[140px] sm:min-h-[160px] lg:min-h-[220px]">
               <Transition :name="textTransitionName" mode="out-in">
-                <div
-                  :key="activeStep.id"
-                  class="flex flex-col lg:items-start text-center lg:text-left px-1"
-                >
+                <div :key="activeStep.id" class="flex flex-col lg:items-start text-center lg:text-left px-1">
                   <span
-                    class="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full border border-amber-400/35 bg-amber-400/10 backdrop-blur-sm text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.2em] text-amber-300 mx-auto lg:mx-0"
-                  >
-                    <span
-                      class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_#fbbf24]"
-                    />
+                    class="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full border border-amber-400/35 bg-amber-400/10 backdrop-blur-sm text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.2em] text-amber-300 mx-auto lg:mx-0">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_#fbbf24]" />
                     {{ activeStep.tag }}
                   </span>
 
-                  <div
-                    class="h-px w-12 bg-gradient-to-r from-amber-400 to-amber-400/0 mb-3 mx-auto lg:mx-0"
-                  />
+                  <div class="h-px w-12 bg-gradient-to-r from-amber-400 to-amber-400/0 mb-3 mx-auto lg:mx-0" />
 
                   <h2
-                    class="text-3xl sm:text-4xl lg:text-[2.65rem] font-black text-white leading-[0.98] tracking-tight"
-                  >
+                    class="text-3xl sm:text-4xl lg:text-[2.65rem] font-black text-white leading-[0.98] tracking-tight">
                     {{ activeStep.titleStart }}
                     <span
-                      class="block mt-1 text-amber-400 drop-shadow-[0_0_18px_rgba(251,191,36,0.35)] transition-colors duration-700"
-                    >
+                      class="block mt-1 text-amber-400 drop-shadow-[0_0_18px_rgba(251,191,36,0.35)] transition-colors duration-700">
                       {{ activeStep.titleHighlight }}
                     </span>
                   </h2>
 
                   <p
-                    class="mt-3 text-slate-300/90 text-sm sm:text-base leading-relaxed max-w-md mx-auto lg:mx-0 border-l-0 lg:border-l-2 lg:border-amber-400/40 lg:pl-4"
-                  >
+                    class="mt-3 text-slate-300/90 text-sm sm:text-base leading-relaxed max-w-md mx-auto lg:mx-0 border-l-0 lg:border-l-2 lg:border-amber-400/40 lg:pl-4">
                     {{ activeStep.description }}
                   </p>
                 </div>
@@ -74,64 +42,37 @@
             </div>
 
             <!-- Preview -->
-            <div
-              class="relative w-full lg:flex-1 flex items-center justify-center min-h-0"
-              :style="previewShellStyle"
-            >
+            <div class="relative w-full lg:flex-1 flex items-center justify-center min-h-0" :style="previewShellStyle">
               <div
                 class="absolute w-64 h-64 sm:w-72 sm:h-72 blur-[70px] opacity-20 transition-colors duration-1000 pointer-events-none"
-                :style="{ backgroundColor: activeStep.themeColor }"
-              />
+                :style="{ backgroundColor: activeStep.themeColor }" />
 
               <Transition name="explore-preview" mode="out-in">
-                <div
-                  :key="activeStep.id"
-                  class="relative flex items-center justify-center"
-                >
-                  <div
-                    v-if="activeStep.viewport === 'mobile'"
+                <div :key="activeStep.id" class="relative flex items-center justify-center">
+                  <div v-if="activeStep.viewport === 'mobile'"
                     class="relative bg-black rounded-[2.5rem] border-[8px] border-slate-900 shadow-[0_24px_60px_-18px_rgba(0,0,0,0.85)] ring-1 ring-amber-400/20 overflow-hidden"
-                    :class="
-                      activeStep.mobileWide
-                        ? 'h-[min(58vh,520px)] sm:h-[min(64vh,540px)] w-auto aspect-[9/18.2] min-w-[210px] sm:min-w-[300px]'
-                        : 'h-[min(54vh,480px)] sm:h-[min(70vh,660px)] w-auto aspect-[9/19.5] min-w-[290px] sm:min-w-[265px]'
-                    "
-                  >
-                    <div
-                      class="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-4 bg-slate-900 rounded-b-xl z-20"
-                    />
-                    <img
-                      :src="activeStep.image"
-                      :alt="activeStep.imageAlt"
-                      class="absolute inset-0 w-full h-full object-cover object-top"
-                      loading="lazy"
-                      decoding="async"
-                    />
+                    :class="activeStep.mobileWide
+                      ? 'h-[min(58vh,520px)] sm:h-[min(64vh,540px)] w-auto aspect-[9/18.2] min-w-[210px] sm:min-w-[300px]'
+                      : 'h-[min(54vh,480px)] sm:h-[min(70vh,660px)] w-auto aspect-[9/19.5] min-w-[290px] sm:min-w-[265px]'
+                      ">
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-4 bg-slate-900 rounded-b-xl z-20" />
+                    <img :src="activeStep.image" :alt="activeStep.imageAlt"
+                      class="absolute inset-0 w-full h-full object-cover object-top" loading="lazy" decoding="async" />
                   </div>
 
-                  <div
-                    v-else
-                    class="relative w-[min(94vw,700px)] max-h-[min(66vh,550px)] sm:max-h-[min(48vh,460px)] aspect-[16/10] bg-slate-900 rounded-xl border border-amber-400/15 shadow-[0_24px_70px_-20px_rgba(0,0,0,0.9)] overflow-hidden"
-                  >
-                    <div
-                      class="h-7 sm:h-8 bg-slate-800/90 border-b border-amber-400/10 flex items-center px-3 gap-1.5"
-                    >
+                  <div v-else
+                    class="relative w-[min(94vw,700px)] max-h-[min(66vh,550px)] sm:max-h-[min(48vh,460px)] aspect-[16/10] bg-slate-900 rounded-xl border border-amber-400/15 shadow-[0_24px_70px_-20px_rgba(0,0,0,0.9)] overflow-hidden">
+                    <div class="h-7 sm:h-8 bg-slate-800/90 border-b border-amber-400/10 flex items-center px-3 gap-1.5">
                       <span class="w-2 h-2 rounded-full bg-red-500/80" />
                       <span class="w-2 h-2 rounded-full bg-amber-400/90" />
                       <span class="w-2 h-2 rounded-full bg-green-500/80" />
-                      <span
-                        class="ml-2 text-[10px] text-amber-200/50 font-mono truncate"
-                      >
+                      <span class="ml-2 text-[10px] text-amber-200/50 font-mono truncate">
                         quacklinks.com.br/{{ activeStep.slug }}
                       </span>
                     </div>
-                    <img
-                      :src="activeStep.image"
-                      :alt="activeStep.imageAlt"
+                    <img :src="activeStep.image" :alt="activeStep.imageAlt"
                       class="w-full h-[calc(100%-1.75rem)] sm:h-[calc(100%-2rem)] object-cover object-top bg-black"
-                      loading="lazy"
-                      decoding="async"
-                    />
+                      loading="lazy" decoding="async" />
                   </div>
                 </div>
               </Transition>
@@ -141,32 +82,20 @@
 
         <!-- Progresso fixo na parte inferior visível -->
         <div class="shrink-0 flex flex-col items-center gap-2 pt-2 pb-1">
-          <div
-            class="flex items-center px-2 py-2 rounded-full border border-amber-400/15 bg-black/30 backdrop-blur-md"
-          >
+          <div class="flex items-center px-2 py-2 rounded-full border border-amber-400/15 bg-black/30 backdrop-blur-md">
             <template v-for="(step, index) in steps" :key="`dot-${step.id}`">
-              <button
-                type="button"
-                class="group relative flex items-center justify-center p-1"
-                :aria-label="step.tag"
-                @click="scrollToStep(index)"
-              >
-                <span
-                  class="block rounded-full transition-all duration-500 ease-out"
-                  :class="
-                    activeIndex === index
-                      ? 'w-3 h-3 ring-4 ring-amber-400/25 bg-amber-400'
-                      : index < activeIndex
-                        ? 'w-2.5 h-2.5 bg-amber-400/70'
-                        : 'w-2 h-2 bg-white/20 hover:bg-amber-400/40'
-                  "
-                />
+              <button type="button" class="group relative flex items-center justify-center p-1" :aria-label="step.tag"
+                @click="scrollToStep(index)">
+                <span class="block rounded-full transition-all duration-500 ease-out" :class="activeIndex === index
+                  ? 'w-3 h-3 ring-4 ring-amber-400/25 bg-amber-400'
+                  : index < activeIndex
+                    ? 'w-2.5 h-2.5 bg-amber-400/70'
+                    : 'w-2 h-2 bg-white/20 hover:bg-amber-400/40'
+                  " />
               </button>
 
-              <div
-                v-if="index < steps.length - 1"
-                class="relative w-8 sm:w-12 h-[2px] mx-1 rounded-full bg-white/10 overflow-hidden"
-              >
+              <div v-if="index < steps.length - 1"
+                class="relative w-8 sm:w-12 h-[2px] mx-1 rounded-full bg-white/10 overflow-hidden">
                 <div
                   class="absolute inset-y-0 left-0 rounded-full transition-[width] duration-300 ease-out bg-gradient-to-r from-amber-400 to-amber-300"
                   :style="{
@@ -175,15 +104,12 @@
                       connectorProgress(index) > 0
                         ? '0 0 10px rgba(251,191,36,0.55)'
                         : undefined,
-                  }"
-                />
+                  }" />
               </div>
             </template>
           </div>
 
-          <p
-            class="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.26em] text-amber-400/55"
-          >
+          <p class="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.26em] text-amber-400/55">
             {{ copy.scrollHint }}
           </p>
         </div>
@@ -249,7 +175,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Profiles that",
           titleHighlight: "feel alive",
           description:
-            "Frosted cards over immersive photos. Clean layout, strong identity — exactly what visitors see on your QuackLinks page.",
+            "Frosted cards over immersive photos. Clean layout, strong identity. Exactly what visitors see on your QuackLinks page.",
           viewport: "mobile",
           image: "/page-mobile2.jpeg",
           imageAlt:
@@ -265,7 +191,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Built to",
           titleHighlight: "convert",
           description:
-            "Bold typography, pixel backgrounds and clear CTAs — perfect for partnerships, media kits and link campaigns.",
+            "Bold typography, pixel backgrounds and clear CTAs. Perfect for partnerships, media kits and link campaigns.",
           viewport: "mobile",
           image: "/page-mobile1.jpeg",
           imageAlt:
@@ -280,7 +206,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Neon energy",
           titleHighlight: "on big screens",
           description:
-            "Video backgrounds, cyberpunk palettes and social blocks that pop on desktop — without sacrificing speed.",
+            "Video backgrounds, cyberpunk palettes and social blocks that pop on desktop. without sacrificing speed.",
           viewport: "desktop",
           image: "/page-desktop2.png",
           imageAlt:
@@ -295,7 +221,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Artistic worlds",
           titleHighlight: "your way",
           description:
-            "Cinematic backgrounds, custom icons and profile cards that tell a story — real pages created with QuackLinks.",
+            "Cinematic backgrounds, custom icons and profile cards that tell a story. Real pages created with QuackLinks.",
           viewport: "desktop",
           image: "/page-desktop1.png",
           imageAlt:
@@ -313,7 +239,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Perfiles que",
           titleHighlight: "respiran estilo",
           description:
-            "Tarjetas de vidrio sobre fotos inmersivas. Layout limpio e identidad fuerte — lo que tus visitantes ven en QuackLinks.",
+            "Tarjetas de vidrio sobre fotos inmersivas. Layout limpio e identidad fuerte. Lo que tus visitantes ven en QuackLinks.",
           viewport: "mobile",
           image: "/page-mobile2.jpeg",
           imageAlt:
@@ -329,7 +255,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Hecho para",
           titleHighlight: "convertir",
           description:
-            "Tipografía marcante, fondos pixel y CTAs claros — ideal para partnerships, media kits y campañas de links.",
+            "Tipografía marcante, fondos pixel y CTAs claros. ideal para partnerships, media kits y campañas de links.",
           viewport: "mobile",
           image: "/page-mobile1.jpeg",
           imageAlt: "Página móvil QuackLinks para marcas con fondo pixel-art",
@@ -343,7 +269,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Energía neón",
           titleHighlight: "en pantalla grande",
           description:
-            "Fondos en video, paletas cyberpunk e íconos sociales que destacan en desktop — sin perder velocidad.",
+            "Fondos en video, paletas cyberpunk e íconos sociales que destacan en desktop. sin perder velocidad.",
           viewport: "desktop",
           image: "/page-desktop2.png",
           imageAlt: "Página desktop QuackLinks con fondo cyberpunk neón",
@@ -357,7 +283,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Mundos artísticos",
           titleHighlight: "a tu manera",
           description:
-            "Fondos cinematográficos, selección de íconos y cards que cuentan una historia — páginas reales hechas con QuackLinks.",
+            "Fondos cinematográficos, selección de íconos y cards que cuentan una historia. páginas reales hechas con QuackLinks.",
           viewport: "desktop",
           image: "/page-desktop1.png",
           imageAlt: "Página desktop QuackLinks con paisaje fantástico de luna",
@@ -374,7 +300,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Perfis que",
           titleHighlight: "respiram estilo",
           description:
-            "Cards de vidro sobre fotos imersivas. Layout limpo e identidade forte — exatamente o que seus visitantes veem no QuackLinks.",
+            "Cards de vidro sobre fotos imersivas. Layout limpo e identidade forte. Exatamente o que seus visitantes veem no QuackLinks.",
           viewport: "mobile",
           image: "/page-mobile2.jpeg",
           imageAlt:
@@ -390,7 +316,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Feito para",
           titleHighlight: "converter",
           description:
-            "Tipografia marcante, fundos pixel e CTAs claros — ideal para parcerias, media kits e campanhas de links.",
+            "Tipografia marcante, fundos pixel e CTAs claros. Ideal para parcerias, media kits e campanhas de links.",
           viewport: "mobile",
           image: "/page-mobile1.jpeg",
           imageAlt: "Página mobile QuackLinks para marcas com fundo pixel-art",
@@ -404,7 +330,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Energia neon",
           titleHighlight: "na tela grande",
           description:
-            "Fundos em vídeo, paletas cyberpunk e blocos sociais que saltam no desktop — sem sacrificar velocidade.",
+            "Fundos em vídeo, paletas cyberpunk e blocos sociais que saltam no desktop. sem sacrificar velocidade.",
           viewport: "desktop",
           image: "/page-desktop2.png",
           imageAlt: "Página desktop QuackLinks com fundo cyberpunk neon",
@@ -418,7 +344,7 @@ const steps = computed<ExploreStep[]>(() => {
           titleStart: "Mundos artísticos",
           titleHighlight: "do seu jeito",
           description:
-            "Backgrounds cinematográficos, ícones customizados e cards de perfil que contam uma história — páginas reais criadas no QuackLinks.",
+            "Backgrounds cinematográficos, ícones customizados e cards de perfil que contam uma história. páginas reais criadas no QuackLinks.",
           viewport: "desktop",
           image: "/page-desktop1.png",
           imageAlt: "Página desktop QuackLinks com paisagem fantástica de lua",
@@ -550,10 +476,8 @@ onUnmounted(() => {
 
 <style scoped>
 .explore-grid {
-  background-image: radial-gradient(
-    rgba(251, 191, 36, 0.35) 1px,
-    transparent 1px
-  );
+  background-image: radial-gradient(rgba(251, 191, 36, 0.35) 1px,
+      transparent 1px);
   background-size: 28px 28px;
 }
 
@@ -614,6 +538,7 @@ onUnmounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .explore-text-left-enter-active,
   .explore-text-left-leave-active,
   .explore-text-right-enter-active,

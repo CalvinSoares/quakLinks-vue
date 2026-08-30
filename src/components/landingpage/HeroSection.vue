@@ -31,10 +31,9 @@
                     }}</span>
                 </div>
 
-                <!-- Headline com Troca de Palavras (ou Gradiente Animado) -->
+                <!-- Headline -->
                 <h1
                     class="text-5xl sm:text-6xl lg:text-7xl font-black mb-6 leading-[1.1] tracking-tight animate-fade-in-up">
-                    {{ copy.hero.titleStart }} <br />
                     <span
                         class="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-500 to-orange-500 bg-[length:200%_auto] animate-gradient-shift">
                         {{ copy.hero.titleHighlight }}
@@ -60,17 +59,6 @@
                     </a>
                 </div>
 
-                <!-- Social Proof -->
-                <div class="mt-12 flex items-center gap-6 text-sm text-slate-500 animate-fade-in-up"
-                    style="animation-delay: 400ms">
-                    <div class="flex -space-x-3">
-                        <img v-for="i in 3" :key="i"
-                            class="w-10 h-10 rounded-full border-2 border-[#0a0a0a] hover:z-10 transition-transform hover:scale-110"
-                            :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${i * 123}`" />
-                    </div>
-                    <p>{{ copy.hero.joinPrefix }} <span class="text-white font-bold">50k+</span> {{
-                        copy.hero.joinSuffix }}</p>
-                </div>
             </div>
 
             <!-- LADO DIREITO: MOCKUP INTERATIVO -->

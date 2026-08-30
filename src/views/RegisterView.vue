@@ -38,7 +38,7 @@
               <div class="mt-2 flex items-center justify-between gap-3 text-xs">
                 <p class="text-slate-500 truncate">
                   {{ copy.usernamePreviewPrefix }} <span class="text-slate-300 font-semibold">/{{ name || '...'
-                    }}</span>
+                  }}</span>
                 </p>
                 <p v-if="usernameStatus === 'checking'" class="text-slate-400">{{ copy.usernameChecking }}</p>
                 <p v-else-if="usernameStatus === 'available'" class="text-emerald-400">{{ copy.usernameAvailable }}</p>
@@ -136,7 +136,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import LanguageMenuButton from '@/components/LanguageMenuButton.vue';
 import TurnstileWidget from '@/components/auth/TurnstileWidget.vue';
@@ -161,6 +161,7 @@ const hasTurnstile = computed(
 );
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const { locale } = useAppLanguage();
 
@@ -320,6 +321,16 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
+  // Check for username from query string (from landing page)
+  const queryUsername = route.query.username;
+  if (queryUsername && typeof queryUsername === 'string') {
+    const normalized = normalizePublicHandle(queryUsername);
+    if (normalized) {
+      name.value = normalized;
+      // Trigger availability check
+      checkUsernameAvailability(normalized);
+    }
+  }
   setTimeout(() => isMounted.value = true, 100);
 });
 
