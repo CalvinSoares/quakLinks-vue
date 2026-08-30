@@ -1,16 +1,22 @@
 <template>
-  <div class="min-h-screen bg-[#0a0a0a] text-white">
-    <DashboardLayout>
+  <PublicLayout>
+    <div class="min-h-screen bg-[#0a0a0a] text-white">
       <div class="max-w-3xl mx-auto py-12 px-4">
+        <a href="/"
+          class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-amber-400 transition-colors mb-8">
+          <span aria-hidden="true">&larr;</span>
+          <span>{{ backLabel }}</span>
+        </a>
+
         <h1 class="text-4xl font-black mb-8">Política de Privacidade</h1>
-        
+
         <div class="prose prose-invert prose-amber max-w-none space-y-8 text-slate-300">
           <p class="text-lg">Última atualização: Janeiro de 2026</p>
 
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">1. Introdução</h2>
             <p>
-              A QuackLinks ("nós", "nosso" ou "plataforma") se compromete a proteger sua privacidade. 
+              A QuackLinks ("nós", "nosso" ou "plataforma") se compromete a proteger sua privacidade.
               Esta Política de Privacidade explica como coletamos, usamos e protegemos suas informações pessoais.
             </p>
           </section>
@@ -41,7 +47,7 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">4. Compartilhamento de Dados</h2>
             <p>
-              Não vendemos seus dados pessoais. Compartilhamos informações apenas quando necessário para 
+              Não vendemos seus dados pessoais. Compartilhamos informações apenas quando necessário para
               fornecer nossos serviços (como integração com Discord ou Spotify) ou quando exigido por lei.
             </p>
           </section>
@@ -49,8 +55,8 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">5. Cookies</h2>
             <p>
-              Utilizamos cookies para manter sua sessão ativa e melhorar sua experiência. Você pode 
-              desativar cookies nas configurações do seu navegador, mas algumas funcionalidades podem 
+              Utilizamos cookies para manter sua sessão ativa e melhorar sua experiência. Você pode
+              desativar cookies nas configurações do seu navegador, mas algumas funcionalidades podem
               não funcionar corretamente.
             </p>
           </section>
@@ -58,7 +64,7 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">6. Segurança</h2>
             <p>
-              Implementamos medidas de segurança técnicas e organizacionais para proteger seus dados, 
+              Implementamos medidas de segurança técnicas e organizacionais para proteger seus dados,
               incluindo criptografia de senhas e conexões (HTTPS).
             </p>
           </section>
@@ -77,16 +83,25 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">8. Contato</h2>
             <p>
-              Para questões sobre esta política ou sobre seus dados, entre em contato pelo email: 
+              Para questões sobre esta política ou sobre seus dados, entre em contato pelo email:
               <a href="mailto:contato@quacklinks.com.br" class="text-amber-400 hover:underline">contato@quacklinks.com.br</a>
             </p>
           </section>
         </div>
       </div>
-    </DashboardLayout>
-  </div>
+    </div>
+  </PublicLayout>
 </template>
 
 <script setup lang="ts">
-import DashboardLayout from '@/layouts/DashboardLayout.vue';
+import { computed } from 'vue';
+import { useAppLanguage } from '@/composables/useAppLanguage';
+import PublicLayout from '@/layouts/PublicLayout.vue';
+
+const { locale } = useAppLanguage();
+const backLabel = computed(() => {
+  if (locale.value === 'en') return 'Back to home';
+  if (locale.value === 'es') return 'Volver al inicio';
+  return 'Voltar para o início';
+});
 </script>

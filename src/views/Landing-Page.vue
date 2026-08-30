@@ -81,21 +81,22 @@
 
         <FaqSection />
 
-        <!-- Final CTA Section with React Bits style ScrollExpand -->
+        <!-- Final CTA Section with refined natural ScrollExpand -->
         <section ref="finalCtaSection" class="final-cta-section relative bg-[#0a0a0a]" :style="containerStyle">
             <div class="scroll-expand-sticky">
                 <div class="scroll-expand-frame" :style="frameStyle">
                     <div class="scroll-expand-content-inner">
                         <div class="text-center max-w-3xl mx-auto px-4 w-full">
-                            <h2 class="text-4xl md:text-5xl lg:text-6xl font-black mb-4 text-white">
-                                <template v-if="locale === 'pt'">Pronto pra <span
-                                        class="text-amber-400">começar?</span></template>
-                                <template v-else-if="locale === 'en'">Ready to <span class="text-amber-400">get
-                                        started?</span></template>
-                                <template v-else>Listo para <span class="text-amber-400">empezar?</span></template>
+                            <h2 class="text-4xl md:text-5xl lg:text-6xl font-black mb-4 text-white tracking-tight">
+                                <template v-if="locale === 'pt'">O seu próximo capítulo <span
+                                        class="text-amber-400">começa aqui.</span></template>
+                                <template v-else-if="locale === 'en'">Your next chapter <span
+                                        class="text-amber-400">starts here.</span></template>
+                                <template v-else>Tu próximo capítulo <span class="text-amber-400">empieza
+                                        aquí.</span></template>
                             </h2>
 
-                            <p class="text-lg text-slate-400 mb-10">
+                            <p class="text-lg text-slate-400 mb-10 max-w-xl mx-auto font-normal">
                                 {{ copy.finalCta.description }}
                             </p>
 
@@ -112,16 +113,16 @@
                                             :class="{
                                                 'border-emerald-500': usernameStatus === 'available',
                                                 'border-red-500': usernameStatus === 'taken' || usernameStatus === 'invalid'
-                                            }"
-                                            :disabled="isCheckingUsername" @input="handleUsernameInput" />
-                                        <div v-if="isCheckingUsername" class="absolute right-4 top-1/2 -translate-y-1/2">
+                                            }" :disabled="isCheckingUsername" @input="handleUsernameInput" />
+                                        <div v-if="isCheckingUsername"
+                                            class="absolute right-4 top-1/2 -translate-y-1/2">
                                             <div
                                                 class="w-4 h-4 border-2 border-slate-700 border-t-amber-400 rounded-full animate-spin">
                                             </div>
                                         </div>
                                     </div>
                                     <button type="submit"
-                                        class="px-6 py-4 bg-amber-400 text-slate-900 font-bold rounded-xl hover:bg-amber-300 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                        class="px-6 py-4 bg-amber-400 text-slate-900 font-bold rounded-xl hover:bg-amber-300 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-400/10"
                                         :disabled="isCheckingUsername || !checkUsernameInput.trim()">
                                         {{ copy.finalCta.button }}
                                     </button>
@@ -133,7 +134,7 @@
                             </form>
 
                             <p class="text-sm text-slate-500">
-                                <template v-if="locale === 'pt'">Já tem conta? <a href="/login"
+                                <template v-if="locale === 'pt'">Já tem uma conta? <a href="/login"
                                         class="text-amber-400 hover:underline">Fazer login</a></template>
                                 <template v-else-if="locale === 'en'">Already have an account? <a href="/login"
                                         class="text-amber-400 hover:underline">Sign in</a></template>
@@ -200,7 +201,7 @@ const usernameStatus = ref('idle')
 const usernameCheckMessage = ref(null)
 let usernameCheckTimer = null
 
-// ScrollExpand state
+// ScrollExpand state (Natural & Organic interpolation)
 const smoothProgress = ref(0)
 const targetProgress = ref(0)
 let rafId = null
@@ -209,22 +210,28 @@ let ticking = false
 const containerStyle = computed(() => ({
     position: 'relative',
     width: '100%',
-    height: '160vh',
+    height: '140vh', // Altura reduzida para transição mais rápida e menos cansativa
 }))
 
-const eased = (t) => 1 - Math.pow(1 - t, 3)
+// Curva de interpolação personalizada (Evita solavancos e dá suavidade de app nativo)
+const eased = (t) => {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+}
 
 const frameStyle = computed(() => {
     const t = eased(smoothProgress.value)
-    const widthPct = 40 + (100 - 40) * t
-    const heightPct = 60 + (100 - 60) * t
-    const radius = 24 - 24 * t
+    // Começa num tamanho elegante (70vw / 70vh) e expande até cobrir a tela (100%)
+    const widthPct = 75 + (100 - 75) * t
+    const heightPct = 75 + (100 - 75) * t
+    const radius = 32 - 32 * t // Arredondamento some suavemente
+
     return {
         width: `${widthPct}%`,
         height: `${heightPct}vh`,
         borderRadius: `${radius}px`,
-        background: 'linear-gradient(180deg, #0f0f0f 0%, #050505 100%)',
-        boxShadow: '0 30px 80px -20px rgba(0, 0, 0, 0.6)',
+        background: 'linear-gradient(180deg, #111113 0%, #070708 100%)',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+        border: `${Math.max(0, 1 - t * 2)}px solid rgba(255, 255, 255, 0.08)`
     }
 })
 
@@ -249,8 +256,9 @@ function handleScrollProgress() {
 
 function animate() {
     const diff = targetProgress.value - smoothProgress.value
-    if (Math.abs(diff) > 0.0005) {
-        smoothProgress.value += diff * 0.15
+    // Fator de inércia ajustado para deixar o movimento denso e natural
+    if (Math.abs(diff) > 0.0001) {
+        smoothProgress.value += diff * 0.08
     } else {
         smoothProgress.value = targetProgress.value
     }
@@ -283,11 +291,11 @@ const translations = {
     pt: {
         auth: { login: 'Entrar', createBio: 'Criar Bio' },
         hero: {
-            badge: 'Todos os seus links num lugar só',
-            titleStart: 'Monta o teu',
+            badge: 'Tudo o que você cria, num só link',
+            titleStart: 'Sua audiência merece',
             titleHighlight: 'link na bio.',
-            description: 'Junta Instagram, YouTube, Twitch, Spotify e mais num link só.',
-            primaryCta: 'Criar minha página',
+            description: 'Centralize seu conteúdo, produtos e redes sociais em uma página com a sua identidade. Sem código, sem frescura.',
+            primaryCta: 'Criar minha página grátis',
             secondaryCta: 'Ver exemplos',
         },
         mockups: {
@@ -345,7 +353,7 @@ const translations = {
             },
         },
         finalCta: {
-            description: 'É de graça. Leva 2 minutos.',
+            description: 'Garanta o seu endereço personalizado agora mesmo. É rápido e gratuito.',
             button: 'Criar conta',
             usernamePlaceholder: 'seu-nome',
             usernameChecking: 'Verificando...',
@@ -372,11 +380,11 @@ const translations = {
     en: {
         auth: { login: 'Login', createBio: 'Create Bio' },
         hero: {
-            badge: 'All your links in one place',
-            titleStart: 'Build your',
-            titleHighlight: 'link in bio.',
-            description: 'Instagram, YouTube, Twitch, Spotify and more, all in one link.',
-            primaryCta: 'Create my page',
+            badge: 'Everything you create, in one link',
+            titleStart: 'Your audience deserves',
+            titleHighlight: 'more than a basic link.',
+            description: 'Centralize your content, products, and socials into a gorgeous custom page. No code, no fuss.',
+            primaryCta: 'Create my free page',
             secondaryCta: 'See examples',
         },
         mockups: {
@@ -434,7 +442,7 @@ const translations = {
             },
         },
         finalCta: {
-            description: "It's free. Takes 2 minutes.",
+            description: "Claim your custom link right now. It's fast and free.",
             button: 'Create account',
             usernamePlaceholder: 'your-name',
             usernameChecking: 'Checking...',
@@ -461,11 +469,11 @@ const translations = {
     es: {
         auth: { login: 'Entrar', createBio: 'Crear Bio' },
         hero: {
-            badge: 'Todos tus links en un solo lugar',
-            titleStart: 'Monta tu',
-            titleHighlight: 'link en bio.',
-            description: 'Instagram, YouTube, Twitch, Spotify y más, todo en un link.',
-            primaryCta: 'Crear mi página',
+            badge: 'Todo lo que creas, en un solo link',
+            titleStart: 'Tu audiencia merece',
+            titleHighlight: 'más que un enlace común.',
+            description: 'Centraliza tu contenido, productos y redes sociales en una página con tu propia identidad. Sin código.',
+            primaryCta: 'Crear mi página gratis',
             secondaryCta: 'Ver ejemplos',
         },
         mockups: {
@@ -523,7 +531,7 @@ const translations = {
             },
         },
         finalCta: {
-            description: 'Es gratis. Tarda 2 minutos.',
+            description: 'Reclama tu dirección personalizada ahora mismo. Es rápido y gratis.',
             button: 'Crear cuenta',
             usernamePlaceholder: 'tu-nombre',
             usernameChecking: 'Verificando...',
@@ -788,7 +796,7 @@ onUnmounted(() => {
     overflow-x: clip;
 }
 
-/* ScrollExpand: o frame interno é sticky dentro de um container de altura maior */
+/* ScrollExpand Refinado: Fluidez natural estilo Apple */
 .scroll-expand-sticky {
     position: sticky;
     top: 0;
@@ -797,7 +805,8 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
+    padding: 0;
+    overflow: hidden;
 }
 
 .scroll-expand-frame {
@@ -807,6 +816,8 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
+    transform: translateZ(0);
+    /* Aceleração de hardware pra evitar stuttering */
 }
 
 .scroll-expand-content-inner {
@@ -815,12 +826,19 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
+    padding: 1.5rem;
 }
 
 @keyframes pulse-slow {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .animate-pulse-slow {
@@ -828,7 +846,9 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .animate-spin {

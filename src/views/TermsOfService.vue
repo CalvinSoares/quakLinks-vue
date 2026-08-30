@@ -1,16 +1,22 @@
 <template>
-  <div class="min-h-screen bg-[#0a0a0a] text-white">
-    <DashboardLayout>
+  <PublicLayout>
+    <div class="min-h-screen bg-[#0a0a0a] text-white">
       <div class="max-w-3xl mx-auto py-12 px-4">
+        <a href="/"
+          class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-amber-400 transition-colors mb-8">
+          <span aria-hidden="true">&larr;</span>
+          <span>{{ backLabel }}</span>
+        </a>
+
         <h1 class="text-4xl font-black mb-8">Termos de Uso</h1>
-        
+
         <div class="prose prose-invert prose-amber max-w-none space-y-8 text-slate-300">
           <p class="text-lg">Última atualização: Janeiro de 2026</p>
 
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">1. Aceitação dos Termos</h2>
             <p>
-              Ao acessar e usar a plataforma QuackLinks, você concorda em cumprir estes Termos de Uso. 
+              Ao acessar e usar a plataforma QuackLinks, você concorda em cumprir estes Termos de Uso.
               Se você não concorda com qualquer parte destes termos, não deve usar nossa plataforma.
             </p>
           </section>
@@ -18,7 +24,7 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">2. Descrição do Serviço</h2>
             <p>
-              A QuackLinks é uma plataforma que permite criar e gerenciar páginas de links na bio. 
+              A QuackLinks é uma plataforma que permite criar e gerenciar páginas de links na bio.
               Oferecemos um plano gratuito com funcionalidades básicas e planos premium com recursos adicionais.
             </p>
           </section>
@@ -49,8 +55,8 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">5. Conteúdo do Usuário</h2>
             <p>
-              Você mantém a propriedade do conteúdo que publica na sua página. Ao usar a plataforma, 
-              você nos concede uma licença limitada para exibir seu conteúdo. Você é o único responsável 
+              Você mantém a propriedade do conteúdo que publica na sua página. Ao usar a plataforma,
+              você nos concede uma licença limitada para exibir seu conteúdo. Você é o único responsável
               pelo conteúdo que publica.
             </p>
           </section>
@@ -58,8 +64,8 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">6. Planos e Pagamentos</h2>
             <p>
-              Oferecemos planos gratuitos e premium. Os planos premium são cobrados conforme o período 
-              escolhido. Você pode cancelar sua assinatura a qualquer momento. Não oferecemos reembolso 
+              Oferecemos planos gratuitos e premium. Os planos premium são cobrados conforme o período
+              escolhido. Você pode cancelar sua assinatura a qualquer momento. Não oferecemos reembolso
               por períodos já pagos, exceto em casos especiais a nosso critério.
             </p>
           </section>
@@ -67,8 +73,8 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">7. Isenção de Responsabilidade</h2>
             <p>
-              A plataforma é fornecida "como está". Não garantimos que a plataforma estará sempre 
-              disponível ou livre de erros. Não somos responsáveis por qualquer dano decorrente do uso 
+              A plataforma é fornecida "como está". Não garantimos que a plataforma estará sempre
+              disponível ou livre de erros. Não somos responsáveis por qualquer dano decorrente do uso
               da plataforma.
             </p>
           </section>
@@ -76,7 +82,7 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">8. Limitação de Responsabilidade</h2>
             <p>
-              Na medida máxima permitida por lei, a QuackLinks não será responsável por quaisquer danos 
+              Na medida máxima permitida por lei, a QuackLinks não será responsável por quaisquer danos
               indiretos, incidentais, especiais ou consequentes decorrentes do uso da plataforma.
             </p>
           </section>
@@ -84,8 +90,8 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">9. Modificações</h2>
             <p>
-              Reservamos o direito de modificar estes termos a qualquer momento. Notificaremos sobre 
-              mudanças significativas. O uso continuado da plataforma após as mudanças constitui 
+              Reservamos o direito de modificar estes termos a qualquer momento. Notificaremos sobre
+              mudanças significativas. O uso continuado da plataforma após as mudanças constitui
               aceitação dos novos termos.
             </p>
           </section>
@@ -93,7 +99,7 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">10. Rescisão</h2>
             <p>
-              Podemos suspender ou encerrar sua conta se você violar estes termos. Você pode excluir 
+              Podemos suspender ou encerrar sua conta se você violar estes termos. Você pode excluir
               sua conta a qualquer momento através das configurações.
             </p>
           </section>
@@ -101,16 +107,25 @@
           <section>
             <h2 class="text-2xl font-bold text-white mb-4">11. Contato</h2>
             <p>
-              Para questões sobre estes termos, entre em contato pelo email: 
+              Para questões sobre estes termos, entre em contato pelo email:
               <a href="mailto:contato@quacklinks.com.br" class="text-amber-400 hover:underline">contato@quacklinks.com.br</a>
             </p>
           </section>
         </div>
       </div>
-    </DashboardLayout>
-  </div>
+    </div>
+  </PublicLayout>
 </template>
 
 <script setup lang="ts">
-import DashboardLayout from '@/layouts/DashboardLayout.vue';
+import { computed } from 'vue';
+import { useAppLanguage } from '@/composables/useAppLanguage';
+import PublicLayout from '@/layouts/PublicLayout.vue';
+
+const { locale } = useAppLanguage();
+const backLabel = computed(() => {
+  if (locale.value === 'en') return 'Back to home';
+  if (locale.value === 'es') return 'Volver al inicio';
+  return 'Voltar para o início';
+});
 </script>
